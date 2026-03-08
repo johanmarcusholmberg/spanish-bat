@@ -54,7 +54,7 @@ const ResetPasswordPage = () => {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md animate-fade-in">
         <div className="text-center mb-6">
-          <img src={batAvatar} alt="MurciélagoLingo" className="w-20 h-20 mx-auto mb-3" />
+          <img src={batAvatar} alt="MurciélagoLingo" className="w-20 h-20 mx-auto mb-3 animate-float" />
           <h1 className="text-2xl font-heading font-bold text-foreground">{t("resetPasswordTitle")}</h1>
           <p className="text-muted-foreground text-sm mt-1">{t("passwordHistory")}</p>
         </div>
