@@ -118,6 +118,27 @@ const translations: Translations = {
   correctAnswer: { sv: "Rätt svar", en: "Correct answer" },
   category: { sv: "Kategori", en: "Category" },
 
+  // Grammar exercises
+  stepLearn: { sv: "Lär dig", en: "Learn" },
+  stepPractice: { sv: "Öva", en: "Practice" },
+  startExercises: { sv: "Starta övningar", en: "Start exercises" },
+  showHint: { sv: "Visa ledtråd", en: "Show hint" },
+  seeResults: { sv: "Se resultat", en: "See results" },
+  lessonPassed: { sv: "Lektion godkänd! 🎉", en: "Lesson passed! 🎉" },
+  tryAgain: { sv: "Försök igen!", en: "Try again!" },
+  correctAnswers: { sv: "rätt svar", en: "correct answers" },
+  needScore: { sv: "Du behöver minst", en: "You need at least" },
+  toPass: { sv: "för att klara lektionen", en: "to pass the lesson" },
+  reviewLesson: { sv: "Repetera", en: "Review" },
+  retryExercises: { sv: "Försök igen", en: "Try again" },
+  nextLessonUnlocked: { sv: "Nästa lektion upplåst!", en: "Next lesson unlocked!" },
+  bestScore: { sv: "Bästa resultat", en: "Best score" },
+  attemptsLabel: { sv: "försök", en: "attempts" },
+  "exerciseType_fill-blank": { sv: "Fyll i", en: "Fill in" },
+  "exerciseType_multiple-choice": { sv: "Flerval", en: "Multiple choice" },
+  exerciseType_translate: { sv: "Översätt", en: "Translate" },
+  "exerciseType_error-correction": { sv: "Rätta felet", en: "Correct the error" },
+
   // Quiz categories
   vocabulary: { sv: "Glosor", en: "Vocabulary" },
   dailyPhrases: { sv: "Vardagsfraser", en: "Daily phrases" },
