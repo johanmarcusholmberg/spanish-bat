@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
       setIsLoggedIn(true);
       setUser(profile);
-      return true;
+      return profile;
     }
 
     if (email && password) {
@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
       setIsLoggedIn(true);
       setUser(profile);
-      return true;
+      return profile;
     }
 
     return false;
