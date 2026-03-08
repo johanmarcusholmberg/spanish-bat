@@ -34,7 +34,7 @@ const LoginPage = () => {
         <LanguageToggle />
       </div>
 
-      <div className="w-full max-w-md animate-fade-in">
+      <div className="w-full max-w-md" style={{ animation: 'fade-in 0.5s ease-out both' }}>
         {/* Avatar & Title */}
         <div className="text-center mb-8">
           <img
