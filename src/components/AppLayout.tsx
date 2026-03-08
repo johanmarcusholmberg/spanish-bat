@@ -2,7 +2,6 @@ import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import LanguageToggle from "@/components/LanguageToggle";
 import batAvatar from "@/assets/bat-avatar.png";
 import { Home, BookOpen, User, LogOut } from "lucide-react";
 
@@ -31,7 +30,6 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
           <span className="font-heading font-bold text-foreground text-lg">MurciélagoLingo</span>
         </div>
         <div className="flex items-center gap-4">
-          <LanguageToggle />
           <button
             onClick={handleLogout}
             className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition text-sm"
