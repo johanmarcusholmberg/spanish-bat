@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import LanguageToggle from "@/components/LanguageToggle";
+import batAvatar from "@/assets/bat-avatar.png";
 import batAvatar from "@/assets/bat-avatar.png";
 import { Home, BookOpen, User, LogOut } from "lucide-react";
 
