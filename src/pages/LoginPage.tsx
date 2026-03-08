@@ -50,7 +50,7 @@ const LoginPage = () => {
         </div>
 
         {/* Login Form */}
-        <div className="bg-card rounded-lg p-6 shadow-soft">
+        <div className="bg-card rounded-lg p-6 shadow-soft animate-fade-in" style={{ animationDelay: '0.2s', animationFillMode: 'both' }}>
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">
