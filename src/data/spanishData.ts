@@ -12,9 +12,9 @@ export interface VerbData {
       nosotros: string;
       vosotros: string;
       ellos: string;
+      example: { es: string; sv: string; en: string };
     };
   };
-  example: { es: string; sv: string; en: string };
   level: Level;
 }
 
