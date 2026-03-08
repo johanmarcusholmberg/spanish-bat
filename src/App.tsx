@@ -16,6 +16,10 @@ import VerbExercisePage from "./pages/VerbExercisePage";
 import NounExercisePage from "./pages/NounExercisePage";
 import AdjectiveExercisePage from "./pages/AdjectiveExercisePage";
 import QuizExercisePage from "./pages/QuizExercisePage";
+import GrammarPage from "./pages/GrammarPage";
+import FlashcardsPage from "./pages/FlashcardsPage";
+import ReadingPage from "./pages/ReadingPage";
+import SentenceBuilderPage from "./pages/SentenceBuilderPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +43,10 @@ const AppRoutes = () => (
     <Route path="/exercises/nouns" element={<ProtectedRoute><NounExercisePage /></ProtectedRoute>} />
     <Route path="/exercises/adjectives" element={<ProtectedRoute><AdjectiveExercisePage /></ProtectedRoute>} />
     <Route path="/exercises/quiz" element={<ProtectedRoute><QuizExercisePage /></ProtectedRoute>} />
+    <Route path="/learn/grammar" element={<ProtectedRoute><GrammarPage /></ProtectedRoute>} />
+    <Route path="/learn/flashcards" element={<ProtectedRoute><FlashcardsPage /></ProtectedRoute>} />
+    <Route path="/learn/reading" element={<ProtectedRoute><ReadingPage /></ProtectedRoute>} />
+    <Route path="/learn/sentences" element={<ProtectedRoute><SentenceBuilderPage /></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
