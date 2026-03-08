@@ -48,6 +48,7 @@ export const tenseNames: Record<string, { sv: string; en: string }> = {
   presente: { sv: "Presens", en: "Present" },
   preterito: { sv: "Preteritum", en: "Preterite" },
   imperfecto: { sv: "Imperfekt", en: "Imperfect" },
+  perfecto: { sv: "Perfekt", en: "Perfect" },
   futuro: { sv: "Futurum", en: "Future" },
   condicional: { sv: "Konditionalis", en: "Conditional" },
   subjuntivo: { sv: "Konjunktiv", en: "Subjunctive" },
