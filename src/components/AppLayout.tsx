@@ -3,7 +3,6 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import batAvatar from "@/assets/bat-avatar.png";
-import batAvatar from "@/assets/bat-avatar.png";
 import { Home, BookOpen, User, LogOut } from "lucide-react";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
