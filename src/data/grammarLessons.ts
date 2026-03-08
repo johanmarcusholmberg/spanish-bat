@@ -1,5 +1,22 @@
 import { Level } from "@/contexts/AuthContext";
 
+export type ExerciseType = "fill-blank" | "multiple-choice" | "translate" | "error-correction";
+
+export interface GrammarExercise {
+  type: ExerciseType;
+  question: { sv: string; en: string };
+  /** For fill-blank: the sentence with ___ */
+  prompt?: string;
+  /** Correct answer(s) */
+  answer: string;
+  /** For multiple-choice */
+  options?: string[];
+  /** For error-correction: the incorrect sentence */
+  incorrectSentence?: string;
+  /** Hint shown after wrong attempt */
+  hint?: { sv: string; en: string };
+}
+
 export interface GrammarLesson {
   id: string;
   title: { sv: string; en: string };
@@ -11,6 +28,7 @@ export interface GrammarLesson {
     examples: { es: string; sv: string; en: string }[];
     tip?: { sv: string; en: string };
   }[];
+  exercises: GrammarExercise[];
 }
 
 export const grammarLessons: GrammarLesson[] = [
@@ -49,6 +67,15 @@ export const grammarLessons: GrammarLesson[] = [
           { es: "las casas", sv: "husen", en: "the houses" },
         ]
       }
+    ],
+    exercises: [
+      { type: "fill-blank", question: { sv: "Fyll i rätt artikel", en: "Fill in the correct article" }, prompt: "___ libro", answer: "el", hint: { sv: "'Libro' slutar på -o och är maskulint", en: "'Libro' ends in -o and is masculine" } },
+      { type: "fill-blank", question: { sv: "Fyll i rätt artikel", en: "Fill in the correct article" }, prompt: "___ casa", answer: "la", hint: { sv: "'Casa' slutar på -a och är feminint", en: "'Casa' ends in -a and is feminine" } },
+      { type: "multiple-choice", question: { sv: "Vilken artikel passar? ___ mesa", en: "Which article fits? ___ mesa" }, answer: "la", options: ["el", "la", "los", "las"], hint: { sv: "'Mesa' är femininum singular", en: "'Mesa' is feminine singular" } },
+      { type: "multiple-choice", question: { sv: "Vilken artikel passar? ___ libros", en: "Which article fits? ___ libros" }, answer: "los", options: ["el", "la", "los", "las"], hint: { sv: "'Libros' är maskulinum plural", en: "'Libros' is masculine plural" } },
+      { type: "fill-blank", question: { sv: "Fyll i rätt artikel", en: "Fill in the correct article" }, prompt: "___ gatos", answer: "los", hint: { sv: "Plural av 'el' är 'los'", en: "Plural of 'el' is 'los'" } },
+      { type: "translate", question: { sv: "Översätt: böckerna", en: "Translate: the books" }, answer: "los libros", hint: { sv: "'Bok' = 'libro' (maskulint), plural", en: "'Book' = 'libro' (masculine), plural" } },
+      { type: "error-correction", question: { sv: "Rätta felet i meningen", en: "Correct the error in the sentence" }, incorrectSentence: "El casa es grande.", answer: "La casa es grande.", hint: { sv: "'Casa' är femininum, ska ha 'la'", en: "'Casa' is feminine, needs 'la'" } },
     ]
   },
   {
@@ -79,6 +106,14 @@ export const grammarLessons: GrammarLesson[] = [
           { es: "unas flores", sv: "några blommor", en: "some flowers" },
         ]
       }
+    ],
+    exercises: [
+      { type: "fill-blank", question: { sv: "Fyll i rätt artikel", en: "Fill in the correct article" }, prompt: "___ perro", answer: "un", hint: { sv: "'Perro' är maskulint singular", en: "'Perro' is masculine singular" } },
+      { type: "fill-blank", question: { sv: "Fyll i rätt artikel", en: "Fill in the correct article" }, prompt: "___ flor", answer: "una", hint: { sv: "'Flor' är feminint", en: "'Flor' is feminine" } },
+      { type: "multiple-choice", question: { sv: "Vilken artikel? ___ libros", en: "Which article? ___ libros" }, answer: "unos", options: ["un", "una", "unos", "unas"], hint: { sv: "Maskulinum plural", en: "Masculine plural" } },
+      { type: "multiple-choice", question: { sv: "Vilken artikel? ___ flores", en: "Which article? ___ flores" }, answer: "unas", options: ["un", "una", "unos", "unas"], hint: { sv: "Femininum plural", en: "Feminine plural" } },
+      { type: "translate", question: { sv: "Översätt: en hund", en: "Translate: a dog" }, answer: "un perro", hint: { sv: "Maskulinum singular + 'perro'", en: "Masculine singular + 'perro'" } },
+      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Un flor bonita.", answer: "Una flor bonita.", hint: { sv: "'Flor' är feminint", en: "'Flor' is feminine" } },
     ]
   },
   {
@@ -115,6 +150,15 @@ export const grammarLessons: GrammarLesson[] = [
           en: "Think: SER = what something IS, ESTAR = how something FEELS or WHERE it is."
         }
       }
+    ],
+    exercises: [
+      { type: "multiple-choice", question: { sv: "Jag ___ svensk. (permanent egenskap)", en: "I ___ Swedish. (permanent trait)" }, answer: "soy", options: ["soy", "estoy", "es", "está"], hint: { sv: "Nationalitet = SER", en: "Nationality = SER" } },
+      { type: "multiple-choice", question: { sv: "Jag ___ trött. (tillfälligt tillstånd)", en: "I ___ tired. (temporary state)" }, answer: "estoy", options: ["soy", "estoy", "es", "está"], hint: { sv: "Tillfällig känsla = ESTAR", en: "Temporary feeling = ESTAR" } },
+      { type: "fill-blank", question: { sv: "Fyll i ser eller estar", en: "Fill in ser or estar" }, prompt: "Ella ___ profesora.", answer: "es", hint: { sv: "Yrke = SER (tredje person)", en: "Profession = SER (third person)" } },
+      { type: "fill-blank", question: { sv: "Fyll i ser eller estar", en: "Fill in ser or estar" }, prompt: "El libro ___ en la mesa.", answer: "está", hint: { sv: "Plats = ESTAR", en: "Location = ESTAR" } },
+      { type: "multiple-choice", question: { sv: "Nosotros ___ contentos. (känsla)", en: "We ___ happy. (feeling)" }, answer: "estamos", options: ["somos", "estamos", "son", "están"], hint: { sv: "Känsla/tillstånd = ESTAR", en: "Feeling/state = ESTAR" } },
+      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Yo estoy sueco.", answer: "Yo soy sueco.", hint: { sv: "Nationalitet kräver SER", en: "Nationality requires SER" } },
+      { type: "translate", question: { sv: "Översätt: Hon är lärare.", en: "Translate: She is a teacher." }, answer: "Ella es profesora.", hint: { sv: "Yrke = SER", en: "Profession = SER" } },
     ]
   },
   {
@@ -157,6 +201,15 @@ export const grammarLessons: GrammarLesson[] = [
           { es: "Ellos viven aquí.", sv: "De bor här.", en: "They live here." },
         ]
       }
+    ],
+    exercises: [
+      { type: "fill-blank", question: { sv: "Böj verbet 'hablar' (yo)", en: "Conjugate 'hablar' (yo)" }, prompt: "Yo ___ español.", answer: "hablo", hint: { sv: "-ar verb: yo → -o", en: "-ar verb: yo → -o" } },
+      { type: "fill-blank", question: { sv: "Böj verbet 'comer' (ella)", en: "Conjugate 'comer' (ella)" }, prompt: "Ella ___ fruta.", answer: "come", hint: { sv: "-er verb: él/ella → -e", en: "-er verb: él/ella → -e" } },
+      { type: "fill-blank", question: { sv: "Böj verbet 'vivir' (nosotros)", en: "Conjugate 'vivir' (nosotros)" }, prompt: "Nosotros ___ en Madrid.", answer: "vivimos", hint: { sv: "-ir verb: nosotros → -imos", en: "-ir verb: nosotros → -imos" } },
+      { type: "multiple-choice", question: { sv: "Tú ___ mucho. (hablar)", en: "Tú ___ a lot. (hablar)" }, answer: "hablas", options: ["hablo", "hablas", "habla", "hablamos"], hint: { sv: "-ar verb: tú → -as", en: "-ar verb: tú → -as" } },
+      { type: "multiple-choice", question: { sv: "Ellos ___ aquí. (vivir)", en: "They ___ here. (vivir)" }, answer: "viven", options: ["vivo", "vives", "vivimos", "viven"], hint: { sv: "-ir verb: ellos → -en", en: "-ir verb: ellos → -en" } },
+      { type: "translate", question: { sv: "Översätt: Jag äter pizza.", en: "Translate: I eat pizza." }, answer: "Yo como pizza.", hint: { sv: "comer → como (yo)", en: "comer → como (yo)" } },
+      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Nosotros hablan español.", answer: "Nosotros hablamos español.", hint: { sv: "Nosotros → -amos", en: "Nosotros → -amos" } },
     ]
   },
   {
@@ -191,6 +244,14 @@ export const grammarLessons: GrammarLesson[] = [
           en: "The adjective usually comes AFTER the noun in Spanish, unlike in English/Swedish."
         }
       }
+    ],
+    exercises: [
+      { type: "fill-blank", question: { sv: "Skriv rätt form av 'alto' (femininum)", en: "Write correct form of 'alto' (feminine)" }, prompt: "La chica es ___.", answer: "alta", hint: { sv: "-o → -a i femininum", en: "-o → -a in feminine" } },
+      { type: "fill-blank", question: { sv: "Skriv rätt pluralform av 'alto' (maskulinum)", en: "Write correct plural of 'alto' (masculine)" }, prompt: "Los chicos son ___.", answer: "altos", hint: { sv: "Plural: lägg till -s", en: "Plural: add -s" } },
+      { type: "multiple-choice", question: { sv: "Las casas son ___. (grande)", en: "The houses are ___. (grande)" }, answer: "grandes", options: ["grande", "grandes", "grando", "grandos"], hint: { sv: "'Grande' slutar på -e, plural = -es", en: "'Grande' ends in -e, plural = -es" } },
+      { type: "multiple-choice", question: { sv: "La mujer es ___. (inteligente)", en: "The woman is ___. (inteligente)" }, answer: "inteligente", options: ["inteligento", "inteligenta", "inteligente", "inteligentes"], hint: { sv: "Adjektiv på -e ändras inte för genus", en: "Adjectives ending in -e don't change for gender" } },
+      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "La chica es alto.", answer: "La chica es alta.", hint: { sv: "Femininum kräver -a", en: "Feminine requires -a" } },
+      { type: "translate", question: { sv: "Översätt: Pojkarna är långa.", en: "Translate: The boys are tall." }, answer: "Los chicos son altos.", hint: { sv: "Maskulinum plural av 'alto'", en: "Masculine plural of 'alto'" } },
     ]
   },
   // A2
@@ -222,6 +283,14 @@ export const grammarLessons: GrammarLesson[] = [
           { es: "Vivieron en Madrid.", sv: "De bodde i Madrid.", en: "They lived in Madrid." },
         ]
       }
+    ],
+    exercises: [
+      { type: "fill-blank", question: { sv: "Böj 'hablar' i preteritum (yo)", en: "Conjugate 'hablar' in preterite (yo)" }, prompt: "Yo ___ con María ayer.", answer: "hablé", hint: { sv: "-ar verb: yo → -é", en: "-ar verb: yo → -é" } },
+      { type: "fill-blank", question: { sv: "Böj 'comer' i preteritum (yo)", en: "Conjugate 'comer' in preterite (yo)" }, prompt: "Yo ___ paella en Valencia.", answer: "comí", hint: { sv: "-er verb: yo → -í", en: "-er verb: yo → -í" } },
+      { type: "multiple-choice", question: { sv: "Ella ___ un vestido. (comprar)", en: "She ___ a dress. (comprar)" }, answer: "compró", options: ["compré", "compraste", "compró", "compraron"], hint: { sv: "Ella → tredje person singular", en: "Ella → third person singular" } },
+      { type: "multiple-choice", question: { sv: "Ellos ___ en Madrid. (vivir)", en: "They ___ in Madrid. (vivir)" }, answer: "vivieron", options: ["viví", "viviste", "vivió", "vivieron"], hint: { sv: "Ellos → tredje person plural", en: "Ellos → third person plural" } },
+      { type: "translate", question: { sv: "Översätt: Jag pratade med María igår.", en: "Translate: I spoke with María yesterday." }, answer: "Yo hablé con María ayer.", hint: { sv: "hablar → hablé (yo, preteritum)", en: "hablar → hablé (yo, preterite)" } },
+      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Yo hablo con María ayer.", answer: "Yo hablé con María ayer.", hint: { sv: "'Ayer' kräver preteritum", en: "'Ayer' requires preterite" } },
     ]
   },
   {
@@ -246,6 +315,14 @@ export const grammarLessons: GrammarLesson[] = [
           en: "Many daily routines are expressed with reflexive verbs in Spanish."
         }
       }
+    ],
+    exercises: [
+      { type: "fill-blank", question: { sv: "Fyll i rätt reflexivt pronomen", en: "Fill in the correct reflexive pronoun" }, prompt: "___ levanto a las siete.", answer: "Me", hint: { sv: "Yo → me", en: "Yo → me" } },
+      { type: "fill-blank", question: { sv: "Fyll i rätt reflexivt pronomen", en: "Fill in the correct reflexive pronoun" }, prompt: "Ella ___ ducha por la mañana.", answer: "se", hint: { sv: "Ella → se", en: "Ella → se" } },
+      { type: "multiple-choice", question: { sv: "___ acostamos tarde. (nosotros)", en: "___ go to bed late. (nosotros)" }, answer: "Nos", options: ["Me", "Te", "Nos", "Se"], hint: { sv: "Nosotros → nos", en: "Nosotros → nos" } },
+      { type: "multiple-choice", question: { sv: "Tú ___ despiertas temprano. (pronomen?)", en: "You ___ wake up early. (pronoun?)" }, answer: "te", options: ["me", "te", "se", "nos"], hint: { sv: "Tú → te", en: "Tú → te" } },
+      { type: "translate", question: { sv: "Översätt: Jag går upp klockan sju.", en: "Translate: I get up at seven." }, answer: "Me levanto a las siete.", hint: { sv: "levantarse → me levanto", en: "levantarse → me levanto" } },
+      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Ella levanta por la mañana.", answer: "Ella se levanta por la mañana.", hint: { sv: "Reflexivt pronomen saknas: se", en: "Reflexive pronoun missing: se" } },
     ]
   },
   {
@@ -276,6 +353,13 @@ export const grammarLessons: GrammarLesson[] = [
           { es: "Es el mejor restaurante.", sv: "Det är den bästa restaurangen.", en: "It's the best restaurant." },
         ]
       }
+    ],
+    exercises: [
+      { type: "fill-blank", question: { sv: "Fyll i: María es ___ alta que Pedro.", en: "Fill in: María is ___ tall than Pedro." }, prompt: "María es ___ alta que Pedro.", answer: "más", hint: { sv: "Mer = más", en: "More = más" } },
+      { type: "multiple-choice", question: { sv: "Es ___ restaurante. (bäst)", en: "It's ___ restaurant. (best)" }, answer: "el mejor", options: ["el más bueno", "el mejor", "el más mejor", "el bueno"], hint: { sv: "'Bueno' har oregelbunden superlativ: mejor", en: "'Bueno' has irregular superlative: mejor" } },
+      { type: "fill-blank", question: { sv: "Este libro es ___ interesante que el otro. (mindre)", en: "This book is ___ interesting than the other. (less)" }, prompt: "Este libro es ___ interesante que el otro.", answer: "menos", hint: { sv: "Mindre = menos", en: "Less = menos" } },
+      { type: "translate", question: { sv: "Översätt: Det är den vackraste staden.", en: "Translate: It's the most beautiful city." }, answer: "Es la ciudad más bonita.", hint: { sv: "la + más + adjektiv", en: "la + más + adjective" } },
+      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "María es más alta de Pedro.", answer: "María es más alta que Pedro.", hint: { sv: "Jämförelse: más...que (inte de)", en: "Comparison: más...que (not de)" } },
     ]
   },
   // B1
@@ -311,6 +395,14 @@ export const grammarLessons: GrammarLesson[] = [
           en: "Think: Imperfect = movie background (camera panning), Preterite = specific event (cut!)"
         }
       }
+    ],
+    exercises: [
+      { type: "multiple-choice", question: { sv: "Cuando era niño, ___ en el parque. (vana)", en: "When I was a child, I ___ in the park. (habit)" }, answer: "jugaba", options: ["jugué", "jugaba", "jugo", "jugará"], hint: { sv: "Vana i förflutna = imperfekt", en: "Past habit = imperfect" } },
+      { type: "multiple-choice", question: { sv: "Dormía cuando ___ el teléfono. (avbrott)", en: "I was sleeping when the phone ___. (interruption)" }, answer: "sonó", options: ["sonaba", "sonó", "suena", "sonará"], hint: { sv: "Avbrott i pågående handling = preteritum", en: "Interruption of ongoing action = preterite" } },
+      { type: "fill-blank", question: { sv: "Fyll i imperfekt av 'llover'", en: "Fill in imperfect of 'llover'" }, prompt: "___ mucho ese día.", answer: "Llovía", hint: { sv: "Bakgrundsbeskrivning = imperfekt", en: "Background description = imperfect" } },
+      { type: "fill-blank", question: { sv: "Fyll i preteritum av 'ver' (yo)", en: "Fill in preterite of 'ver' (yo)" }, prompt: "Caminaba cuando ___ a Juan.", answer: "vi", hint: { sv: "Specifik händelse = preteritum. Ver → vi (yo)", en: "Specific event = preterite. Ver → vi (yo)" } },
+      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Cuando fui niño, jugaba en el parque.", answer: "Cuando era niño, jugaba en el parque.", hint: { sv: "'Vara barn' är en bakgrund/tillstånd = imperfekt", en: "'Being a child' is background/state = imperfect" } },
+      { type: "translate", question: { sv: "Översätt: Jag sov när telefonen ringde.", en: "Translate: I was sleeping when the phone rang." }, answer: "Dormía cuando sonó el teléfono.", hint: { sv: "Bakgrund (imperfekt) + händelse (preteritum)", en: "Background (imperfect) + event (preterite)" } },
     ]
   },
   {
@@ -335,6 +427,13 @@ export const grammarLessons: GrammarLesson[] = [
           en: "The WEIRDO rule: Wishes, Emotions, Impersonal expressions, Recommendations, Doubt, Ojalá – all require subjunctive!"
         }
       }
+    ],
+    exercises: [
+      { type: "multiple-choice", question: { sv: "Quiero que ___ a mi fiesta. (venir, tú)", en: "I want you to ___ to my party. (venir, tú)" }, answer: "vengas", options: ["vienes", "vengas", "vendrás", "viniste"], hint: { sv: "Önskning + que = konjunktiv", en: "Wish + que = subjunctive" } },
+      { type: "multiple-choice", question: { sv: "Espero que ___ bien. (estar, tú)", en: "I hope you ___ well. (estar, tú)" }, answer: "estés", options: ["estás", "estés", "estarás", "estabas"], hint: { sv: "Hopp = WEIRDO → konjunktiv", en: "Hope = WEIRDO → subjunctive" } },
+      { type: "fill-blank", question: { sv: "Fyll i konjunktiv av 'ser' (det)", en: "Fill in subjunctive of 'ser' (it)" }, prompt: "No creo que ___ verdad.", answer: "sea", hint: { sv: "Tvivel + que = konjunktiv. Ser → sea", en: "Doubt + que = subjunctive. Ser → sea" } },
+      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Quiero que vienes a mi fiesta.", answer: "Quiero que vengas a mi fiesta.", hint: { sv: "Efter 'quiero que' måste det vara konjunktiv", en: "After 'quiero que' it must be subjunctive" } },
+      { type: "translate", question: { sv: "Översätt: Jag hoppas att du mår bra.", en: "Translate: I hope you're well." }, answer: "Espero que estés bien.", hint: { sv: "Esperar + que + konjunktiv", en: "Esperar + que + subjunctive" } },
     ]
   },
   {
@@ -366,6 +465,14 @@ export const grammarLessons: GrammarLesson[] = [
           { es: "Pagué diez euros por el libro.", sv: "Jag betalade tio euro för boken.", en: "I paid ten euros for the book." },
         ]
       }
+    ],
+    exercises: [
+      { type: "multiple-choice", question: { sv: "Estudio ___ aprender. (syfte)", en: "I study ___ learn. (purpose)" }, answer: "para", options: ["por", "para", "de", "a"], hint: { sv: "Syfte = para", en: "Purpose = para" } },
+      { type: "multiple-choice", question: { sv: "Gracias ___ tu ayuda. (orsak)", en: "Thanks ___ your help. (cause)" }, answer: "por", options: ["por", "para", "de", "con"], hint: { sv: "Orsak/anledning = por", en: "Cause/reason = por" } },
+      { type: "fill-blank", question: { sv: "Fyll i por eller para", en: "Fill in por or para" }, prompt: "Este regalo es ___ ti.", answer: "para", hint: { sv: "Mottagare = para", en: "Recipient = para" } },
+      { type: "fill-blank", question: { sv: "Fyll i por eller para", en: "Fill in por or para" }, prompt: "Caminé ___ el parque.", answer: "por", hint: { sv: "Rörelse genom = por", en: "Movement through = por" } },
+      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Gracias para tu ayuda.", answer: "Gracias por tu ayuda.", hint: { sv: "Tacksamhet/orsak = por", en: "Gratitude/cause = por" } },
+      { type: "translate", question: { sv: "Översätt: Den här presenten är till dig.", en: "Translate: This gift is for you." }, answer: "Este regalo es para ti.", hint: { sv: "Mottagare = para", en: "Recipient = para" } },
     ]
   },
   // B2
@@ -397,6 +504,14 @@ export const grammarLessons: GrammarLesson[] = [
           { es: "Quería que vinieras.", sv: "Jag ville att du skulle komma.", en: "I wanted you to come." },
         ]
       }
+    ],
+    exercises: [
+      { type: "multiple-choice", question: { sv: "Cuando ___, llámame. (llegar, tú – framtid)", en: "When you ___, call me. (llegar, tú – future)" }, answer: "llegues", options: ["llegas", "llegues", "llegarás", "llegaste"], hint: { sv: "Cuando + framtid = konjunktiv", en: "Cuando + future = subjunctive" } },
+      { type: "multiple-choice", question: { sv: "Si ___ dinero, viajaría. (tener, yo)", en: "If I ___ money, I would travel. (tener, yo)" }, answer: "tuviera", options: ["tengo", "tenía", "tuviera", "tendré"], hint: { sv: "Si + hypotetisk = konjunktiv imperfekt", en: "Si + hypothetical = imperfect subjunctive" } },
+      { type: "fill-blank", question: { sv: "Fyll i konjunktiv av 'llover'", en: "Fill in subjunctive of 'llover'" }, prompt: "Aunque ___, iremos.", answer: "llueva", hint: { sv: "Aunque + osäkerhet = konjunktiv", en: "Aunque + uncertainty = subjunctive" } },
+      { type: "fill-blank", question: { sv: "Fyll i konjunktiv imperfekt av 'venir' (tú)", en: "Fill in imperfect subjunctive of 'venir' (tú)" }, prompt: "Quería que ___.", answer: "vinieras", hint: { sv: "Vinieron → vinier- + -as", en: "Vinieron → vinier- + -as" } },
+      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Cuando llegas, llámame.", answer: "Cuando llegues, llámame.", hint: { sv: "Cuando + framtid kräver konjunktiv", en: "Cuando + future requires subjunctive" } },
+      { type: "translate", question: { sv: "Översätt: Om jag hade pengar, skulle jag resa.", en: "Translate: If I had money, I would travel." }, answer: "Si tuviera dinero, viajaría.", hint: { sv: "Si + konjunktiv imperfekt + konditionalis", en: "Si + imperfect subjunctive + conditional" } },
     ]
   },
   {
@@ -435,6 +550,13 @@ export const grammarLessons: GrammarLesson[] = [
           { es: "Si hubiera estudiado, habría aprobado.", sv: "Om jag hade pluggat, hade jag klarat det.", en: "If I had studied, I would have passed." },
         ]
       }
+    ],
+    exercises: [
+      { type: "multiple-choice", question: { sv: "Si estudias, ___. (Typ 1)", en: "If you study, ___. (Type 1)" }, answer: "aprobarás", options: ["apruebas", "aprobarás", "aprobarías", "habrías aprobado"], hint: { sv: "Typ 1: Si + presens → futurum", en: "Type 1: Si + present → future" } },
+      { type: "multiple-choice", question: { sv: "Si fuera rico, ___ una isla. (Typ 2)", en: "If I were rich, I ___ an island. (Type 2)" }, answer: "compraría", options: ["compro", "compraré", "compraría", "habría comprado"], hint: { sv: "Typ 2: Si + konj. imperf. → konditionalis", en: "Type 2: Si + imp. subj. → conditional" } },
+      { type: "fill-blank", question: { sv: "Fyll i rätt verbform (Typ 3)", en: "Fill in correct verb form (Type 3)" }, prompt: "Si hubiera estudiado, ___ aprobado.", answer: "habría", hint: { sv: "Typ 3: konditionalis perfekt = habría + particip", en: "Type 3: conditional perfect = habría + past participle" } },
+      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Si estudias, aprobarías.", answer: "Si estudias, aprobarás.", hint: { sv: "Si + presens → futurum (inte konditionalis)", en: "Si + present → future (not conditional)" } },
+      { type: "translate", question: { sv: "Översätt: Om jag vore rik, skulle jag köpa en ö.", en: "Translate: If I were rich, I would buy an island." }, answer: "Si fuera rico, compraría una isla.", hint: { sv: "Si + konjunktiv imperfekt + konditionalis", en: "Si + imperfect subjunctive + conditional" } },
     ]
   },
 ];
