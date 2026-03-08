@@ -12,7 +12,7 @@ interface UserProfile {
 interface AuthContextType {
   isLoggedIn: boolean;
   user: UserProfile | null;
-  login: (email: string, password: string) => boolean;
+  login: (email: string, password: string) => UserProfile | false;
   logout: () => void;
   updateProfile: (profile: Partial<UserProfile>) => void;
 }
@@ -20,7 +20,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   isLoggedIn: false,
   user: null,
-  login: () => false,
+  login: () => false as const,
   logout: () => {},
   updateProfile: () => {},
 });
@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch {}
   };
 
-  const login = (email: string, password: string): boolean => {
+  const login = (email: string, password: string): UserProfile | false => {
     if (email === "admin" && password === "Jagtestar2026!!") {
       const saved = loadProfile("admin@murcielagolingo.app");
       const profile: UserProfile = {
@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
       setIsLoggedIn(true);
       setUser(profile);
-      return true;
+      return profile;
     }
 
     if (email && password) {
@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
       setIsLoggedIn(true);
       setUser(profile);
-      return true;
+      return profile;
     }
 
     return false;

@@ -7,7 +7,7 @@ import batAvatar from "@/assets/bat-avatar.png";
 import { Eye, EyeOff, Mail } from "lucide-react";
 
 const LoginPage = () => {
-  const { t } = useLanguage();
+  const { t, setLanguage } = useLanguage();
   const { login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -21,8 +21,9 @@ const LoginPage = () => {
       setError(t("language") === "sv" ? "Fyll i alla fält" : "Fill in all fields");
       return;
     }
-    const success = login(email, password);
-    if (success) {
+    const result = login(email, password);
+    if (result) {
+      setLanguage(result.learningFrom);
       navigate("/dashboard");
     }
   };
