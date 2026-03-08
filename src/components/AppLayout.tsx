@@ -7,7 +7,7 @@ import { Home, BookOpen, User, LogOut } from "lucide-react";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const { t } = useLanguage();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -57,6 +57,9 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
             >
               <item.icon className="h-4 w-4" />
               {item.label}
+              {item.to === "/profile" && user?.level && (
+                <span className="text-xs font-bold bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded-full">{user.level}</span>
+              )}
             </NavLink>
           ))}
         </div>

@@ -53,7 +53,7 @@ const DashboardPage = () => {
               {t("welcomeBack")} {user?.displayName}
             </h1>
             <p className="text-muted-foreground">
-              {t("chooseExercise")} <span className="text-sm font-medium bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">{user?.level || "A1"}</span>
+              {t("chooseExercise")}
             </p>
           </div>
         </div>
