@@ -87,8 +87,8 @@ export default {
           to: { height: "0" },
         },
         "float": {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-10px)" },
+          "0%, 100%": { transform: "translateY(0)", filter: "drop-shadow(0 4px 12px hsl(14 91% 78% / 0.3))" },
+          "50%": { transform: "translateY(-10px)", filter: "drop-shadow(0 12px 20px hsl(14 91% 78% / 0.5))" },
         },
         "fade-in": {
           from: { opacity: "0", transform: "translateY(10px)" },
