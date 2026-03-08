@@ -16,6 +16,10 @@ import VerbExercisePage from "./pages/VerbExercisePage";
 import NounExercisePage from "./pages/NounExercisePage";
 import AdjectiveExercisePage from "./pages/AdjectiveExercisePage";
 import QuizExercisePage from "./pages/QuizExercisePage";
+import GrammarPage from "./pages/GrammarPage";
+import FlashcardsPage from "./pages/FlashcardsPage";
+import ReadingPage from "./pages/ReadingPage";
+import SentenceBuilderPage from "./pages/SentenceBuilderPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
