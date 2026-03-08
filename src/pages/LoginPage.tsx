@@ -53,14 +53,14 @@ const LoginPage = () => {
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">
-                {t("email")}
+                {t("username")} / {t("email")}
               </label>
               <input
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-md bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition"
-                placeholder="email@example.com"
+                placeholder={t("username") + " / email@example.com"}
               />
             </div>
 
