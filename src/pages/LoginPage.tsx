@@ -21,8 +21,9 @@ const LoginPage = () => {
       setError(t("language") === "sv" ? "Fyll i alla fält" : "Fill in all fields");
       return;
     }
-    const success = login(email, password);
-    if (success) {
+    const result = login(email, password);
+    if (result) {
+      setLanguage(result.learningFrom);
       navigate("/dashboard");
     }
   };
