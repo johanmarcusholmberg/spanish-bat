@@ -3,6 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import { verbs, tenseNames, getItemsForLevel } from "@/data/spanishData";
+import { checkAnswer } from "@/lib/answerUtils";
 import { ArrowLeft, Check, X, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -94,7 +95,7 @@ const VerbExercisePage = () => {
               const tenseData = currentVerb.tenses[selectedTense];
               const correctAnswer = tenseData?.[key] || "";
               const userAnswer = answers[key] || "";
-              const isCorrect = showResults && userAnswer.trim().toLowerCase() === correctAnswer.toLowerCase();
+              const isCorrect = showResults && checkAnswer(userAnswer, correctAnswer);
               const isWrong = showResults && !isCorrect;
 
               return (

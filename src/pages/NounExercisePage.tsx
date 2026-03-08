@@ -3,6 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import { nouns, getItemsForLevel } from "@/data/spanishData";
+import { checkAnswer } from "@/lib/answerUtils";
 import { ArrowLeft, Check, X, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -25,7 +26,7 @@ const NounExercisePage = () => {
 
   const word = language === "sv" ? current.sv : current.en;
   const genderCorrect = genderAnswer === current.gender;
-  const translationCorrect = translationAnswer.trim().toLowerCase() === current.spanish.toLowerCase();
+  const translationCorrect = checkAnswer(translationAnswer, current.spanish);
 
   const handleCheck = () => setShowResults(true);
 

@@ -3,6 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import { quizItems, getItemsForLevel } from "@/data/spanishData";
+import { checkAnswer } from "@/lib/answerUtils";
 import { ArrowLeft, Check, X, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -26,7 +27,7 @@ const QuizExercisePage = () => {
 
   const current = available[currentIndex % Math.max(available.length, 1)];
 
-  const isCorrect = current && answer.trim().toLowerCase() === current.answer.toLowerCase();
+  const isCorrect = current && checkAnswer(answer, current.answer);
 
   const handleCheck = () => {
     setShowResult(true);

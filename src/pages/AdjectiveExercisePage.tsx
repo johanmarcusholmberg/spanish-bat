@@ -3,6 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import { adjectives, getItemsForLevel } from "@/data/spanishData";
+import { checkAnswer } from "@/lib/answerUtils";
 import { ArrowLeft, Check, X, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -24,8 +25,8 @@ const AdjectiveExercisePage = () => {
   if (!current) return null;
 
   const word = language === "sv" ? current.sv : current.en;
-  const mascCorrect = masculineAnswer.trim().toLowerCase() === current.masculine.toLowerCase();
-  const femCorrect = feminineAnswer.trim().toLowerCase() === current.feminine.toLowerCase();
+  const mascCorrect = checkAnswer(masculineAnswer, current.masculine);
+  const femCorrect = checkAnswer(feminineAnswer, current.feminine);
 
   const handleNext = () => {
     setCurrentIndex((prev) => (prev + 1) % available.length);
