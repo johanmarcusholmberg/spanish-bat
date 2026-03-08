@@ -16,6 +16,7 @@ const ProfilePage = () => {
 
   const handleSave = () => {
     updateProfile({ displayName, level, learningFrom });
+    setLanguage(learningFrom);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };

@@ -20,7 +20,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   isLoggedIn: false,
   user: null,
-  login: () => false,
+  login: () => false as const,
   logout: () => {},
   updateProfile: () => {},
 });
