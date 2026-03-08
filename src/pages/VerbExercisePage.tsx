@@ -82,7 +82,7 @@ const VerbExercisePage = () => {
               {language === "sv" ? currentVerb.sv : currentVerb.en}
             </p>
             {currentVerb.tenses[selectedTense]?.example && (
-              <p className="text-sm mt-2 bg-background rounded-md px-3 py-2 italic text-muted-foreground">
+              <p className="text-sm mt-2 bg-background rounded-md px-3 py-2 italic text-muted-foreground truncate" title={`"${currentVerb.tenses[selectedTense].example.es}" — ${language === "sv" ? currentVerb.tenses[selectedTense].example.sv : currentVerb.tenses[selectedTense].example.en}`}>
                 "{currentVerb.tenses[selectedTense].example.es}" — {language === "sv" ? currentVerb.tenses[selectedTense].example.sv : currentVerb.tenses[selectedTense].example.en}
               </p>
             )}
