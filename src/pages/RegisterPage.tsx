@@ -69,7 +69,7 @@ const RegisterPage = () => {
         </button>
 
         <div className="text-center mb-6">
-          <img src={batAvatar} alt="MurciélagoLingo" className="w-20 h-20 mx-auto mb-3 animate-float" />
+          <img src={batAvatar} alt="MurciélagoLingo" className="w-20 h-20 mx-auto mb-3" />
           <h1 className="text-2xl font-heading font-bold text-foreground">{t("createAccount")}</h1>
           <p className="text-muted-foreground text-sm mt-1">{t("registerInfo")}</p>
         </div>
