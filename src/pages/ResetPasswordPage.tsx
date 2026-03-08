@@ -80,10 +80,10 @@ const ResetPasswordPage = () => {
                 </button>
               </div>
               <div className="mt-2 space-y-1">
-                <Requirement met={hasMinLength} text={t("language") === "sv" ? "Minst 8 tecken" : "At least 8 characters"} />
-                <Requirement met={hasUppercase} text={t("language") === "sv" ? "En stor bokstav" : "One uppercase letter"} />
-                <Requirement met={hasNumber} text={t("language") === "sv" ? "En siffra" : "One number"} />
-                <Requirement met={hasSpecial} text={t("language") === "sv" ? "Ett specialtecken" : "One special character"} />
+                <Requirement met={hasMinLength} text={language === "sv" ? "Minst 8 tecken" : "At least 8 characters"} />
+                <Requirement met={hasUppercase} text={language === "sv" ? "En stor bokstav" : "One uppercase letter"} />
+                <Requirement met={hasNumber} text={language === "sv" ? "En siffra" : "One number"} />
+                <Requirement met={hasSpecial} text={language === "sv" ? "Ett specialtecken" : "One special character"} />
               </div>
             </div>
 

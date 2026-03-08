@@ -127,7 +127,7 @@ const RegisterPage = () => {
               />
               {confirmPassword && !passwordsMatch && (
                 <p className="text-destructive text-sm mt-1">
-                  {t("language") === "sv" ? "Lösenorden matchar inte" : "Passwords don't match"}
+                  {language === "sv" ? "Lösenorden matchar inte" : "Passwords don't match"}
                 </p>
               )}
             </div>
