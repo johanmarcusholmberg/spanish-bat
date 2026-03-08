@@ -57,74 +57,66 @@ export const verbs: VerbData[] = [
   {
     infinitive: "hablar", sv: "tala", en: "to speak", level: "A1",
     tenses: {
-      presente: { yo: "hablo", tú: "hablas", él: "habla", nosotros: "hablamos", vosotros: "habláis", ellos: "hablan" },
-      preterito: { yo: "hablé", tú: "hablaste", él: "habló", nosotros: "hablamos", vosotros: "hablasteis", ellos: "hablaron" },
-      futuro: { yo: "hablaré", tú: "hablarás", él: "hablará", nosotros: "hablaremos", vosotros: "hablaréis", ellos: "hablarán" },
+      presente: { yo: "hablo", tú: "hablas", él: "habla", nosotros: "hablamos", vosotros: "habláis", ellos: "hablan", example: { es: "Yo hablo español todos los días.", sv: "Jag talar spanska varje dag.", en: "I speak Spanish every day." } },
+      preterito: { yo: "hablé", tú: "hablaste", él: "habló", nosotros: "hablamos", vosotros: "hablasteis", ellos: "hablaron", example: { es: "Ayer hablé con mi madre.", sv: "Igår talade jag med min mamma.", en: "Yesterday I spoke with my mother." } },
+      futuro: { yo: "hablaré", tú: "hablarás", él: "hablará", nosotros: "hablaremos", vosotros: "hablaréis", ellos: "hablarán", example: { es: "Mañana hablaré con el profesor.", sv: "Imorgon kommer jag att tala med läraren.", en: "Tomorrow I will speak with the teacher." } },
     },
-    example: { es: "Yo hablo español.", sv: "Jag talar spanska.", en: "I speak Spanish." },
   },
   {
     infinitive: "comer", sv: "äta", en: "to eat", level: "A1",
     tenses: {
-      presente: { yo: "como", tú: "comes", él: "come", nosotros: "comemos", vosotros: "coméis", ellos: "comen" },
-      preterito: { yo: "comí", tú: "comiste", él: "comió", nosotros: "comimos", vosotros: "comisteis", ellos: "comieron" },
-      futuro: { yo: "comeré", tú: "comerás", él: "comerá", nosotros: "comeremos", vosotros: "comeréis", ellos: "comerán" },
+      presente: { yo: "como", tú: "comes", él: "come", nosotros: "comemos", vosotros: "coméis", ellos: "comen", example: { es: "Nosotros comemos paella los domingos.", sv: "Vi äter paella på söndagar.", en: "We eat paella on Sundays." } },
+      preterito: { yo: "comí", tú: "comiste", él: "comió", nosotros: "comimos", vosotros: "comisteis", ellos: "comieron", example: { es: "Ayer comimos en un restaurante.", sv: "Igår åt vi på en restaurang.", en: "Yesterday we ate at a restaurant." } },
+      futuro: { yo: "comeré", tú: "comerás", él: "comerá", nosotros: "comeremos", vosotros: "comeréis", ellos: "comerán", example: { es: "Esta noche comeremos pizza.", sv: "Ikväll kommer vi att äta pizza.", en: "Tonight we will eat pizza." } },
     },
-    example: { es: "Nosotros comemos paella.", sv: "Vi äter paella.", en: "We eat paella." },
   },
   {
     infinitive: "vivir", sv: "leva/bo", en: "to live", level: "A1",
     tenses: {
-      presente: { yo: "vivo", tú: "vives", él: "vive", nosotros: "vivimos", vosotros: "vivís", ellos: "viven" },
-      preterito: { yo: "viví", tú: "viviste", él: "vivió", nosotros: "vivimos", vosotros: "vivisteis", ellos: "vivieron" },
-      futuro: { yo: "viviré", tú: "vivirás", él: "vivirá", nosotros: "viviremos", vosotros: "viviréis", ellos: "vivirán" },
+      presente: { yo: "vivo", tú: "vives", él: "vive", nosotros: "vivimos", vosotros: "vivís", ellos: "viven", example: { es: "Ellos viven en Madrid.", sv: "De bor i Madrid.", en: "They live in Madrid." } },
+      preterito: { yo: "viví", tú: "viviste", él: "vivió", nosotros: "vivimos", vosotros: "vivisteis", ellos: "vivieron", example: { es: "Viví en Barcelona durante dos años.", sv: "Jag bodde i Barcelona i två år.", en: "I lived in Barcelona for two years." } },
+      futuro: { yo: "viviré", tú: "vivirás", él: "vivirá", nosotros: "viviremos", vosotros: "viviréis", ellos: "vivirán", example: { es: "El próximo año viviremos en España.", sv: "Nästa år kommer vi att bo i Spanien.", en: "Next year we will live in Spain." } },
     },
-    example: { es: "Ellos viven en Madrid.", sv: "De bor i Madrid.", en: "They live in Madrid." },
   },
   {
     infinitive: "ser", sv: "vara", en: "to be", level: "A1",
     tenses: {
-      presente: { yo: "soy", tú: "eres", él: "es", nosotros: "somos", vosotros: "sois", ellos: "son" },
-      preterito: { yo: "fui", tú: "fuiste", él: "fue", nosotros: "fuimos", vosotros: "fuisteis", ellos: "fueron" },
-      futuro: { yo: "seré", tú: "serás", él: "será", nosotros: "seremos", vosotros: "seréis", ellos: "serán" },
+      presente: { yo: "soy", tú: "eres", él: "es", nosotros: "somos", vosotros: "sois", ellos: "son", example: { es: "Yo soy estudiante.", sv: "Jag är student.", en: "I am a student." } },
+      preterito: { yo: "fui", tú: "fuiste", él: "fue", nosotros: "fuimos", vosotros: "fuisteis", ellos: "fueron", example: { es: "Fue un día maravilloso.", sv: "Det var en underbar dag.", en: "It was a wonderful day." } },
+      futuro: { yo: "seré", tú: "serás", él: "será", nosotros: "seremos", vosotros: "seréis", ellos: "serán", example: { es: "Seré médico algún día.", sv: "Jag kommer att bli läkare en dag.", en: "I will be a doctor someday." } },
     },
-    example: { es: "Yo soy estudiante.", sv: "Jag är student.", en: "I am a student." },
   },
   {
     infinitive: "tener", sv: "ha", en: "to have", level: "A1",
     tenses: {
-      presente: { yo: "tengo", tú: "tienes", él: "tiene", nosotros: "tenemos", vosotros: "tenéis", ellos: "tienen" },
-      preterito: { yo: "tuve", tú: "tuviste", él: "tuvo", nosotros: "tuvimos", vosotros: "tuvisteis", ellos: "tuvieron" },
-      futuro: { yo: "tendré", tú: "tendrás", él: "tendrá", nosotros: "tendremos", vosotros: "tendréis", ellos: "tendrán" },
+      presente: { yo: "tengo", tú: "tienes", él: "tiene", nosotros: "tenemos", vosotros: "tenéis", ellos: "tienen", example: { es: "Yo tengo un gato.", sv: "Jag har en katt.", en: "I have a cat." } },
+      preterito: { yo: "tuve", tú: "tuviste", él: "tuvo", nosotros: "tuvimos", vosotros: "tuvisteis", ellos: "tuvieron", example: { es: "Tuve mucha suerte ayer.", sv: "Jag hade mycket tur igår.", en: "I had a lot of luck yesterday." } },
+      futuro: { yo: "tendré", tú: "tendrás", él: "tendrá", nosotros: "tendremos", vosotros: "tendréis", ellos: "tendrán", example: { es: "Mañana tendré una reunión.", sv: "Imorgon kommer jag att ha ett möte.", en: "Tomorrow I will have a meeting." } },
     },
-    example: { es: "Yo tengo un gato.", sv: "Jag har en katt.", en: "I have a cat." },
   },
   {
     infinitive: "poder", sv: "kunna", en: "to be able to", level: "A2",
     tenses: {
-      presente: { yo: "puedo", tú: "puedes", él: "puede", nosotros: "podemos", vosotros: "podéis", ellos: "pueden" },
-      preterito: { yo: "pude", tú: "pudiste", él: "pudo", nosotros: "pudimos", vosotros: "pudisteis", ellos: "pudieron" },
-      futuro: { yo: "podré", tú: "podrás", él: "podrá", nosotros: "podremos", vosotros: "podréis", ellos: "podrán" },
+      presente: { yo: "puedo", tú: "puedes", él: "puede", nosotros: "podemos", vosotros: "podéis", ellos: "pueden", example: { es: "¿Puedes ayudarme?", sv: "Kan du hjälpa mig?", en: "Can you help me?" } },
+      preterito: { yo: "pude", tú: "pudiste", él: "pudo", nosotros: "pudimos", vosotros: "pudisteis", ellos: "pudieron", example: { es: "No pude dormir anoche.", sv: "Jag kunde inte sova inatt.", en: "I couldn't sleep last night." } },
+      futuro: { yo: "podré", tú: "podrás", él: "podrá", nosotros: "podremos", vosotros: "podréis", ellos: "podrán", example: { es: "Pronto podrás hablar español.", sv: "Snart kommer du att kunna tala spanska.", en: "Soon you will be able to speak Spanish." } },
     },
-    example: { es: "¿Puedes ayudarme?", sv: "Kan du hjälpa mig?", en: "Can you help me?" },
   },
   {
     infinitive: "querer", sv: "vilja", en: "to want", level: "A2",
     tenses: {
-      presente: { yo: "quiero", tú: "quieres", él: "quiere", nosotros: "queremos", vosotros: "queréis", ellos: "quieren" },
-      preterito: { yo: "quise", tú: "quisiste", él: "quiso", nosotros: "quisimos", vosotros: "quisisteis", ellos: "quisieron" },
-      futuro: { yo: "querré", tú: "querrás", él: "querrá", nosotros: "querremos", vosotros: "querréis", ellos: "querrán" },
+      presente: { yo: "quiero", tú: "quieres", él: "quiere", nosotros: "queremos", vosotros: "queréis", ellos: "quieren", example: { es: "Quiero un café, por favor.", sv: "Jag vill ha en kaffe, tack.", en: "I want a coffee, please." } },
+      preterito: { yo: "quise", tú: "quisiste", él: "quiso", nosotros: "quisimos", vosotros: "quisisteis", ellos: "quisieron", example: { es: "Quise llamarte pero no pude.", sv: "Jag ville ringa dig men kunde inte.", en: "I wanted to call you but I couldn't." } },
+      futuro: { yo: "querré", tú: "querrás", él: "querrá", nosotros: "querremos", vosotros: "querréis", ellos: "querrán", example: { es: "Querrás volver a España.", sv: "Du kommer att vilja åka tillbaka till Spanien.", en: "You will want to go back to Spain." } },
     },
-    example: { es: "Quiero un café, por favor.", sv: "Jag vill ha en kaffe, tack.", en: "I want a coffee, please." },
   },
   {
     infinitive: "saber", sv: "veta/kunna", en: "to know", level: "B1",
     tenses: {
-      presente: { yo: "sé", tú: "sabes", él: "sabe", nosotros: "sabemos", vosotros: "sabéis", ellos: "saben" },
-      preterito: { yo: "supe", tú: "supiste", él: "supo", nosotros: "supimos", vosotros: "supisteis", ellos: "supieron" },
-      futuro: { yo: "sabré", tú: "sabrás", él: "sabrá", nosotros: "sabremos", vosotros: "sabréis", ellos: "sabrán" },
+      presente: { yo: "sé", tú: "sabes", él: "sabe", nosotros: "sabemos", vosotros: "sabéis", ellos: "saben", example: { es: "No sé la respuesta.", sv: "Jag vet inte svaret.", en: "I don't know the answer." } },
+      preterito: { yo: "supe", tú: "supiste", él: "supo", nosotros: "supimos", vosotros: "supisteis", ellos: "supieron", example: { es: "Supe la verdad demasiado tarde.", sv: "Jag fick veta sanningen för sent.", en: "I found out the truth too late." } },
+      futuro: { yo: "sabré", tú: "sabrás", él: "sabrá", nosotros: "sabremos", vosotros: "sabréis", ellos: "sabrán", example: { es: "Pronto sabremos los resultados.", sv: "Snart kommer vi att veta resultaten.", en: "Soon we will know the results." } },
     },
-    example: { es: "No sé la respuesta.", sv: "Jag vet inte svaret.", en: "I don't know the answer." },
   },
 ];
 
