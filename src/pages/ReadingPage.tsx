@@ -18,6 +18,12 @@ const ReadingPage = () => {
     [user?.level]
   );
 
+  useEffect(() => {
+    setTextIndex(0);
+    setAnswers({});
+    setSubmitted(false);
+  }, [user?.level]);
+
   const current = texts[textIndex % texts.length];
   if (!current) return <AppLayout><p>No texts available.</p></AppLayout>;
 

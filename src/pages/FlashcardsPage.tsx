@@ -25,6 +25,12 @@ const FlashcardsPage = () => {
     [user?.level]
   );
 
+  useEffect(() => {
+    setCurrentIndex(0);
+    setFlipped(false);
+    setSessionScore({ correct: 0, incorrect: 0 });
+  }, [user?.level]);
+
   // Sort: cards due for review first (SRS), then new cards
   const sortedCards = useMemo(() => {
     const now = Date.now();

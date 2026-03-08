@@ -20,6 +20,13 @@ const SentenceBuilderPage = () => {
     [user?.level]
   );
 
+  useEffect(() => {
+    setExerciseIndex(0);
+    setSelected([]);
+    setResult(null);
+    setScore({ correct: 0, total: 0 });
+  }, [user?.level]);
+
   const current = exercises[exerciseIndex % exercises.length];
 
   // Initialize available words (shuffled) when exercise changes
