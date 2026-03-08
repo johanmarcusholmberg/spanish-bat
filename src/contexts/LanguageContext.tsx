@@ -98,7 +98,7 @@ const translations: Translations = {
   saveProfile: { sv: "Spara profil", en: "Save profile" },
   profileSaved: { sv: "Profil sparad!", en: "Profile saved!" },
 
-  // Levels
+  levelLabel: { sv: "Nivå", en: "Level" },
   levelA1: { sv: "A1 - Nybörjare", en: "A1 - Beginner" },
   levelA2: { sv: "A2 - Elementär", en: "A2 - Elementary" },
   levelB1: { sv: "B1 - Mellannivå", en: "B1 - Intermediate" },
