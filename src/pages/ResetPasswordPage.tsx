@@ -5,7 +5,7 @@ import batAvatar from "@/assets/bat-avatar.png";
 import { Eye, EyeOff, Check, X } from "lucide-react";
 
 const ResetPasswordPage = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
