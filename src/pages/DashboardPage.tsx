@@ -1,0 +1,56 @@
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import AppLayout from "@/components/AppLayout";
+import batAvatar from "@/assets/bat-avatar.png";
+import { BookOpen, Type, Palette, HelpCircle } from "lucide-react";
+
+const DashboardPage = () => {
+  const { t } = useLanguage();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const exercises = [
+    { key: "verbs", icon: BookOpen, path: "/exercises/verbs", color: "gradient-peach" },
+    { key: "nouns", icon: Type, path: "/exercises/nouns", color: "gradient-mint" },
+    { key: "adjectives", icon: Palette, path: "/exercises/adjectives", color: "gradient-peach" },
+    { key: "quiz", icon: HelpCircle, path: "/exercises/quiz", color: "gradient-mint" },
+  ];
+
+  return (
+    <AppLayout>
+      <div className="animate-fade-in">
+        <div className="flex items-center gap-4 mb-8">
+          <img src={batAvatar} alt="MurciélagoLingo" className="w-16 h-16 animate-float" />
+          <div>
+            <h1 className="text-2xl font-heading font-bold text-foreground">
+              {t("welcomeBack")} {user?.displayName}
+            </h1>
+            <p className="text-muted-foreground">
+              {t("chooseExercise")} <span className="text-sm font-medium bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">{user?.level || "A1"}</span>
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {exercises.map((ex) => (
+            <button
+              key={ex.key}
+              onClick={() => navigate(ex.path)}
+              className="bg-card rounded-lg p-6 shadow-soft hover:shadow-warm transition-all hover:-translate-y-1 text-left group"
+            >
+              <div className={`w-12 h-12 rounded-lg ${ex.color} flex items-center justify-center mb-3`}>
+                <ex.icon className="h-6 w-6 text-primary-foreground" />
+              </div>
+              <h3 className="font-heading font-bold text-foreground text-lg">{t(ex.key)}</h3>
+              <p className="text-muted-foreground text-sm mt-1">{t(ex.key + "Desc")}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+    </AppLayout>
+  );
+};
+
+export default DashboardPage;
