@@ -25,6 +25,14 @@ const QuizExercisePage = () => {
     return levelFiltered.filter((q) => q.category === selectedCategory);
   }, [user?.level, selectedCategory]);
 
+  useEffect(() => {
+    setCurrentIndex(0);
+    setAnswer("");
+    setShowResult(false);
+    setTotalScore(0);
+    setTotalAnswered(0);
+  }, [user?.level]);
+
   const current = available[currentIndex % Math.max(available.length, 1)];
 
   const isCorrect = current && checkAnswer(answer, current.answer);

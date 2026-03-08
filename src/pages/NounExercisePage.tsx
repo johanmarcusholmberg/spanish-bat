@@ -21,6 +21,13 @@ const NounExercisePage = () => {
     [user?.level]
   );
 
+  useEffect(() => {
+    setCurrentIndex(0);
+    setGenderAnswer("");
+    setTranslationAnswer("");
+    setShowResults(false);
+  }, [user?.level]);
+
   const current = availableNouns[currentIndex];
   if (!current) return null;
 

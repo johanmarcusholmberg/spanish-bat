@@ -21,6 +21,13 @@ const AdjectiveExercisePage = () => {
     [user?.level]
   );
 
+  useEffect(() => {
+    setCurrentIndex(0);
+    setMasculineAnswer("");
+    setFeminineAnswer("");
+    setShowResults(false);
+  }, [user?.level]);
+
   const current = available[currentIndex];
   if (!current) return null;
 

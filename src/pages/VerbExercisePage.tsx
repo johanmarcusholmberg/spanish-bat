@@ -25,6 +25,13 @@ const VerbExercisePage = () => {
     [user?.level]
   );
 
+  useEffect(() => {
+    setCurrentIndex(0);
+    setAnswers({});
+    setShowResults(false);
+    setScore(0);
+  }, [user?.level]);
+
   const currentVerb = availableVerbs[currentIndex];
   if (!currentVerb) return null;
 
