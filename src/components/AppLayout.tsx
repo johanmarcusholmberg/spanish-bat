@@ -31,7 +31,6 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
           <span className="font-heading font-bold text-foreground text-lg">MurciélagoLingo</span>
         </div>
         <div className="flex items-center gap-4">
-          <LanguageToggle />
           <button
             onClick={handleLogout}
             className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition text-sm"
