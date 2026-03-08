@@ -12,7 +12,7 @@ interface UserProfile {
 interface AuthContextType {
   isLoggedIn: boolean;
   user: UserProfile | null;
-  login: (email: string, password: string) => boolean;
+  login: (email: string, password: string) => UserProfile | false;
   logout: () => void;
   updateProfile: (profile: Partial<UserProfile>) => void;
 }
