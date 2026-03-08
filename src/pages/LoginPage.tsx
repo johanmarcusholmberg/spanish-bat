@@ -7,7 +7,7 @@ import batAvatar from "@/assets/bat-avatar.png";
 import { Eye, EyeOff, Mail } from "lucide-react";
 
 const LoginPage = () => {
-  const { t } = useLanguage();
+  const { t, setLanguage } = useLanguage();
   const { login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
