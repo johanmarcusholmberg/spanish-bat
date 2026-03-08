@@ -29,16 +29,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
 
-  const login = (email: string, _password: string): boolean => {
-    // Mock login - will be replaced with Supabase auth
-    setIsLoggedIn(true);
-    setUser({
-      displayName: email.split("@")[0],
-      email,
-      level: "A1",
-      learningFrom: "sv",
-    });
-    return true;
+  const login = (email: string, password: string): boolean => {
+    // Mock login - will be replaced with real auth via Lovable Cloud
+    // Admin account for testing
+    if (email === "admin" && password === "Jagtestar2026!!") {
+      setIsLoggedIn(true);
+      setUser({
+        displayName: "Admin",
+        email: "admin@murcielagolingo.app",
+        level: "C2",
+        learningFrom: "sv",
+      });
+      return true;
+    }
+
+    // Allow any email/password for demo purposes
+    if (email && password) {
+      setIsLoggedIn(true);
+      setUser({
+        displayName: email.split("@")[0],
+        email,
+        level: "A1",
+        learningFrom: "sv",
+      });
+      return true;
+    }
+
+    return false;
   };
 
   const logout = () => {
