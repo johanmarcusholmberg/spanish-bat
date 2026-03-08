@@ -26,7 +26,7 @@ const NounExercisePage = () => {
 
   const word = language === "sv" ? current.sv : current.en;
   const genderCorrect = genderAnswer === current.gender;
-  const translationCorrect = translationAnswer.trim().toLowerCase() === current.spanish.toLowerCase();
+  const translationCorrect = checkAnswer(translationAnswer, current.spanish);
 
   const handleCheck = () => setShowResults(true);
 

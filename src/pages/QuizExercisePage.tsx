@@ -27,7 +27,7 @@ const QuizExercisePage = () => {
 
   const current = available[currentIndex % Math.max(available.length, 1)];
 
-  const isCorrect = current && answer.trim().toLowerCase() === current.answer.toLowerCase();
+  const isCorrect = current && checkAnswer(answer, current.answer);
 
   const handleCheck = () => {
     setShowResult(true);

@@ -25,8 +25,8 @@ const AdjectiveExercisePage = () => {
   if (!current) return null;
 
   const word = language === "sv" ? current.sv : current.en;
-  const mascCorrect = masculineAnswer.trim().toLowerCase() === current.masculine.toLowerCase();
-  const femCorrect = feminineAnswer.trim().toLowerCase() === current.feminine.toLowerCase();
+  const mascCorrect = checkAnswer(masculineAnswer, current.masculine);
+  const femCorrect = checkAnswer(feminineAnswer, current.feminine);
 
   const handleNext = () => {
     setCurrentIndex((prev) => (prev + 1) % available.length);

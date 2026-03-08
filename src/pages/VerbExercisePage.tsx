@@ -97,7 +97,7 @@ const VerbExercisePage = () => {
               const tenseData = currentVerb.tenses[selectedTense];
               const correctAnswer = tenseData?.[key] || "";
               const userAnswer = answers[key] || "";
-              const isCorrect = showResults && userAnswer.trim().toLowerCase() === correctAnswer.toLowerCase();
+              const isCorrect = showResults && checkAnswer(userAnswer, correctAnswer);
               const isWrong = showResults && !isCorrect;
 
               return (
