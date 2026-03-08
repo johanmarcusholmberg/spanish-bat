@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
@@ -20,6 +20,13 @@ const AdjectiveExercisePage = () => {
     () => getItemsForLevel(adjectives, user?.level || "A1"),
     [user?.level]
   );
+
+  useEffect(() => {
+    setCurrentIndex(0);
+    setMasculineAnswer("");
+    setFeminineAnswer("");
+    setShowResults(false);
+  }, [user?.level]);
 
   const current = available[currentIndex];
   if (!current) return null;

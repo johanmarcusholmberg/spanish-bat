@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
@@ -24,6 +24,14 @@ const QuizExercisePage = () => {
     const levelFiltered = getItemsForLevel(quizItems, user?.level || "A1");
     return levelFiltered.filter((q) => q.category === selectedCategory);
   }, [user?.level, selectedCategory]);
+
+  useEffect(() => {
+    setCurrentIndex(0);
+    setAnswer("");
+    setShowResult(false);
+    setTotalScore(0);
+    setTotalAnswered(0);
+  }, [user?.level]);
 
   const current = available[currentIndex % Math.max(available.length, 1)];
 

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
@@ -20,6 +20,13 @@ const NounExercisePage = () => {
     () => getItemsForLevel(nouns, user?.level || "A1"),
     [user?.level]
   );
+
+  useEffect(() => {
+    setCurrentIndex(0);
+    setGenderAnswer("");
+    setTranslationAnswer("");
+    setShowResults(false);
+  }, [user?.level]);
 
   const current = availableNouns[currentIndex];
   if (!current) return null;

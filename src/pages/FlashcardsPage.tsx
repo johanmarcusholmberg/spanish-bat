@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
@@ -24,6 +24,12 @@ const FlashcardsPage = () => {
     () => getItemsForLevel(flashcardData, user?.level || "A1"),
     [user?.level]
   );
+
+  useEffect(() => {
+    setCurrentIndex(0);
+    setFlipped(false);
+    setSessionScore({ correct: 0, incorrect: 0 });
+  }, [user?.level]);
 
   // Sort: cards due for review first (SRS), then new cards
   const sortedCards = useMemo(() => {

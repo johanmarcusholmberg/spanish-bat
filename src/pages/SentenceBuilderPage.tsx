@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
@@ -19,6 +19,13 @@ const SentenceBuilderPage = () => {
     () => getItemsForLevel(sentenceExercises, user?.level || "A1"),
     [user?.level]
   );
+
+  useEffect(() => {
+    setExerciseIndex(0);
+    setSelected([]);
+    setResult(null);
+    setScore({ correct: 0, total: 0 });
+  }, [user?.level]);
 
   const current = exercises[exerciseIndex % exercises.length];
 

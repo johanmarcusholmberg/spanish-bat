@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
@@ -17,6 +17,12 @@ const ReadingPage = () => {
     () => getItemsForLevel(readingTexts, user?.level || "A1"),
     [user?.level]
   );
+
+  useEffect(() => {
+    setTextIndex(0);
+    setAnswers({});
+    setSubmitted(false);
+  }, [user?.level]);
 
   const current = texts[textIndex % texts.length];
   if (!current) return <AppLayout><p>No texts available.</p></AppLayout>;
