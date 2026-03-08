@@ -56,10 +56,9 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
               }
             >
               <item.icon className="h-4 w-4" />
-              {item.label}
-              {item.to === "/profile" && user?.level && (
-                <span className="text-sm font-medium text-muted-foreground">– {t("levelLabel")}: {user.level}</span>
-              )}
+              {item.to === "/profile" && user?.level
+                ? `${item.label} – ${t("levelLabel")}: ${user.level}`
+                : item.label}
             </NavLink>
           ))}
         </div>

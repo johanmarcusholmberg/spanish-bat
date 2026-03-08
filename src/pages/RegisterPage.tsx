@@ -6,7 +6,7 @@ import batAvatar from "@/assets/bat-avatar.png";
 import { Eye, EyeOff, Mail, ArrowLeft, Check, X } from "lucide-react";
 
 const RegisterPage = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -108,10 +108,10 @@ const RegisterPage = () => {
                 </button>
               </div>
               <div className="mt-2 space-y-1">
-                <Requirement met={hasMinLength} text={t("language") === "sv" ? "Minst 8 tecken" : "At least 8 characters"} />
-                <Requirement met={hasUppercase} text={t("language") === "sv" ? "En stor bokstav" : "One uppercase letter"} />
-                <Requirement met={hasNumber} text={t("language") === "sv" ? "En siffra" : "One number"} />
-                <Requirement met={hasSpecial} text={t("language") === "sv" ? "Ett specialtecken" : "One special character"} />
+                <Requirement met={hasMinLength} text={language === "sv" ? "Minst 8 tecken" : "At least 8 characters"} />
+                <Requirement met={hasUppercase} text={language === "sv" ? "En stor bokstav" : "One uppercase letter"} />
+                <Requirement met={hasNumber} text={language === "sv" ? "En siffra" : "One number"} />
+                <Requirement met={hasSpecial} text={language === "sv" ? "Ett specialtecken" : "One special character"} />
               </div>
             </div>
 
@@ -127,7 +127,7 @@ const RegisterPage = () => {
               />
               {confirmPassword && !passwordsMatch && (
                 <p className="text-destructive text-sm mt-1">
-                  {t("language") === "sv" ? "Lösenorden matchar inte" : "Passwords don't match"}
+                  {language === "sv" ? "Lösenorden matchar inte" : "Passwords don't match"}
                 </p>
               )}
             </div>

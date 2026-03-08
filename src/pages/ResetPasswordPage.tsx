@@ -5,7 +5,7 @@ import batAvatar from "@/assets/bat-avatar.png";
 import { Eye, EyeOff, Check, X } from "lucide-react";
 
 const ResetPasswordPage = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -40,10 +40,10 @@ const ResetPasswordPage = () => {
         <div className="w-full max-w-md animate-fade-in text-center">
           <img src={batAvatar} alt="MurciélagoLingo" className="w-24 h-24 mx-auto mb-4 animate-float" />
           <h1 className="text-2xl font-heading font-bold text-foreground mb-2">
-            {t("language") === "sv" ? "Lösenord återställt!" : "Password reset!"}
+            {language === "sv" ? "Lösenord återställt!" : "Password reset!"}
           </h1>
           <p className="text-muted-foreground">
-            {t("language") === "sv" ? "Du omdirigeras till inloggningen..." : "Redirecting to login..."}
+            {language === "sv" ? "Du omdirigeras till inloggningen..." : "Redirecting to login..."}
           </p>
         </div>
       </div>
@@ -80,10 +80,10 @@ const ResetPasswordPage = () => {
                 </button>
               </div>
               <div className="mt-2 space-y-1">
-                <Requirement met={hasMinLength} text={t("language") === "sv" ? "Minst 8 tecken" : "At least 8 characters"} />
-                <Requirement met={hasUppercase} text={t("language") === "sv" ? "En stor bokstav" : "One uppercase letter"} />
-                <Requirement met={hasNumber} text={t("language") === "sv" ? "En siffra" : "One number"} />
-                <Requirement met={hasSpecial} text={t("language") === "sv" ? "Ett specialtecken" : "One special character"} />
+                <Requirement met={hasMinLength} text={language === "sv" ? "Minst 8 tecken" : "At least 8 characters"} />
+                <Requirement met={hasUppercase} text={language === "sv" ? "En stor bokstav" : "One uppercase letter"} />
+                <Requirement met={hasNumber} text={language === "sv" ? "En siffra" : "One number"} />
+                <Requirement met={hasSpecial} text={language === "sv" ? "Ett specialtecken" : "One special character"} />
               </div>
             </div>
 
