@@ -7,7 +7,7 @@ import { Home, BookOpen, User, LogOut } from "lucide-react";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const { t } = useLanguage();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
