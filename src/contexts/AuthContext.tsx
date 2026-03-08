@@ -29,29 +29,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
 
+  const loadProfile = (email: string): Partial<UserProfile> => {
+    try {
+      const saved = localStorage.getItem(`profile_${email}`);
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  };
+
+  const saveProfile = (profile: UserProfile) => {
+    try {
+      localStorage.setItem(`profile_${profile.email}`, JSON.stringify({
+        displayName: profile.displayName,
+        level: profile.level,
+        learningFrom: profile.learningFrom,
+      }));
+    } catch {}
+  };
+
   const login = (email: string, password: string): boolean => {
-    // Mock login - will be replaced with real auth via Lovable Cloud
-    // Admin account for testing
     if (email === "admin" && password === "Jagtestar2026!!") {
-      setIsLoggedIn(true);
-      setUser({
-        displayName: "Admin",
+      const saved = loadProfile("admin@murcielagolingo.app");
+      const profile: UserProfile = {
+        displayName: saved.displayName || "Admin",
         email: "admin@murcielagolingo.app",
-        level: "C2",
-        learningFrom: "sv",
-      });
+        level: (saved.level as Level) || "C2",
+        learningFrom: saved.learningFrom || "sv",
+      };
+      setIsLoggedIn(true);
+      setUser(profile);
       return true;
     }
 
-    // Allow any email/password for demo purposes
     if (email && password) {
-      setIsLoggedIn(true);
-      setUser({
-        displayName: email.split("@")[0],
+      const saved = loadProfile(email);
+      const profile: UserProfile = {
+        displayName: saved.displayName || email.split("@")[0],
         email,
-        level: "A1",
-        learningFrom: "sv",
-      });
+        level: (saved.level as Level) || "A1",
+        learningFrom: saved.learningFrom || "sv",
+      };
+      setIsLoggedIn(true);
+      setUser(profile);
       return true;
     }
 
