@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch {}
   };
 
-  const login = (email: string, password: string): boolean => {
+  const login = (email: string, password: string): UserProfile | false => {
     if (email === "admin" && password === "Jagtestar2026!!") {
       const saved = loadProfile("admin@murcielagolingo.app");
       const profile: UserProfile = {
