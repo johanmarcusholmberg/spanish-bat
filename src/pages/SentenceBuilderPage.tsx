@@ -109,21 +109,24 @@ const SentenceBuilderPage = () => {
           {selected.length === 0 && (
             <span className="text-muted-foreground text-sm">{t("tapWordsToOrder")}</span>
           )}
-          {selected.map((word, i) => (
-            <button
-              key={`sel-${i}`}
-              onClick={() => handleDeselectWord(word, i)}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
-                result === "correct"
-                  ? "bg-secondary text-secondary-foreground"
-                  : result === "incorrect"
-                  ? "bg-destructive/10 text-destructive"
-                  : "gradient-peach text-primary-foreground shadow-warm hover:opacity-90"
-              }`}
-            >
-              {word}
-            </button>
-          ))}
+          {selected.map((word, i) => {
+            const wordCorrect = result ? correctWordAt(i) : null;
+            return (
+              <button
+                key={`sel-${i}`}
+                onClick={() => handleDeselectWord(word, i)}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
+                  wordCorrect === true
+                    ? "bg-secondary text-secondary-foreground ring-2 ring-secondary"
+                    : wordCorrect === false
+                    ? "bg-destructive/15 text-destructive ring-2 ring-destructive"
+                    : "gradient-peach text-primary-foreground shadow-warm hover:opacity-90"
+                }`}
+              >
+                {word}
+              </button>
+            );
+          })}
         </div>
 
         {/* Available words */}
