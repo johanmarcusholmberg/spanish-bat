@@ -4,9 +4,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { MessageCircle, Send, Lightbulb, Languages, X, RotateCcw } from "lucide-react";
+import { MessageCircle, Send, Lightbulb, Languages, X, RotateCcw, Volume2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useSpanishTTS } from "@/hooks/useSpanishTTS";
 
 interface Message {
   role: "user" | "assistant";
