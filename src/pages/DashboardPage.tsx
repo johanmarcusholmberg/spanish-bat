@@ -4,6 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import batAvatar from "@/assets/bat-avatar.png";
+import { ProgressOverview, NextStepsCard, LevelAdvancementCard } from "@/components/ProgressDashboard";
 import { BookOpen, Type, Palette, HelpCircle, GraduationCap, Layers, FileText, Puzzle } from "lucide-react";
 
 const DashboardPage = () => {
@@ -45,8 +46,8 @@ const DashboardPage = () => {
 
   return (
     <AppLayout>
-      <div className="animate-fade-in">
-        <div className="flex items-center gap-4 mb-8">
+      <div className="animate-fade-in space-y-6">
+        <div className="flex items-center gap-4">
           <img src={batAvatar} alt="MurciélagoLingo" className="w-16 h-16 animate-float" />
           <div>
             <h1 className="text-2xl font-heading font-bold text-foreground">
@@ -58,12 +59,23 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        <h2 className="font-heading font-bold text-foreground text-lg mb-3 flex items-center gap-2">
+        {/* Progress Dashboard Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <ProgressOverview />
+          </div>
+          <div className="space-y-6">
+            <NextStepsCard />
+            <LevelAdvancementCard />
+          </div>
+        </div>
+
+        <h2 className="font-heading font-bold text-foreground text-lg flex items-center gap-2">
           <GraduationCap className="h-5 w-5" /> {t("learn")}
         </h2>
         {renderGrid(learnItems)}
 
-        <h2 className="font-heading font-bold text-foreground text-lg mb-3 mt-8 flex items-center gap-2">
+        <h2 className="font-heading font-bold text-foreground text-lg flex items-center gap-2">
           <BookOpen className="h-5 w-5" /> {t("practice")}
         </h2>
         {renderGrid(exercises)}
