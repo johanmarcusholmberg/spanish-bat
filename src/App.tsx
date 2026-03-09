@@ -22,6 +22,7 @@ import GrammarPage from "./pages/GrammarPage";
 import FlashcardsPage from "./pages/FlashcardsPage";
 import ReadingPage from "./pages/ReadingPage";
 import SentenceBuilderPage from "./pages/SentenceBuilderPage";
+import ConversationPage from "./pages/ConversationPage";
 import StatsPage from "./pages/StatsPage";
 import NotFound from "./pages/NotFound";
 import AdminPage from "./pages/AdminPage";
