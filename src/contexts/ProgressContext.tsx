@@ -99,30 +99,43 @@ export const ProgressProvider = ({ children }: { children: ReactNode }) => {
       { key: "flashcards", label: "flashcards", path: "/learn/flashcards", percentage: progress.flashcards.percentage },
       { key: "reading", label: "reading", path: "/learn/reading", percentage: progress.reading.percentage },
       { key: "sentences", label: "sentenceBuilder", path: "/learn/sentences", percentage: progress.sentences.percentage },
-      { key: "exercises", label: "exercises", path: "/exercises", percentage: progress.exercises.percentage },
+      { key: "exercises", label: "practice", path: "/exercises", percentage: progress.exercises.percentage },
     ];
 
-    // Find the category with the lowest progress
-    const lowest = categories.reduce((min, cat) => 
-      cat.percentage < min.percentage ? cat : min
-    );
-
-    // If everything is at 100%, suggest review
-    if (lowest.percentage >= 100) {
+    // Priority 1: Find exercises that are almost finished (70-99%)
+    const almostFinished = categories
+      .filter(cat => cat.percentage >= 70 && cat.percentage < 100)
+      .sort((a, b) => b.percentage - a.percentage);
+    
+    if (almostFinished.length > 0) {
       return {
-        category: categories[0].label,
-        path: categories[0].path,
-        reason: "reviewContent"
+        category: almostFinished[0].label,
+        path: almostFinished[0].path,
+        reason: "almostFinished"
       };
     }
 
-    // If there's a category with 0%, prioritize it
+    // Priority 2: If there's a category with 0%, prioritize it
     const zero = categories.find(cat => cat.percentage === 0);
     if (zero) {
       return {
         category: zero.label,
         path: zero.path,
         reason: "notStarted"
+      };
+    }
+
+    // Priority 3: Find the category with the lowest progress
+    const lowest = categories.reduce((min, cat) => 
+      cat.percentage < min.percentage ? cat : min
+    );
+
+    // If everything is at 100%, suggest the exercises tab for review
+    if (lowest.percentage >= 100) {
+      return {
+        category: "practice",
+        path: "/exercises",
+        reason: "reviewContent"
       };
     }
 
