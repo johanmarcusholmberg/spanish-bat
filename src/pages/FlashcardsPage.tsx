@@ -18,10 +18,20 @@ const FlashcardsPage = () => {
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const { updateProgress } = useProgress();
+  const { logActivity } = useStreak();
   const [flipped, setFlipped] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cardStates, setCardStates] = useState<Record<string, CardState>>({});
   const [sessionScore, setSessionScore] = useState({ correct: 0, incorrect: 0 });
+
+  // Load SRS states from localStorage
+  useEffect(() => {
+    const email = user?.email || "guest";
+    try {
+      const saved = localStorage.getItem(`srs_${email}`);
+      if (saved) setCardStates(JSON.parse(saved));
+    } catch {}
+  }, [user?.email]);
 
   const allCards = useMemo(
     () => getItemsForLevel(flashcardData, user?.level || "A1"),
