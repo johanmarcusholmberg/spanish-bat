@@ -1,18 +1,22 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import LanguageToggle from "@/components/LanguageToggle";
 import batAvatar from "@/assets/bat-avatar.png";
-import { Eye, EyeOff, Mail, ArrowLeft, Check, X } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, Check, X, Loader2 } from "lucide-react";
 
 const RegisterPage = () => {
   const { t, language } = useLanguage();
+  const { register: signUp, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [registered, setRegistered] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const hasMinLength = password.length >= 8;
   const hasUppercase = /[A-Z]/.test(password);
@@ -21,9 +25,16 @@ const RegisterPage = () => {
   const passwordsMatch = password === confirmPassword && password.length > 0;
   const isValid = hasMinLength && hasUppercase && hasNumber && hasSpecial && passwordsMatch;
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isValid) {
+    if (!isValid) return;
+    setLoading(true);
+    setError("");
+    const err = await signUp(email, password);
+    setLoading(false);
+    if (err) {
+      setError(err);
+    } else {
       setRegistered(true);
     }
   };
@@ -132,11 +143,14 @@ const RegisterPage = () => {
               )}
             </div>
 
+            {error && <p className="text-destructive text-sm">{error}</p>}
+
             <button
               type="submit"
-              disabled={!isValid}
-              className="w-full py-2.5 rounded-md gradient-peach text-primary-foreground font-semibold shadow-warm hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!isValid || loading}
+              className="w-full py-2.5 rounded-md gradient-peach text-primary-foreground font-semibold shadow-warm hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               {t("register")}
             </button>
           </form>
@@ -150,8 +164,16 @@ const RegisterPage = () => {
                 <span className="bg-card px-2 text-muted-foreground">{t("orLoginWith")}</span>
               </div>
             </div>
-            <button className="mt-4 w-full py-2.5 rounded-md bg-background border border-border text-foreground font-medium flex items-center justify-center gap-2 hover:bg-muted transition">
-              <Mail className="h-4 w-4" />
+            <button
+              onClick={signInWithGoogle}
+              className="mt-4 w-full py-2.5 rounded-md bg-background border border-border text-foreground font-medium flex items-center justify-center gap-2 hover:bg-muted transition"
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+              </svg>
               {t("registerWithGoogle")}
             </button>
           </div>

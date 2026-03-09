@@ -1,16 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import batAvatar from "@/assets/bat-avatar.png";
-import { Eye, EyeOff, Check, X } from "lucide-react";
+import { Eye, EyeOff, Check, X, Loader2 } from "lucide-react";
 
 const ResetPasswordPage = () => {
   const { t, language } = useLanguage();
+  const { updatePassword } = useAuth();
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const hasMinLength = password.length >= 8;
   const hasUppercase = /[A-Z]/.test(password);
@@ -19,9 +23,16 @@ const ResetPasswordPage = () => {
   const passwordsMatch = password === confirmPassword && password.length > 0;
   const isValid = hasMinLength && hasUppercase && hasNumber && hasSpecial && passwordsMatch;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isValid) {
+    if (!isValid) return;
+    setLoading(true);
+    setError("");
+    const err = await updatePassword(password);
+    setLoading(false);
+    if (err) {
+      setError(err);
+    } else {
       setSuccess(true);
       setTimeout(() => navigate("/"), 2000);
     }
@@ -98,11 +109,14 @@ const ResetPasswordPage = () => {
               />
             </div>
 
+            {error && <p className="text-destructive text-sm">{error}</p>}
+
             <button
               type="submit"
-              disabled={!isValid}
-              className="w-full py-2.5 rounded-md gradient-peach text-primary-foreground font-semibold shadow-warm hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!isValid || loading}
+              className="w-full py-2.5 rounded-md gradient-peach text-primary-foreground font-semibold shadow-warm hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               {t("resetPassword")}
             </button>
           </form>

@@ -1,19 +1,30 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import LanguageToggle from "@/components/LanguageToggle";
 import batAvatar from "@/assets/bat-avatar.png";
-import { ArrowLeft, Mail } from "lucide-react";
+import { ArrowLeft, Mail, Loader2 } from "lucide-react";
 
 const ForgotPasswordPage = () => {
   const { t } = useLanguage();
+  const { resetPassword } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
+    if (!email) return;
+    setLoading(true);
+    setError("");
+    const err = await resetPassword(email);
+    setLoading(false);
+    if (err) {
+      setError(err);
+    } else {
       setSent(true);
     }
   };
@@ -74,10 +85,14 @@ const ForgotPasswordPage = () => {
               </div>
             </div>
 
+            {error && <p className="text-destructive text-sm">{error}</p>}
+
             <button
               type="submit"
-              className="w-full py-2.5 rounded-md gradient-peach text-primary-foreground font-semibold shadow-warm hover:opacity-90 transition"
+              disabled={loading}
+              className="w-full py-2.5 rounded-md gradient-peach text-primary-foreground font-semibold shadow-warm hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
             >
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               {t("sendResetLink")}
             </button>
           </form>
