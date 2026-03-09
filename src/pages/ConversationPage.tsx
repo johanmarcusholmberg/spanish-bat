@@ -1,12 +1,15 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageCircle, Send, Lightbulb, Languages, X, RotateCcw, Volume2 } from "lucide-react";
+import { MessageCircle, Send, Lightbulb, Languages, X, RotateCcw, Volume2, Mic, MicOff, BookPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useSpanishTTS } from "@/hooks/useSpanishTTS";
+import { useSpanishSTT } from "@/hooks/useSpanishSTT";
+import { useVocabulary } from "@/hooks/useVocabulary";
+import { Switch } from "@/components/ui/switch";
 
 interface Message {
   role: "user" | "assistant";
@@ -40,17 +43,55 @@ const ConversationPage = () => {
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { speak, isSupported: ttsSupported } = useSpanishTTS();
+  const { speak, stop: stopTTS, isSupported: ttsSupported } = useSpanishTTS();
+  const { isListening, transcript, interimTranscript, startListening, stopListening, resetTranscript, isSupported: sttSupported } = useSpanishSTT();
+  const { addWord } = useVocabulary();
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [autoRead, setAutoRead] = useState(false);
+  const [saveWordMode, setSaveWordMode] = useState<number | null>(null);
+  const [selectedText, setSelectedText] = useState("");
+  const [wordTranslation, setWordTranslation] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const lastAssistantMsgRef = useRef<string>("");
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Auto-read: speak the last assistant message when it finishes streaming
+  useEffect(() => {
+    if (!autoRead || !ttsSupported || isLoading) return;
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg?.role === "assistant" && lastMsg.content !== lastAssistantMsgRef.current) {
+      lastAssistantMsgRef.current = lastMsg.content;
+      speak(lastMsg.content);
+    }
+  }, [messages, isLoading, autoRead, ttsSupported, speak]);
+
+  // STT: when transcript changes, update input
+  useEffect(() => {
+    if (transcript) {
+      setInput(transcript);
+    }
+  }, [transcript]);
+
+  const handleMicToggle = () => {
+    if (isListening) {
+      stopListening();
+      // Send the transcript after stopping
+      if (transcript.trim()) {
+        setTimeout(() => sendMessage(transcript.trim()), 100);
+      }
+    } else {
+      resetTranscript();
+      setInput("");
+      startListening();
+    }
+  };
 
   const streamChat = async (allMessages: Message[], onDelta: (text: string) => void, onDone: () => void) => {
     const resp = await fetch(CHAT_URL, {
@@ -108,6 +149,7 @@ const ConversationPage = () => {
     setSelectedScenario(scenario);
     setMessages([]);
     setIsLoading(true);
+    lastAssistantMsgRef.current = "";
 
     let assistantSoFar = "";
     const initialMessages: Message[] = [];
@@ -130,6 +172,7 @@ const ConversationPage = () => {
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
     setInput("");
+    resetTranscript();
     setIsLoading(true);
 
     let assistantSoFar = "";
@@ -158,6 +201,7 @@ const ConversationPage = () => {
 
   const endConversation = () => {
     if (isLoading) return;
+    stopTTS();
     sendMessage("[END]");
   };
 
@@ -165,6 +209,29 @@ const ConversationPage = () => {
     setSelectedScenario(null);
     setMessages([]);
     setInput("");
+    stopTTS();
+    lastAssistantMsgRef.current = "";
+  };
+
+  const handleSaveWord = async (msgIndex: number) => {
+    if (saveWordMode === msgIndex) {
+      setSaveWordMode(null);
+      setSelectedText("");
+      setWordTranslation("");
+      return;
+    }
+    setSaveWordMode(msgIndex);
+    setSelectedText("");
+    setWordTranslation("");
+  };
+
+  const confirmSaveWord = async () => {
+    if (!selectedText.trim() || !wordTranslation.trim()) return;
+    const context = messages[saveWordMode!]?.content.slice(0, 100);
+    await addWord(selectedText, wordTranslation, context);
+    setSaveWordMode(null);
+    setSelectedText("");
+    setWordTranslation("");
   };
 
   if (!selectedScenario) {
@@ -222,7 +289,19 @@ const ConversationPage = () => {
               {language === "sv" ? selectedScenario.titleSv : selectedScenario.titleEn}
             </h2>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            {/* Auto-read toggle */}
+            {ttsSupported && (
+              <div className="flex items-center gap-1.5 mr-2">
+                <Volume2 className="h-4 w-4 text-muted-foreground" />
+                <Switch
+                  checked={autoRead}
+                  onCheckedChange={setAutoRead}
+                  className="data-[state=checked]:bg-primary"
+                />
+                <span className="text-xs text-muted-foreground hidden sm:inline">Auto</span>
+              </div>
+            )}
             <Button variant="outline" size="sm" onClick={resetConversation}>
               <RotateCcw className="h-4 w-4 mr-1" />
               {language === "sv" ? "Nytt" : "New"}
@@ -238,22 +317,59 @@ const ConversationPage = () => {
         <div className="flex-1 overflow-y-auto space-y-3 mb-3 pr-1">
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div
-                className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
-                  msg.role === "user"
-                    ? "bg-primary text-primary-foreground rounded-br-md"
-                    : "bg-muted text-foreground rounded-bl-md"
-                }`}
-              >
-                {msg.content}
-                {msg.role === "assistant" && ttsSupported && (
-                  <button
-                    onClick={() => speak(msg.content)}
-                    className="ml-2 inline-flex items-center text-muted-foreground hover:text-foreground transition"
-                    title={language === "sv" ? "Lyssna" : "Listen"}
-                  >
-                    <Volume2 className="h-4 w-4" />
-                  </button>
+              <div className="max-w-[80%]">
+                <div
+                  className={`rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
+                    msg.role === "user"
+                      ? "bg-primary text-primary-foreground rounded-br-md"
+                      : "bg-muted text-foreground rounded-bl-md"
+                  }`}
+                >
+                  {msg.content}
+                </div>
+                {/* Action buttons for assistant messages */}
+                {msg.role === "assistant" && (
+                  <div className="flex gap-1 mt-1">
+                    {ttsSupported && (
+                      <button
+                        onClick={() => speak(msg.content)}
+                        className="text-muted-foreground hover:text-foreground transition p-1"
+                        title={language === "sv" ? "Lyssna" : "Listen"}
+                      >
+                        <Volume2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleSaveWord(i)}
+                      className={`transition p-1 ${saveWordMode === i ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                      title={language === "sv" ? "Spara ord" : "Save word"}
+                    >
+                      <BookPlus className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                )}
+                {/* Save word inline form */}
+                {saveWordMode === i && (
+                  <div className="mt-2 bg-card border border-border rounded-lg p-3 space-y-2">
+                    <p className="text-xs text-muted-foreground">
+                      {language === "sv" ? "Skriv ett ord/fras att spara:" : "Enter a word/phrase to save:"}
+                    </p>
+                    <Input
+                      value={selectedText}
+                      onChange={(e) => setSelectedText(e.target.value)}
+                      placeholder={language === "sv" ? "Spanskt ord/fras" : "Spanish word/phrase"}
+                      className="h-8 text-sm"
+                    />
+                    <Input
+                      value={wordTranslation}
+                      onChange={(e) => setWordTranslation(e.target.value)}
+                      placeholder={language === "sv" ? "Översättning" : "Translation"}
+                      className="h-8 text-sm"
+                    />
+                    <Button size="sm" onClick={confirmSaveWord} disabled={!selectedText.trim() || !wordTranslation.trim()}>
+                      {language === "sv" ? "Spara" : "Save"}
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
@@ -284,20 +400,39 @@ const ConversationPage = () => {
           </Button>
         </div>
 
+        {/* STT interim display */}
+        {isListening && interimTranscript && (
+          <div className="text-xs text-muted-foreground italic mb-1 px-1">
+            🎤 {interimTranscript}
+          </div>
+        )}
+
         {/* Input */}
         <form
           onSubmit={(e) => { e.preventDefault(); sendMessage(input); }}
           className="flex gap-2"
         >
+          {sttSupported && (
+            <Button
+              type="button"
+              variant={isListening ? "destructive" : "outline"}
+              size="icon"
+              onClick={handleMicToggle}
+              disabled={isLoading}
+              className="shrink-0"
+            >
+              {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            </Button>
+          )}
           <Input
             ref={inputRef}
-            value={input}
+            value={isListening ? (transcript + interimTranscript) : input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={language === "sv" ? "Skriv på spanska..." : "Write in Spanish..."}
-            disabled={isLoading}
+            placeholder={language === "sv" ? "Skriv eller tala spanska..." : "Type or speak Spanish..."}
+            disabled={isLoading || isListening}
             className="flex-1"
           />
-          <Button type="submit" disabled={isLoading || !input.trim()}>
+          <Button type="submit" disabled={isLoading || !input.trim() || isListening}>
             <Send className="h-4 w-4" />
           </Button>
         </form>

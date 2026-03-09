@@ -23,6 +23,7 @@ import FlashcardsPage from "./pages/FlashcardsPage";
 import ReadingPage from "./pages/ReadingPage";
 import SentenceBuilderPage from "./pages/SentenceBuilderPage";
 import ConversationPage from "./pages/ConversationPage";
+import VocabularyPage from "./pages/VocabularyPage";
 import StatsPage from "./pages/StatsPage";
 import NotFound from "./pages/NotFound";
 import AdminPage from "./pages/AdminPage";
@@ -54,6 +55,7 @@ const AppRoutes = () => (
     <Route path="/learn/reading" element={<ProtectedRoute><ReadingPage /></ProtectedRoute>} />
     <Route path="/learn/sentences" element={<ProtectedRoute><SentenceBuilderPage /></ProtectedRoute>} />
     <Route path="/learn/conversation" element={<ProtectedRoute><ConversationPage /></ProtectedRoute>} />
+    <Route path="/learn/vocabulary" element={<ProtectedRoute><VocabularyPage /></ProtectedRoute>} />
     <Route path="/stats" element={<ProtectedRoute><StatsPage /></ProtectedRoute>} />
     <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
