@@ -19,12 +19,6 @@ const DashboardPage = () => {
     { key: "sentenceBuilder", icon: Puzzle, path: "/learn/sentences", color: "gradient-mint" },
   ];
 
-  const exercises = [
-    { key: "verbs", icon: BookOpen, path: "/exercises/verbs", color: "gradient-peach" },
-    { key: "nouns", icon: Type, path: "/exercises/nouns", color: "gradient-mint" },
-    { key: "adjectives", icon: Palette, path: "/exercises/adjectives", color: "gradient-peach" },
-    { key: "quiz", icon: HelpCircle, path: "/exercises/quiz", color: "gradient-mint" },
-  ];
 
   const renderGrid = (items: typeof exercises) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
