@@ -4,7 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useProgress } from "@/contexts/ProgressContext";
 import AppLayout from "@/components/AppLayout";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, Type, Palette, HelpCircle, GraduationCap, Layers, FileText, Puzzle } from "lucide-react";
+import { BookOpen, Type, Palette, HelpCircle, GraduationCap, Layers, FileText, Puzzle, MessageCircle } from "lucide-react";
 
 const ExercisesPage = () => {
   const { t } = useLanguage();
