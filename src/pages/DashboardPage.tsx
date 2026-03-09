@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import batAvatar from "@/assets/bat-avatar.png";
 import { ProgressOverview, NextStepsCard, LevelAdvancementCard } from "@/components/ProgressDashboard";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Layers, FileText, Puzzle } from "lucide-react";
 
 const DashboardPage = () => {
   const { t } = useLanguage();
