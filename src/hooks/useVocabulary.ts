@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 export interface VocabularyWord {
@@ -13,13 +12,19 @@ export interface VocabularyWord {
 }
 
 export const useVocabulary = () => {
-  const { user } = useAuth();
   const { toast } = useToast();
   const [words, setWords] = useState<VocabularyWord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUserId(data.user?.id ?? null);
+    });
+  }, []);
 
   const fetchWords = useCallback(async () => {
-    if (!user?.id) return;
+    if (!userId) return;
     
     setLoading(true);
     const { data, error } = await supabase
@@ -33,7 +38,7 @@ export const useVocabulary = () => {
       setWords(data || []);
     }
     setLoading(false);
-  }, [user?.id]);
+  }, [userId]);
 
   useEffect(() => {
     fetchWords();
@@ -45,12 +50,12 @@ export const useVocabulary = () => {
     context?: string,
     category: string = "conversation"
   ) => {
-    if (!user?.id) return false;
+    if (!userId) return false;
 
     const { error } = await supabase
       .from("user_vocabulary")
       .upsert({
-        user_id: user.id,
+        user_id: userId,
         spanish: spanish.toLowerCase().trim(),
         translation: translation.trim(),
         context,
@@ -73,7 +78,7 @@ export const useVocabulary = () => {
       description: `"${spanish}" har lagts till i din ordbok`,
     });
     return true;
-  }, [user?.id, fetchWords, toast]);
+  }, [userId, fetchWords, toast]);
 
   const removeWord = useCallback(async (id: string) => {
     const { error } = await supabase
