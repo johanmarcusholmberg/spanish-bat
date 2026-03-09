@@ -7,6 +7,7 @@ import {
   BookOpen, ChevronRight, ChevronDown, Lightbulb, Check, X,
   Lock, Trophy, ArrowRight, RotateCcw, GraduationCap, Pencil, Star, ArrowUp
 } from "lucide-react";
+import { useProgress } from "@/contexts/ProgressContext";
 
 type LessonStep = "learn" | "practice" | "result";
 
