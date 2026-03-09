@@ -6,6 +6,7 @@ import { adjectives, getItemsForLevel } from "@/data/spanishData";
 import { checkAnswer } from "@/lib/answerUtils";
 import { ArrowLeft, Check, X, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useProgress } from "@/contexts/ProgressContext";
 
 const AdjectiveExercisePage = () => {
   const { language, t } = useLanguage();
