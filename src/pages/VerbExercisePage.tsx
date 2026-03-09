@@ -53,6 +53,9 @@ const VerbExercisePage = () => {
   };
 
   const handleNext = () => {
+    const newCompleted = completedVerbs + 1;
+    setCompletedVerbs(newCompleted);
+    updateProgress("exercises", newCompleted, availableVerbs.length);
     setCurrentIndex((prev) => (prev + 1) % availableVerbs.length);
     setAnswers({});
     setShowResults(false);

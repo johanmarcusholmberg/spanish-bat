@@ -41,6 +41,9 @@ const NounExercisePage = () => {
   const handleCheck = () => setShowResults(true);
 
   const handleNext = () => {
+    const newCompleted = completedNouns + 1;
+    setCompletedNouns(newCompleted);
+    updateProgress("exercises", newCompleted, availableNouns.length);
     setCurrentIndex((prev) => (prev + 1) % availableNouns.length);
     setGenderAnswer("");
     setTranslationAnswer("");

@@ -39,6 +39,9 @@ const AdjectiveExercisePage = () => {
   const femCorrect = checkAnswer(feminineAnswer, current.feminine);
 
   const handleNext = () => {
+    const newCompleted = completedAdj + 1;
+    setCompletedAdj(newCompleted);
+    updateProgress("exercises", newCompleted, available.length);
     setCurrentIndex((prev) => (prev + 1) % available.length);
     setMasculineAnswer("");
     setFeminineAnswer("");

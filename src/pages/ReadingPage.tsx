@@ -37,6 +37,8 @@ const ReadingPage = () => {
   const handleSubmit = () => setSubmitted(true);
 
   const handleNext = () => {
+    const newCompleted = textIndex + 1;
+    updateProgress("reading", newCompleted, texts.length);
     setTextIndex((i) => i + 1);
     setAnswers({});
     setSubmitted(false);

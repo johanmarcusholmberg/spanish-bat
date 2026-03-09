@@ -68,8 +68,10 @@ const SentenceBuilderPage = () => {
   }, [selected, current]);
 
   const handleNext = useCallback(() => {
+    const newIndex = exerciseIndex + 1;
+    updateProgress("sentences", newIndex, exercises.length);
     setExerciseIndex((i) => i + 1);
-  }, []);
+  }, [exerciseIndex, exercises.length, updateProgress]);
 
   const handleReset = useCallback(() => {
     if (current) {

@@ -68,7 +68,11 @@ const FlashcardsPage = () => {
       }));
 
       if (quality !== "hard") {
-        setSessionScore((s) => ({ ...s, correct: s.correct + 1 }));
+        setSessionScore((s) => {
+          const newCorrect = s.correct + 1;
+          updateProgress("flashcards", newCorrect, allCards.length);
+          return { ...s, correct: newCorrect };
+        });
       } else {
         setSessionScore((s) => ({ ...s, incorrect: s.incorrect + 1 }));
       }
