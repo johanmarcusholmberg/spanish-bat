@@ -163,16 +163,31 @@ const GrammarPage = () => {
       const scorePercent = Math.round((finalResults.filter(Boolean).length / currentLesson.exercises.length) * 100);
       const passed = scorePercent >= PASS_THRESHOLD;
 
-      if (user?.email) {
+      if (session?.user) {
         const newProgress = { ...progress };
         const existing = newProgress[currentLesson.id];
-        newProgress[currentLesson.id] = {
+        const lessonProgress = {
           completed: passed || existing?.completed || false,
           bestScore: Math.max(scorePercent, existing?.bestScore || 0),
           attempts: (existing?.attempts || 0) + 1,
         };
+        newProgress[currentLesson.id] = lessonProgress;
         setProgress(newProgress);
-        saveProgress(user.email, newProgress);
+
+        // Persist to DB
+        supabase
+          .from("grammar_progress")
+          .upsert(
+            {
+              user_id: session.user.id,
+              lesson_id: currentLesson.id,
+              completed: lessonProgress.completed,
+              best_score: lessonProgress.bestScore,
+              attempts: lessonProgress.attempts,
+            },
+            { onConflict: "user_id,lesson_id" }
+          )
+          .then();
 
         // Update global progress
         const completedLessons = Object.values(newProgress).filter(p => p.completed).length;
