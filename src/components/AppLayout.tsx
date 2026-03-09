@@ -7,7 +7,7 @@ import { Home, BookOpen, User, LogOut, BarChart3, Moon, Sun, Shield } from "luci
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const { t } = useLanguage();
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [dark, setDark] = useState(() => {
     if (typeof window !== "undefined") {
