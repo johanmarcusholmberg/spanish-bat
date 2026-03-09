@@ -50,6 +50,11 @@ const SentenceBuilderPage = () => {
     setAvailable((a) => [...a, word]);
   }, [result]);
 
+  const correctWordAt = useCallback((index: number): boolean => {
+    if (!current) return false;
+    return selected[index] === current.correctOrder[index];
+  }, [selected, current]);
+
   const handleCheck = useCallback(() => {
     if (!current) return;
     const isCorrect = selected.join(" ") === current.correctOrder.join(" ");
