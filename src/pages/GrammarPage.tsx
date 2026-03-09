@@ -445,7 +445,7 @@ const GrammarPage = () => {
                               <>
                                 <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                                 <div>
-                                  <p className="font-bold text-primary">{t("correct")} 🎉</p>
+                                  <p className="font-bold text-primary">{t("correct")}</p>
                                   <p className="text-sm text-foreground mt-1">{currentExercise.answer}</p>
                                 </div>
                               </>

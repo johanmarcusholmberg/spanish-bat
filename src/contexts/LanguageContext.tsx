@@ -125,7 +125,7 @@ const translations: Translations = {
   startExercises: { sv: "Starta övningar", en: "Start exercises" },
   showHint: { sv: "Visa ledtråd", en: "Show hint" },
   seeResults: { sv: "Se resultat", en: "See results" },
-  lessonPassed: { sv: "Lektion godkänd! 🎉", en: "Lesson passed! 🎉" },
+  lessonPassed: { sv: "Lektion godkänd!", en: "Lesson passed!" },
   tryAgain: { sv: "Försök igen!", en: "Try again!" },
   correctAnswers: { sv: "rätt svar", en: "correct answers" },
   needScore: { sv: "Du behöver minst", en: "You need at least" },
