@@ -246,6 +246,15 @@ const ConversationPage = () => {
                 }`}
               >
                 {msg.content}
+                {msg.role === "assistant" && ttsSupported && (
+                  <button
+                    onClick={() => speak(msg.content)}
+                    className="ml-2 inline-flex items-center text-muted-foreground hover:text-foreground transition"
+                    title={language === "sv" ? "Lyssna" : "Listen"}
+                  >
+                    <Volume2 className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             </div>
           ))}
