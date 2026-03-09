@@ -10,6 +10,7 @@ import { useProgress } from "@/contexts/ProgressContext";
 const ReadingPage = () => {
   const { t, language } = useLanguage();
   const { user } = useAuth();
+  const { updateProgress } = useProgress();
   const [textIndex, setTextIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
