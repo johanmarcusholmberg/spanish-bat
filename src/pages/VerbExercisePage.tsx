@@ -15,11 +15,13 @@ const VerbExercisePage = () => {
   const { language, t } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { updateProgress } = useProgress();
   const [selectedTense, setSelectedTense] = useState<string>("presente");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState(0);
+  const [completedVerbs, setCompletedVerbs] = useState(0);
 
   const availableVerbs = useMemo(
     () => getItemsForLevel(verbs, user?.level || "A1"),
