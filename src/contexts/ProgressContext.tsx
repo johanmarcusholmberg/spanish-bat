@@ -47,7 +47,7 @@ export const ProgressProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // Load progress from localStorage
-    const savedProgress = localStorage.getItem(`progress_${user?.username || "guest"}`);
+    const savedProgress = localStorage.getItem(`progress_${user?.email || "guest"}`);
     if (savedProgress) {
       setProgress(JSON.parse(savedProgress));
     } else {
@@ -64,7 +64,7 @@ export const ProgressProvider = ({ children }: { children: ReactNode }) => {
         overall: 0,
       });
     }
-  }, [user?.username, user?.level]);
+  }, [user?.email, user?.level]);
 
   const updateProgress = (category: keyof Omit<LevelProgress, "overall">, completed: number, total: number) => {
     setProgress((prev) => {
