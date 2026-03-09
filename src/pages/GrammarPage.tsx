@@ -51,7 +51,16 @@ const GrammarPage = () => {
   const [attempts, setAttempts] = useState(0);
 
   useEffect(() => {
-    if (user?.email) setProgress(loadProgress(user.email));
+    if (user?.email) {
+      const loaded = loadProgress(user.email);
+      setProgress(loaded);
+      // Sync with global progress context
+      const completedCount = Object.values(loaded).filter(p => p.completed).length;
+      const totalLessons = grammarLessons.filter(l => l.level === (user.level || "A1")).length;
+      if (completedCount > 0 && totalLessons > 0) {
+        updateGlobalProgress("grammar", completedCount, totalLessons);
+      }
+    }
   }, [user?.email]);
 
   const userLevel = user?.level || "A1";
