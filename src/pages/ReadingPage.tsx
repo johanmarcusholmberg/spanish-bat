@@ -38,6 +38,7 @@ const ReadingPage = () => {
   const handleSubmit = () => setSubmitted(true);
 
   const handleNext = () => {
+    logActivity();
     const newCompleted = textIndex + 1;
     updateProgress("reading", newCompleted, texts.length);
     setTextIndex((i) => i + 1);

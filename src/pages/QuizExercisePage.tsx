@@ -47,6 +47,7 @@ const QuizExercisePage = () => {
   };
 
   const handleNext = () => {
+    logActivity();
     const newAnswered = totalAnswered + 1;
     updateProgress("exercises", newAnswered, available.length);
     setCurrentIndex((prev) => (prev + 1) % available.length);

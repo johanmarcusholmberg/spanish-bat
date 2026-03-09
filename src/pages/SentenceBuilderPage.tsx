@@ -69,10 +69,11 @@ const SentenceBuilderPage = () => {
   }, [selected, current]);
 
   const handleNext = useCallback(() => {
+    logActivity();
     const newIndex = exerciseIndex + 1;
     updateProgress("sentences", newIndex, exercises.length);
     setExerciseIndex((i) => i + 1);
-  }, [exerciseIndex, exercises.length, updateProgress]);
+  }, [exerciseIndex, exercises.length, updateProgress, logActivity]);
 
   const handleReset = useCallback(() => {
     if (current) {

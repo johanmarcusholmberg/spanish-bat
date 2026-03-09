@@ -54,6 +54,7 @@ const VerbExercisePage = () => {
   };
 
   const handleNext = () => {
+    logActivity();
     const newCompleted = completedVerbs + 1;
     setCompletedVerbs(newCompleted);
     updateProgress("exercises", newCompleted, availableVerbs.length);

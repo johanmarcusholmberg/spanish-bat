@@ -36,6 +36,7 @@ const GrammarPage = () => {
   const { t, language } = useLanguage();
   const { user, updateProfile } = useAuth();
   const { updateProgress: updateGlobalProgress } = useProgress();
+  const { logActivity } = useStreak();
   const [openLesson, setOpenLesson] = useState<string | null>(null);
   const [step, setStep] = useState<LessonStep>("learn");
   const [progress, setProgress] = useState<Record<string, LessonProgress>>({});

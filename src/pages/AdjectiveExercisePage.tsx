@@ -40,6 +40,7 @@ const AdjectiveExercisePage = () => {
   const femCorrect = checkAnswer(feminineAnswer, current.feminine);
 
   const handleNext = () => {
+    logActivity();
     const newCompleted = completedAdj + 1;
     setCompletedAdj(newCompleted);
     updateProgress("exercises", newCompleted, available.length);

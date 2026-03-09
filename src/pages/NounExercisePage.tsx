@@ -42,6 +42,7 @@ const NounExercisePage = () => {
   const handleCheck = () => setShowResults(true);
 
   const handleNext = () => {
+    logActivity();
     const newCompleted = completedNouns + 1;
     setCompletedNouns(newCompleted);
     updateProgress("exercises", newCompleted, availableNouns.length);
