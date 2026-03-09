@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import batAvatar from "@/assets/bat-avatar.png";
+import logo from "@/assets/logo.png";
 import { Home, BookOpen, User, LogOut, BarChart3, Moon, Sun, Shield } from "lucide-react";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
