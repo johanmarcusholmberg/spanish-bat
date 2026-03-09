@@ -117,7 +117,7 @@ const QuizExercisePage = () => {
                 <p className="text-sm mt-1 text-mint-dark">{t("correctAnswer")}: {current.answer}</p>
               )}
               {showResult && isCorrect && (
-                <p className="text-sm mt-1 text-mint-dark font-medium">{t("correct")} 🎉</p>
+                <p className="text-sm mt-1 text-mint-dark font-medium">{t("correct")}</p>
               )}
             </div>
 

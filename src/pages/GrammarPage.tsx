@@ -212,7 +212,7 @@ const GrammarPage = () => {
               <Trophy className="h-7 w-7 text-primary" />
             </div>
             <h3 className="font-heading font-bold text-foreground text-lg mb-1">
-              {t("allLessonsCompleted")} 🎉
+              {t("allLessonsCompleted")}
             </h3>
             <p className="text-muted-foreground text-sm mb-4">
               {t("levelUpPrompt")} {t(`level${nextLevel}`)}?
@@ -445,7 +445,7 @@ const GrammarPage = () => {
                               <>
                                 <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                                 <div>
-                                  <p className="font-bold text-primary">{t("correct")} 🎉</p>
+                                  <p className="font-bold text-primary">{t("correct")}</p>
                                   <p className="text-sm text-foreground mt-1">{currentExercise.answer}</p>
                                 </div>
                               </>
