@@ -159,33 +159,32 @@ const SentenceBuilderPage = () => {
           )}
         </div>
 
-        {/* Action buttons */}
-        {!result ? (
-          <div className="flex gap-3">
-            <button
-              onClick={handleReset}
-              className="flex-1 py-3 rounded-lg bg-muted text-foreground font-medium flex items-center justify-center gap-2 hover:bg-muted/80 transition"
-            >
-              <RotateCcw className="h-4 w-4" />
-              {t("reset")}
-            </button>
-            <button
-              onClick={handleCheck}
-              disabled={selected.length !== current.correctOrder.length}
-              className="flex-1 py-3 rounded-lg gradient-peach text-primary-foreground font-semibold shadow-warm hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              <Check className="h-4 w-4" />
-              {t("checkAnswer")}
-            </button>
-          </div>
-        ) : (
+        {/* Action buttons — both rendered, toggled by visibility to prevent layout shift */}
+        <div className={`flex gap-3 ${result ? "hidden" : ""}`}>
+          <button
+            onClick={handleReset}
+            className="flex-1 py-3 rounded-lg bg-muted text-foreground font-medium flex items-center justify-center gap-2 hover:bg-muted/80 transition"
+          >
+            <RotateCcw className="h-4 w-4" />
+            {t("reset")}
+          </button>
+          <button
+            onClick={handleCheck}
+            disabled={selected.length !== current.correctOrder.length}
+            className="flex-1 py-3 rounded-lg gradient-peach text-primary-foreground font-semibold shadow-warm hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            <Check className="h-4 w-4" />
+            {t("checkAnswer")}
+          </button>
+        </div>
+        <div className={`${result ? "" : "hidden"}`}>
           <button
             onClick={handleNext}
             className="w-full py-3 rounded-lg gradient-mint text-secondary-foreground font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
           >
             {t("nextQuestion")} <ArrowRight className="h-4 w-4" />
           </button>
-        )}
+        </div>
       </div>
     </AppLayout>
   );
