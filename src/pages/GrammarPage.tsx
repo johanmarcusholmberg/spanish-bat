@@ -8,6 +8,7 @@ import {
   Lock, Trophy, ArrowRight, RotateCcw, GraduationCap, Pencil, Star, ArrowUp
 } from "lucide-react";
 import { useProgress } from "@/contexts/ProgressContext";
+import { useStreak } from "@/contexts/StreakContext";
 
 type LessonStep = "learn" | "practice" | "result";
 
