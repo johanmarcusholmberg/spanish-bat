@@ -13,6 +13,7 @@ interface UserProfile {
 
 interface AuthContextType {
   isLoggedIn: boolean;
+  isAdmin: boolean;
   user: UserProfile | null;
   session: Session | null;
   loading: boolean;
