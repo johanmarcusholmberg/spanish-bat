@@ -309,9 +309,11 @@ export const grammarLessons: GrammarLesson[] = [
       { type: "fill-blank", question: { sv: "Skriv rätt form av 'alto' (femininum)", en: "Write correct form of 'alto' (feminine)" }, prompt: "La chica es ___.", answer: "alta", hint: { sv: "-o → -a i femininum", en: "-o → -a in feminine" } },
       { type: "fill-blank", question: { sv: "Skriv rätt pluralform av 'alto' (maskulinum)", en: "Write correct plural of 'alto' (masculine)" }, prompt: "Los chicos son ___.", answer: "altos", hint: { sv: "Plural: lägg till -s", en: "Plural: add -s" } },
       { type: "multiple-choice", question: { sv: "Las casas son ___. (grande)", en: "The houses are ___. (grande)" }, answer: "grandes", options: ["grande", "grandes", "grando", "grandos"], hint: { sv: "'Grande' slutar på -e, plural = -es", en: "'Grande' ends in -e, plural = -es" } },
-      { type: "multiple-choice", question: { sv: "La mujer es ___. (inteligente)", en: "The woman is ___. (inteligente)" }, answer: "inteligente", options: ["inteligento", "inteligenta", "inteligente", "inteligentes"], hint: { sv: "Adjektiv på -e ändras inte för genus", en: "Adjectives ending in -e don't change for gender" } },
-      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "La chica es alto.", answer: "La chica es alta.", hint: { sv: "Femininum kräver -a", en: "Feminine requires -a" } },
-      { type: "translate", question: { sv: "Översätt: Pojkarna är långa.", en: "Translate: The boys are tall." }, answer: "Los chicos son altos.", hint: { sv: "Maskulinum plural av 'alto'", en: "Masculine plural of 'alto'" } },
+      { type: "fill-blank", question: { sv: "Förkorta 'bueno' före maskulint substantiv", en: "Shorten 'bueno' before masculine noun" }, prompt: "Un ___ amigo.", answer: "buen", hint: { sv: "Före maskulint substantiv: bueno → buen", en: "Before masculine noun: bueno → buen" } },
+      { type: "fill-blank", question: { sv: "Förkorta 'grande' före substantiv", en: "Shorten 'grande' before noun" }, prompt: "Un ___ hombre.", answer: "gran", hint: { sv: "Grande → gran före substantiv", en: "Grande → gran before noun" } },
+      { type: "multiple-choice", question: { sv: "El ___ día. (primero)", en: "The ___ day. (primero)" }, answer: "primer", options: ["primero", "primer", "primera", "primeres"], hint: { sv: "Primero → primer före maskulint", en: "Primero → primer before masculine" } },
+      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Un malo día.", answer: "Un mal día.", hint: { sv: "Malo → mal före maskulint substantiv", en: "Malo → mal before masculine noun" } },
+      { type: "translate", question: { sv: "Översätt: En fantastisk kvinna.", en: "Translate: A great woman." }, answer: "Una gran mujer.", hint: { sv: "Grande → gran före substantiv (fantastisk)", en: "Grande → gran before noun (great)" } },
     ]
   },
   // A2
