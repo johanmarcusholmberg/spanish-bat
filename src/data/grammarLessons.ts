@@ -93,10 +93,12 @@ export const grammarLessons: GrammarLesson[] = [
       { type: "fill-blank", question: { sv: "Fyll i rätt artikel", en: "Fill in the correct article" }, prompt: "___ libro", answer: "el", hint: { sv: "'Libro' slutar på -o och är maskulint", en: "'Libro' ends in -o and is masculine" } },
       { type: "fill-blank", question: { sv: "Fyll i rätt artikel", en: "Fill in the correct article" }, prompt: "___ casa", answer: "la", hint: { sv: "'Casa' slutar på -a och är feminint", en: "'Casa' ends in -a and is feminine" } },
       { type: "multiple-choice", question: { sv: "Vilken artikel passar? ___ mesa", en: "Which article fits? ___ mesa" }, answer: "la", options: ["el", "la", "los", "las"], hint: { sv: "'Mesa' är femininum singular", en: "'Mesa' is feminine singular" } },
-      { type: "multiple-choice", question: { sv: "Vilken artikel passar? ___ libros", en: "Which article fits? ___ libros" }, answer: "los", options: ["el", "la", "los", "las"], hint: { sv: "'Libros' är maskulinum plural", en: "'Libros' is masculine plural" } },
-      { type: "fill-blank", question: { sv: "Fyll i rätt artikel", en: "Fill in the correct article" }, prompt: "___ gatos", answer: "los", hint: { sv: "Plural av 'el' är 'los'", en: "Plural of 'el' is 'los'" } },
-      { type: "translate", question: { sv: "Översätt: böckerna", en: "Translate: the books" }, answer: "los libros", hint: { sv: "'Bok' = 'libro' (maskulint), plural", en: "'Book' = 'libro' (masculine), plural" } },
-      { type: "error-correction", question: { sv: "Rätta felet i meningen", en: "Correct the error in the sentence" }, incorrectSentence: "El casa es grande.", answer: "La casa es grande.", hint: { sv: "'Casa' är femininum, ska ha 'la'", en: "'Casa' is feminine, needs 'la'" } },
+      { type: "multiple-choice", question: { sv: "Vilken artikel passar? ___ problema (oregelbundet!)", en: "Which article fits? ___ problema (irregular!)" }, answer: "el", options: ["el", "la", "los", "las"], hint: { sv: "'Problema' slutar på -ma och är maskulint!", en: "'Problema' ends in -ma and is masculine!" } },
+      { type: "fill-blank", question: { sv: "Fyll i rätt artikel", en: "Fill in the correct article" }, prompt: "___ mano", answer: "la", hint: { sv: "Oregelbundet: 'mano' är femininum trots -o!", en: "Irregular: 'mano' is feminine despite -o!" } },
+      { type: "fill-blank", question: { sv: "Fyll i rätt artikel", en: "Fill in the correct article" }, prompt: "___ agua", answer: "el", hint: { sv: "Femininum ord på betonad a använder 'el'", en: "Feminine words with stressed a use 'el'" } },
+      { type: "multiple-choice", question: { sv: "Vilken artikel? ___ día", en: "Which article? ___ día" }, answer: "el", options: ["el", "la", "los", "las"], hint: { sv: "Oregelbundet: 'día' är maskulint!", en: "Irregular: 'día' is masculine!" } },
+      { type: "translate", question: { sv: "Översätt: problemen", en: "Translate: the problems" }, answer: "los problemas", hint: { sv: "'Problema' är maskulint plural", en: "'Problema' is masculine plural" } },
+      { type: "error-correction", question: { sv: "Rätta felet i meningen", en: "Correct the error in the sentence" }, incorrectSentence: "La problema es difícil.", answer: "El problema es difícil.", hint: { sv: "'Problema' är maskulint trots -a", en: "'Problema' is masculine despite -a" } },
     ]
   },
   {
