@@ -38,6 +38,66 @@ export type Database = {
         }
         Relationships: []
       }
+      flashcard_srs: {
+        Row: {
+          card_id: string
+          ease: number
+          id: string
+          interval_days: number
+          next_review: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          card_id: string
+          ease?: number
+          id?: string
+          interval_days?: number
+          next_review?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          card_id?: string
+          ease?: number
+          id?: string
+          interval_days?: number
+          next_review?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      grammar_progress: {
+        Row: {
+          attempts: number
+          best_score: number
+          completed: boolean
+          id: string
+          lesson_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          best_score?: number
+          completed?: boolean
+          id?: string
+          lesson_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          best_score?: number
+          completed?: boolean
+          id?: string
+          lesson_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

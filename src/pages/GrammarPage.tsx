@@ -5,10 +5,12 @@ import AppLayout from "@/components/AppLayout";
 import { grammarLessons, GrammarLesson, GrammarExercise } from "@/data/grammarLessons";
 import {
   BookOpen, ChevronRight, ChevronDown, Lightbulb, Check, X,
-  Lock, Trophy, ArrowRight, RotateCcw, GraduationCap, Pencil, Star, ArrowUp
+  Lock, Trophy, ArrowRight, RotateCcw, GraduationCap, Pencil, Star, ArrowUp, Volume2
 } from "lucide-react";
 import { useProgress } from "@/contexts/ProgressContext";
 import { useStreak } from "@/contexts/StreakContext";
+import { useSpanishTTS } from "@/hooks/useSpanishTTS";
+import { supabase } from "@/integrations/supabase/client";
 
 type LessonStep = "learn" | "practice" | "result";
 
@@ -21,22 +23,12 @@ interface LessonProgress {
 const PASS_THRESHOLD = 80;
 const LEVEL_ORDER: Level[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
-function loadProgress(email: string): Record<string, LessonProgress> {
-  try {
-    const saved = localStorage.getItem(`grammar_progress_${email}`);
-    return saved ? JSON.parse(saved) : {};
-  } catch { return {}; }
-}
-
-function saveProgress(email: string, progress: Record<string, LessonProgress>) {
-  try { localStorage.setItem(`grammar_progress_${email}`, JSON.stringify(progress)); } catch {}
-}
-
 const GrammarPage = () => {
   const { t, language } = useLanguage();
-  const { user, updateProfile } = useAuth();
+  const { user, session, updateProfile } = useAuth();
   const { updateProgress: updateGlobalProgress } = useProgress();
   const { logActivity } = useStreak();
+  const { speak, isSupported: ttsSupported } = useSpanishTTS();
   const [openLesson, setOpenLesson] = useState<string | null>(null);
   const [step, setStep] = useState<LessonStep>("learn");
   const [progress, setProgress] = useState<Record<string, LessonProgress>>({});
@@ -50,18 +42,34 @@ const GrammarPage = () => {
   const [exerciseResults, setExerciseResults] = useState<boolean[]>([]);
   const [attempts, setAttempts] = useState(0);
 
+  // Load grammar progress from DB
   useEffect(() => {
-    if (user?.email) {
-      const loaded = loadProgress(user.email);
-      setProgress(loaded);
-      // Sync with global progress context
-      const completedCount = Object.values(loaded).filter(p => p.completed).length;
-      const totalLessons = grammarLessons.filter(l => l.level === (user.level || "A1")).length;
-      if (completedCount > 0 && totalLessons > 0) {
-        updateGlobalProgress("grammar", completedCount, totalLessons);
+    if (!session?.user) return;
+    const loadFromDB = async () => {
+      const { data } = await supabase
+        .from("grammar_progress")
+        .select("*")
+        .eq("user_id", session.user.id);
+
+      if (data) {
+        const loaded: Record<string, LessonProgress> = {};
+        for (const row of data) {
+          loaded[row.lesson_id] = {
+            completed: row.completed,
+            bestScore: row.best_score,
+            attempts: row.attempts,
+          };
+        }
+        setProgress(loaded);
+        const completedCount = Object.values(loaded).filter(p => p.completed).length;
+        const totalLessons = grammarLessons.filter(l => l.level === (user?.level || "A1")).length;
+        if (completedCount > 0 && totalLessons > 0) {
+          updateGlobalProgress("grammar", completedCount, totalLessons);
+        }
       }
-    }
-  }, [user?.email]);
+    };
+    loadFromDB();
+  }, [session?.user?.id, user?.level]);
 
   const userLevel = user?.level || "A1";
 
@@ -155,16 +163,31 @@ const GrammarPage = () => {
       const scorePercent = Math.round((finalResults.filter(Boolean).length / currentLesson.exercises.length) * 100);
       const passed = scorePercent >= PASS_THRESHOLD;
 
-      if (user?.email) {
+      if (session?.user) {
         const newProgress = { ...progress };
         const existing = newProgress[currentLesson.id];
-        newProgress[currentLesson.id] = {
+        const lessonProgress = {
           completed: passed || existing?.completed || false,
           bestScore: Math.max(scorePercent, existing?.bestScore || 0),
           attempts: (existing?.attempts || 0) + 1,
         };
+        newProgress[currentLesson.id] = lessonProgress;
         setProgress(newProgress);
-        saveProgress(user.email, newProgress);
+
+        // Persist to DB
+        supabase
+          .from("grammar_progress")
+          .upsert(
+            {
+              user_id: session.user.id,
+              lesson_id: currentLesson.id,
+              completed: lessonProgress.completed,
+              best_score: lessonProgress.bestScore,
+              attempts: lessonProgress.attempts,
+            },
+            { onConflict: "user_id,lesson_id" }
+          )
+          .then();
 
         // Update global progress
         const completedLessons = Object.values(newProgress).filter(p => p.completed).length;
@@ -336,7 +359,14 @@ const GrammarPage = () => {
                             <div className="bg-background rounded-md p-3 space-y-1.5 mb-3">
                               {section.examples.map((ex, ei) => (
                                 <div key={ei} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-sm">
-                                  <span className="font-semibold text-accent-foreground">{ex.es}</span>
+                                  <span className="font-semibold text-accent-foreground flex items-center gap-1">
+                                    {ex.es}
+                                    {ttsSupported && (
+                                      <button onClick={() => speak(ex.es)} className="text-muted-foreground hover:text-primary transition p-0.5" type="button" aria-label="Lyssna">
+                                        <Volume2 className="h-3.5 w-3.5" />
+                                      </button>
+                                    )}
+                                  </span>
                                   <span className="text-muted-foreground">
                                     — {language === "sv" ? ex.sv : ex.en}
                                   </span>

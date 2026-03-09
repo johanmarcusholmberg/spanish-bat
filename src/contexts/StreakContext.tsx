@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { useAuth } from "./AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface StreakData {
   currentStreak: number;
   longestStreak: number;
-  lastActiveDate: string; // YYYY-MM-DD
-  activityLog: Record<string, number>; // date -> exercises completed that day
+  lastActiveDate: string;
+  activityLog: Record<string, number>;
 }
 
 interface StreakContextType {
@@ -19,20 +20,6 @@ const StreakContext = createContext<StreakContextType | undefined>(undefined);
 
 const getToday = () => new Date().toISOString().split("T")[0];
 
-const loadStreak = (email: string): StreakData => {
-  try {
-    const saved = localStorage.getItem(`streak_${email}`);
-    if (saved) return JSON.parse(saved);
-  } catch {}
-  return { currentStreak: 0, longestStreak: 0, lastActiveDate: "", activityLog: {} };
-};
-
-const saveStreak = (email: string, data: StreakData) => {
-  try {
-    localStorage.setItem(`streak_${email}`, JSON.stringify(data));
-  } catch {}
-};
-
 const daysBetween = (a: string, b: string) => {
   const da = new Date(a);
   const db = new Date(b);
@@ -40,7 +27,7 @@ const daysBetween = (a: string, b: string) => {
 };
 
 export const StreakProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
+  const { session } = useAuth();
   const [streak, setStreak] = useState<StreakData>({
     currentStreak: 0,
     longestStreak: 0,
@@ -48,19 +35,56 @@ export const StreakProvider = ({ children }: { children: ReactNode }) => {
     activityLog: {},
   });
 
+  // Load from DB
   useEffect(() => {
-    const email = user?.email || "guest";
-    const data = loadStreak(email);
-    // Check if streak is broken (missed a day)
-    const today = getToday();
-    if (data.lastActiveDate && daysBetween(data.lastActiveDate, today) > 1) {
-      data.currentStreak = 0;
-    }
-    setStreak(data);
-  }, [user?.email]);
+    if (!session?.user) return;
+    const userId = session.user.id;
+
+    const load = async () => {
+      // Load streak data
+      const { data: streakData } = await supabase
+        .from("user_streaks")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
+
+      // Load activity log
+      const { data: activityData } = await supabase
+        .from("activity_log")
+        .select("*")
+        .eq("user_id", userId);
+
+      const activityLog: Record<string, number> = {};
+      if (activityData) {
+        for (const row of activityData) {
+          activityLog[row.activity_date] = row.count;
+        }
+      }
+
+      const today = getToday();
+      let currentStreak = streakData?.current_streak || 0;
+      const longestStreak = streakData?.longest_streak || 0;
+      const lastActiveDate = streakData?.last_active_date || "";
+
+      // Check if streak is broken
+      if (lastActiveDate && daysBetween(lastActiveDate, today) > 1) {
+        currentStreak = 0;
+        // Update DB
+        await supabase
+          .from("user_streaks")
+          .upsert({ user_id: userId, current_streak: 0, longest_streak: longestStreak, last_active_date: lastActiveDate }, { onConflict: "user_id" });
+      }
+
+      setStreak({ currentStreak, longestStreak, lastActiveDate, activityLog });
+    };
+
+    load();
+  }, [session?.user?.id]);
 
   const logActivity = useCallback(() => {
-    const email = user?.email || "guest";
+    if (!session?.user) return;
+    const userId = session.user.id;
+
     setStreak((prev) => {
       const today = getToday();
       const newLog = { ...prev.activityLog };
@@ -69,11 +93,7 @@ export const StreakProvider = ({ children }: { children: ReactNode }) => {
       let newStreak = prev.currentStreak;
       if (prev.lastActiveDate !== today) {
         const diff = prev.lastActiveDate ? daysBetween(prev.lastActiveDate, today) : 0;
-        if (diff === 1 || diff === 0) {
-          newStreak = prev.lastActiveDate === today ? prev.currentStreak : prev.currentStreak + 1;
-        } else {
-          newStreak = 1;
-        }
+        newStreak = (diff === 1 || diff === 0) ? prev.currentStreak + 1 : 1;
       }
 
       const longest = Math.max(prev.longestStreak, newStreak);
@@ -84,10 +104,27 @@ export const StreakProvider = ({ children }: { children: ReactNode }) => {
         activityLog: newLog,
       };
 
-      saveStreak(email, updated);
+      // Persist streak to DB
+      supabase
+        .from("user_streaks")
+        .upsert(
+          { user_id: userId, current_streak: newStreak, longest_streak: longest, last_active_date: today },
+          { onConflict: "user_id" }
+        )
+        .then();
+
+      // Persist activity log to DB
+      supabase
+        .from("activity_log")
+        .upsert(
+          { user_id: userId, activity_date: today, count: newLog[today] },
+          { onConflict: "user_id,activity_date" }
+        )
+        .then();
+
       return updated;
     });
-  }, [user?.email]);
+  }, [session?.user?.id]);
 
   const getActivityForWeek = useCallback(() => {
     const days: { date: string; count: number; dayLabel: string }[] = [];

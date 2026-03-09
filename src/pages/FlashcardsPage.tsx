@@ -4,34 +4,52 @@ import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import { flashcardData } from "@/data/flashcardData";
 import { getItemsForLevel } from "@/data/spanishData";
-import { RotateCcw, ThumbsUp, ThumbsDown, Layers } from "lucide-react";
+import { RotateCcw, ThumbsUp, ThumbsDown, Layers, Volume2 } from "lucide-react";
 import { useProgress } from "@/contexts/ProgressContext";
 import { useStreak } from "@/contexts/StreakContext";
+import { useSpanishTTS } from "@/hooks/useSpanishTTS";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CardState {
   interval: number; // days until next review
-  nextReview: number; // timestamp
-  ease: number; // 1=hard, 2=ok, 3=easy
+  nextReview: number; // timestamp (ms)
+  ease: number;
 }
 
 const FlashcardsPage = () => {
   const { t, language } = useLanguage();
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { updateProgress } = useProgress();
   const { logActivity } = useStreak();
+  const { speak, isSupported: ttsSupported } = useSpanishTTS();
   const [flipped, setFlipped] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cardStates, setCardStates] = useState<Record<string, CardState>>({});
   const [sessionScore, setSessionScore] = useState({ correct: 0, incorrect: 0 });
 
-  // Load SRS states from localStorage
+  // Load SRS states from DB
   useEffect(() => {
-    const email = user?.email || "guest";
-    try {
-      const saved = localStorage.getItem(`srs_${email}`);
-      if (saved) setCardStates(JSON.parse(saved));
-    } catch {}
-  }, [user?.email]);
+    if (!session?.user) return;
+    const load = async () => {
+      const { data } = await supabase
+        .from("flashcard_srs")
+        .select("*")
+        .eq("user_id", session.user.id);
+
+      if (data) {
+        const states: Record<string, CardState> = {};
+        for (const row of data) {
+          states[row.card_id] = {
+            interval: row.interval_days,
+            nextReview: new Date(row.next_review).getTime(),
+            ease: row.ease,
+          };
+        }
+        setCardStates(states);
+      }
+    };
+    load();
+  }, [session?.user?.id]);
 
   const allCards = useMemo(
     () => getItemsForLevel(flashcardData, user?.level || "A1"),
@@ -67,7 +85,8 @@ const FlashcardsPage = () => {
       const multiplier = quality === "hard" ? 0.5 : quality === "ok" ? 1 : 2;
       const baseInterval = prev ? prev.interval : 1;
       const newInterval = Math.max(1, Math.round(baseInterval * multiplier * (quality === "hard" ? 1 : 1.5)));
-      const nextReview = Date.now() + newInterval * 60 * 1000; // minutes for demo (days in real SRS)
+      // Use real days for SRS
+      const nextReview = Date.now() + newInterval * 24 * 60 * 60 * 1000;
 
       const newStates = {
         ...cardStates,
@@ -79,11 +98,22 @@ const FlashcardsPage = () => {
       };
       setCardStates(newStates);
 
-      // Persist SRS to localStorage
-      try {
-        const email = user?.email || "guest";
-        localStorage.setItem(`srs_${email}`, JSON.stringify(newStates));
-      } catch {}
+      // Persist SRS to DB
+      if (session?.user) {
+        supabase
+          .from("flashcard_srs")
+          .upsert(
+            {
+              user_id: session.user.id,
+              card_id: currentCard.id,
+              interval_days: newInterval,
+              next_review: new Date(nextReview).toISOString(),
+              ease: quality === "hard" ? 1 : quality === "ok" ? 2 : 3,
+            },
+            { onConflict: "user_id,card_id" }
+          )
+          .then();
+      }
 
       if (quality !== "hard") {
         setSessionScore((s) => {
@@ -99,7 +129,7 @@ const FlashcardsPage = () => {
       setFlipped(false);
       setCurrentIndex((i) => i + 1);
     },
-    [currentCard, cardStates]
+    [currentCard, cardStates, session?.user?.id, allCards.length]
   );
 
   if (!currentCard) {
@@ -149,8 +179,18 @@ const FlashcardsPage = () => {
               <span className="text-xs text-muted-foreground uppercase tracking-wider mb-3">
                 {t("answer")}
               </span>
-              <span className="text-2xl font-heading font-bold text-foreground text-center">
+              <span className="text-2xl font-heading font-bold text-foreground text-center flex items-center gap-2">
                 {currentCard.back}
+                {ttsSupported && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); speak(currentCard.back); }}
+                    className="text-muted-foreground hover:text-primary transition p-1"
+                    type="button"
+                    aria-label="Lyssna"
+                  >
+                    <Volume2 className="h-5 w-5" />
+                  </button>
+                )}
               </span>
               <span className="text-sm text-muted-foreground mt-2">
                 ({currentCard.front[language === "sv" ? "en" : "sv"]})
