@@ -17,6 +17,7 @@ const VerbExercisePage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { updateProgress } = useProgress();
+  const { logActivity } = useStreak();
   const [selectedTense, setSelectedTense] = useState<string>("presente");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});

@@ -14,6 +14,7 @@ const AdjectiveExercisePage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { updateProgress } = useProgress();
+  const { logActivity } = useStreak();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [masculineAnswer, setMasculineAnswer] = useState("");
   const [feminineAnswer, setFeminineAnswer] = useState("");

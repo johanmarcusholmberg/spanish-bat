@@ -12,6 +12,7 @@ const SentenceBuilderPage = () => {
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const { updateProgress } = useProgress();
+  const { logActivity } = useStreak();
   const [exerciseIndex, setExerciseIndex] = useState(0);
   const [selected, setSelected] = useState<string[]>([]);
   const [available, setAvailable] = useState<string[]>([]);

@@ -16,6 +16,7 @@ const QuizExercisePage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { updateProgress } = useProgress();
+  const { logActivity } = useStreak();
   const [selectedCategory, setSelectedCategory] = useState<string>("greetings");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answer, setAnswer] = useState("");

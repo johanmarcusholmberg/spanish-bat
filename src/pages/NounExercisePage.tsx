@@ -14,6 +14,7 @@ const NounExercisePage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { updateProgress } = useProgress();
+  const { logActivity } = useStreak();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [genderAnswer, setGenderAnswer] = useState<"el" | "la" | "">("");
   const [translationAnswer, setTranslationAnswer] = useState("");
