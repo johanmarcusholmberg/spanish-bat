@@ -286,6 +286,23 @@ export const grammarLessons: GrammarLesson[] = [
           sv: "Adjektivet kommer oftast EFTER substantivet på spanska, till skillnad från svenskan.",
           en: "The adjective usually comes AFTER the noun in Spanish, unlike in English/Swedish."
         }
+      },
+      {
+        heading: { sv: "Oregelbundna adjektiv", en: "Irregular adjectives" },
+        explanation: {
+          sv: "Vissa adjektiv förkortas när de står FÖRE ett maskulint substantiv: bueno → buen, malo → mal, grande → gran, primero → primer, tercero → tercer. 'Grande' blir 'gran' före BÅDE maskulina och feminina substantiv och betyder då 'fantastisk' istället för 'stor'.",
+          en: "Some adjectives shorten when placed BEFORE a masculine noun: bueno → buen, malo → mal, grande → gran, primero → primer, tercero → tercer. 'Grande' becomes 'gran' before BOTH masculine and feminine nouns and then means 'great' instead of 'big'."
+        },
+        examples: [
+          { es: "Un buen amigo. (Un amigo bueno = också ok)", sv: "En bra vän.", en: "A good friend." },
+          { es: "Un mal día.", sv: "En dålig dag.", en: "A bad day." },
+          { es: "Un gran hombre. / Una gran mujer.", sv: "En fantastisk man. / En fantastisk kvinna.", en: "A great man. / A great woman." },
+          { es: "El primer día. / La primera semana.", sv: "Den första dagen. / Den första veckan.", en: "The first day. / The first week." },
+        ],
+        tip: {
+          sv: "Efter substantivet används hela formen: 'un amigo bueno', 'un hombre grande'.",
+          en: "After the noun, use the full form: 'un amigo bueno', 'un hombre grande'."
+        }
       }
     ],
     exercises: [
