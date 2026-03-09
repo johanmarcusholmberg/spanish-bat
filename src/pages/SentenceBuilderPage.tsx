@@ -151,6 +151,15 @@ const SentenceBuilderPage = () => {
           </div>
         )}
 
+        {/* Text indication */}
+        {result && (
+          <p className={`text-sm font-semibold mb-4 ${
+            result === "correct" ? "text-secondary-foreground" : "text-destructive"
+          }`}>
+            {result === "correct" ? `✓ ${t("correct")}` : `✗ ${t("incorrect")}`}
+          </p>
+        )}
+
         {/* Action buttons */}
         {!result ? (
           <div className="flex gap-3">
@@ -171,19 +180,12 @@ const SentenceBuilderPage = () => {
             </button>
           </div>
         ) : (
-          <div className="space-y-3">
-            <div className={`rounded-lg p-3 text-center font-heading font-bold ${
-              result === "correct" ? "bg-secondary/20 text-foreground" : "bg-destructive/10 text-foreground"
-            }`}>
-              {result === "correct" ? t("correct") : t("incorrect")}
-            </div>
-            <button
-              onClick={handleNext}
-              className="w-full py-3 rounded-lg gradient-mint text-secondary-foreground font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
-            >
-              {t("nextQuestion")} <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
+          <button
+            onClick={handleNext}
+            className="w-full py-3 rounded-lg gradient-mint text-secondary-foreground font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
+          >
+            {t("nextQuestion")} <ArrowRight className="h-4 w-4" />
+          </button>
         )}
       </div>
     </AppLayout>
