@@ -5,6 +5,7 @@ import AppLayout from "@/components/AppLayout";
 import { readingTexts } from "@/data/readingTexts";
 import { getItemsForLevel } from "@/data/spanishData";
 import { BookOpen, Check, X, ArrowRight } from "lucide-react";
+import { useProgress } from "@/contexts/ProgressContext";
 
 const ReadingPage = () => {
   const { t, language } = useLanguage();
