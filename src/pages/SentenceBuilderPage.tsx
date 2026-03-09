@@ -5,6 +5,7 @@ import AppLayout from "@/components/AppLayout";
 import { sentenceExercises } from "@/data/sentenceBuilder";
 import { getItemsForLevel } from "@/data/spanishData";
 import { Puzzle, Check, ArrowRight, RotateCcw } from "lucide-react";
+import { useProgress } from "@/contexts/ProgressContext";
 
 const SentenceBuilderPage = () => {
   const { t, language } = useLanguage();
