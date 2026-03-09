@@ -69,14 +69,21 @@ const FlashcardsPage = () => {
       const newInterval = Math.max(1, Math.round(baseInterval * multiplier * (quality === "hard" ? 1 : 1.5)));
       const nextReview = Date.now() + newInterval * 60 * 1000; // minutes for demo (days in real SRS)
 
-      setCardStates((s) => ({
-        ...s,
+      const newStates = {
+        ...cardStates,
         [currentCard.id]: {
           interval: newInterval,
           nextReview,
           ease: quality === "hard" ? 1 : quality === "ok" ? 2 : 3,
         },
-      }));
+      };
+      setCardStates(newStates);
+
+      // Persist SRS to localStorage
+      try {
+        const email = user?.email || "guest";
+        localStorage.setItem(`srs_${email}`, JSON.stringify(newStates));
+      } catch {}
 
       if (quality !== "hard") {
         setSessionScore((s) => {
