@@ -188,6 +188,14 @@ const translations: Translations = {
   activeDays: { sv: "Aktiva dagar", en: "Active Days" },
   exercisesUnit: { sv: "övningar", en: "exercises" },
   activity: { sv: "Aktivitet", en: "Activity" },
+
+  // Admin
+  adminPanel: { sv: "Admin-panel", en: "Admin Panel" },
+  totalUsers: { sv: "Totalt antal användare", en: "Total Users" },
+  activeStreaks: { sv: "Aktiva streaks", en: "Active Streaks" },
+  adminCount: { sv: "Administratörer", en: "Administrators" },
+  adminRoles: { sv: "Roller", en: "Roles" },
+  registered: { sv: "Registrerad", en: "Registered" },
 };
 
 interface LanguageContextType {

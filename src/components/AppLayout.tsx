@@ -31,6 +31,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
     { to: "/exercises", icon: BookOpen, label: t("exercises") },
     { to: "/stats", icon: BarChart3, label: t("statistics") },
     { to: "/profile", icon: User, label: t("profile") },
+    ...(isAdmin ? [{ to: "/admin", icon: Shield, label: t("adminPanel") }] : []),
   ];
 
   return (
