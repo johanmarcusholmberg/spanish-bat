@@ -13,6 +13,7 @@ interface UserProfile {
 
 interface AuthContextType {
   isLoggedIn: boolean;
+  isAdmin: boolean;
   user: UserProfile | null;
   session: Session | null;
   loading: boolean;
@@ -27,6 +28,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({
   isLoggedIn: false,
+  isAdmin: false,
   user: null,
   session: null,
   loading: true,
@@ -43,6 +45,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const fetchProfile = async (authUser: User) => {
     const { data } = await supabase
@@ -66,6 +69,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         learningFrom: "sv",
       });
     }
+
+    // Check admin role
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", authUser.id)
+      .eq("role", "admin")
+      .maybeSingle();
+    setIsAdmin(!!roleData);
   };
 
   useEffect(() => {
@@ -152,8 +164,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{
+       value={{
         isLoggedIn,
+        isAdmin,
         user,
         session,
         loading,

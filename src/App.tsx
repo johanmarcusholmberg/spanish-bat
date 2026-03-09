@@ -24,6 +24,7 @@ import ReadingPage from "./pages/ReadingPage";
 import SentenceBuilderPage from "./pages/SentenceBuilderPage";
 import StatsPage from "./pages/StatsPage";
 import NotFound from "./pages/NotFound";
+import AdminPage from "./pages/AdminPage";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const AppRoutes = () => (
     <Route path="/learn/reading" element={<ProtectedRoute><ReadingPage /></ProtectedRoute>} />
     <Route path="/learn/sentences" element={<ProtectedRoute><SentenceBuilderPage /></ProtectedRoute>} />
     <Route path="/stats" element={<ProtectedRoute><StatsPage /></ProtectedRoute>} />
+    <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );

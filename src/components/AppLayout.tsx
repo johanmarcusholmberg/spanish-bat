@@ -3,11 +3,11 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import batAvatar from "@/assets/bat-avatar.png";
-import { Home, BookOpen, User, LogOut, BarChart3, Moon, Sun } from "lucide-react";
+import { Home, BookOpen, User, LogOut, BarChart3, Moon, Sun, Shield } from "lucide-react";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const { t } = useLanguage();
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [dark, setDark] = useState(() => {
     if (typeof window !== "undefined") {
@@ -31,6 +31,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
     { to: "/exercises", icon: BookOpen, label: t("exercises") },
     { to: "/stats", icon: BarChart3, label: t("statistics") },
     { to: "/profile", icon: User, label: t("profile") },
+    ...(isAdmin ? [{ to: "/admin", icon: Shield, label: t("adminPanel") }] : []),
   ];
 
   return (
