@@ -6,6 +6,7 @@ import { flashcardData } from "@/data/flashcardData";
 import { getItemsForLevel } from "@/data/spanishData";
 import { RotateCcw, ThumbsUp, ThumbsDown, Layers } from "lucide-react";
 import { useProgress } from "@/contexts/ProgressContext";
+import { useStreak } from "@/contexts/StreakContext";
 
 interface CardState {
   interval: number; // days until next review
