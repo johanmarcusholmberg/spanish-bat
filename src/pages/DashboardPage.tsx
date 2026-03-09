@@ -20,7 +20,7 @@ const DashboardPage = () => {
   ];
 
 
-  const renderGrid = (items: typeof exercises) => (
+  const renderGrid = (items: typeof learnItems) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {items.map((ex) => (
         <button
