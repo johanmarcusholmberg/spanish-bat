@@ -73,6 +73,8 @@ export const NextStepsCard = () => {
         return t("recommendationLowest");
       case "reviewContent":
         return t("recommendationReview");
+      case "almostFinished":
+        return t("recommendationAlmostFinished");
       default:
         return t("recommendationContinue");
     }
