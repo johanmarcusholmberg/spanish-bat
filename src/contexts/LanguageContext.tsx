@@ -78,6 +78,8 @@ const translations: Translations = {
   readingDesc: { sv: "Läs nivåanpassade texter och svara på frågor", en: "Read level-adapted texts and answer questions" },
   sentenceBuilder: { sv: "Meningsbyggare", en: "Sentence Builder" },
   sentenceBuilderDesc: { sv: "Bygg meningar genom att sätta ord i rätt ordning", en: "Build sentences by putting words in the correct order" },
+  conversation: { sv: "Konversation", en: "Conversation" },
+  conversationDesc: { sv: "Öva vardagssamtal med en AI-partner på spanska", en: "Practice everyday conversations with an AI partner in Spanish" },
   tapToFlip: { sv: "Tryck för att vända", en: "Tap to flip" },
   answer: { sv: "Svar", en: "Answer" },
   hard: { sv: "Svårt", en: "Hard" },
