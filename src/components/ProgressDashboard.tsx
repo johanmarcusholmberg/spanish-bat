@@ -137,7 +137,7 @@ export const LevelAdvancementCard = () => {
               <span>{t("progressToAdvance")}</span>
               <span className="font-semibold">{progress.overall}/80%</span>
             </div>
-            <Progress value={progress.overall} className="h-2" />
+            <Progress value={(progress.overall / 80) * 100} className="h-2" />
             <p className="text-xs text-muted-foreground mt-2">{t("completeAllCategories")}</p>
           </div>
         )}
