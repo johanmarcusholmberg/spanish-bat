@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import batAvatar from "@/assets/bat-avatar.png";
+import logo from "@/assets/murcielago-logo.png";
 import { Home, BookOpen, User, LogOut, BarChart3, Moon, Sun, Shield } from "lucide-react";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
@@ -39,8 +39,8 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
       {/* Top bar */}
       <header className="bg-card border-b border-border px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img src={batAvatar} alt="MurciélagoLingo" className="w-8 h-8" />
-          <span className="font-heading font-bold text-foreground text-lg">MurciélagoLingo</span>
+          <img src={logo} alt="MurciélagoLingo Logo" className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(255,181,167,0.6)]" />
+          <span className="font-heading font-bold text-foreground text-lg tracking-tight">MurciélagoLingo</span>
         </div>
         <div className="flex items-center gap-3">
           <button
