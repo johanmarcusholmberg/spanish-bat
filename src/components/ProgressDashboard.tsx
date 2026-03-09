@@ -135,9 +135,9 @@ export const LevelAdvancementCard = () => {
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>{t("progressToAdvance")}</span>
-              <span className="font-semibold">{progress.overall}/80%</span>
+              <span className="font-semibold">{progress.overall}%</span>
             </div>
-            <Progress value={(progress.overall / 80) * 100} className="h-2" />
+            <Progress value={progress.overall} className="h-2" />
             <p className="text-xs text-muted-foreground mt-2">{t("completeAllCategories")}</p>
           </div>
         )}
