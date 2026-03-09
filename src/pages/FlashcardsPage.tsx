@@ -6,6 +6,7 @@ import { flashcardData } from "@/data/flashcardData";
 import { getItemsForLevel } from "@/data/spanishData";
 import { RotateCcw, ThumbsUp, ThumbsDown, Layers } from "lucide-react";
 import { useProgress } from "@/contexts/ProgressContext";
+import { useStreak } from "@/contexts/StreakContext";
 
 interface CardState {
   interval: number; // days until next review
@@ -17,10 +18,20 @@ const FlashcardsPage = () => {
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const { updateProgress } = useProgress();
+  const { logActivity } = useStreak();
   const [flipped, setFlipped] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cardStates, setCardStates] = useState<Record<string, CardState>>({});
   const [sessionScore, setSessionScore] = useState({ correct: 0, incorrect: 0 });
+
+  // Load SRS states from localStorage
+  useEffect(() => {
+    const email = user?.email || "guest";
+    try {
+      const saved = localStorage.getItem(`srs_${email}`);
+      if (saved) setCardStates(JSON.parse(saved));
+    } catch {}
+  }, [user?.email]);
 
   const allCards = useMemo(
     () => getItemsForLevel(flashcardData, user?.level || "A1"),
@@ -58,14 +69,21 @@ const FlashcardsPage = () => {
       const newInterval = Math.max(1, Math.round(baseInterval * multiplier * (quality === "hard" ? 1 : 1.5)));
       const nextReview = Date.now() + newInterval * 60 * 1000; // minutes for demo (days in real SRS)
 
-      setCardStates((s) => ({
-        ...s,
+      const newStates = {
+        ...cardStates,
         [currentCard.id]: {
           interval: newInterval,
           nextReview,
           ease: quality === "hard" ? 1 : quality === "ok" ? 2 : 3,
         },
-      }));
+      };
+      setCardStates(newStates);
+
+      // Persist SRS to localStorage
+      try {
+        const email = user?.email || "guest";
+        localStorage.setItem(`srs_${email}`, JSON.stringify(newStates));
+      } catch {}
 
       if (quality !== "hard") {
         setSessionScore((s) => {
@@ -77,6 +95,7 @@ const FlashcardsPage = () => {
         setSessionScore((s) => ({ ...s, incorrect: s.incorrect + 1 }));
       }
 
+      logActivity();
       setFlipped(false);
       setCurrentIndex((i) => i + 1);
     },

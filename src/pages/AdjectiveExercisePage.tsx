@@ -7,12 +7,14 @@ import { checkAnswer } from "@/lib/answerUtils";
 import { ArrowLeft, Check, X, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProgress } from "@/contexts/ProgressContext";
+import { useStreak } from "@/contexts/StreakContext";
 
 const AdjectiveExercisePage = () => {
   const { language, t } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { updateProgress } = useProgress();
+  const { logActivity } = useStreak();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [masculineAnswer, setMasculineAnswer] = useState("");
   const [feminineAnswer, setFeminineAnswer] = useState("");
@@ -39,6 +41,7 @@ const AdjectiveExercisePage = () => {
   const femCorrect = checkAnswer(feminineAnswer, current.feminine);
 
   const handleNext = () => {
+    logActivity();
     const newCompleted = completedAdj + 1;
     setCompletedAdj(newCompleted);
     updateProgress("exercises", newCompleted, available.length);

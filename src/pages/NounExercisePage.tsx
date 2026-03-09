@@ -7,12 +7,14 @@ import { checkAnswer } from "@/lib/answerUtils";
 import { ArrowLeft, Check, X, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProgress } from "@/contexts/ProgressContext";
+import { useStreak } from "@/contexts/StreakContext";
 
 const NounExercisePage = () => {
   const { language, t } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { updateProgress } = useProgress();
+  const { logActivity } = useStreak();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [genderAnswer, setGenderAnswer] = useState<"el" | "la" | "">("");
   const [translationAnswer, setTranslationAnswer] = useState("");
@@ -41,6 +43,7 @@ const NounExercisePage = () => {
   const handleCheck = () => setShowResults(true);
 
   const handleNext = () => {
+    logActivity();
     const newCompleted = completedNouns + 1;
     setCompletedNouns(newCompleted);
     updateProgress("exercises", newCompleted, availableNouns.length);

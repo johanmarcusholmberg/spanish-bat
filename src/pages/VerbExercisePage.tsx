@@ -7,6 +7,7 @@ import { checkAnswer } from "@/lib/answerUtils";
 import { ArrowLeft, Check, X, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProgress } from "@/contexts/ProgressContext";
+import { useStreak } from "@/contexts/StreakContext";
 
 const pronouns = ["yo", "tú", "él/ella", "nosotros", "vosotros", "ellos"] as const;
 const pronounKeys = ["yo", "tú", "él", "nosotros", "vosotros", "ellos"] as const;
@@ -16,6 +17,7 @@ const VerbExercisePage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { updateProgress } = useProgress();
+  const { logActivity } = useStreak();
   const [selectedTense, setSelectedTense] = useState<string>("presente");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -53,6 +55,7 @@ const VerbExercisePage = () => {
   };
 
   const handleNext = () => {
+    logActivity();
     const newCompleted = completedVerbs + 1;
     setCompletedVerbs(newCompleted);
     updateProgress("exercises", newCompleted, availableVerbs.length);

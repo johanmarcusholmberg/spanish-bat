@@ -173,6 +173,21 @@ const translations: Translations = {
   completeAllCategories: { sv: "Slutför övningar i alla kategorier för att låsa upp nästa nivå", en: "Complete exercises in all categories to unlock the next level" },
   complete: { sv: "slutfört", en: "complete" },
   recommendationAlmostFinished: { sv: "Nästan klart! Slutför detta för att öka ditt framsteg.", en: "Almost done! Finish this to boost your progress." },
+
+  // Streak
+  streakTitle: { sv: "Din streak", en: "Your Streak" },
+  currentStreak: { sv: "Nuvarande", en: "Current" },
+  longestStreak: { sv: "Längsta", en: "Longest" },
+  totalExercises: { sv: "Totalt", en: "Total" },
+
+  // Stats
+  statistics: { sv: "Statistik", en: "Statistics" },
+  weeklyActivity: { sv: "Veckoaktivitet", en: "Weekly Activity" },
+  categoryBreakdown: { sv: "Kategorier", en: "Category Breakdown" },
+  detailedProgress: { sv: "Detaljerat framsteg", en: "Detailed Progress" },
+  activeDays: { sv: "Aktiva dagar", en: "Active Days" },
+  exercisesUnit: { sv: "övningar", en: "exercises" },
+  activity: { sv: "Aktivitet", en: "Activity" },
 };
 
 interface LanguageContextType {

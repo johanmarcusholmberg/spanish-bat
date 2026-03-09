@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import batAvatar from "@/assets/bat-avatar.png";
-import { Home, BookOpen, User, LogOut } from "lucide-react";
+import { Home, BookOpen, User, LogOut, BarChart3 } from "lucide-react";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const { t } = useLanguage();
@@ -18,6 +18,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const navItems = [
     { to: "/dashboard", icon: Home, label: t("dashboard") },
     { to: "/exercises", icon: BookOpen, label: t("exercises") },
+    { to: "/stats", icon: BarChart3, label: t("statistics") },
     { to: "/profile", icon: User, label: t("profile") },
   ];
 

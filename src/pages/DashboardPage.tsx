@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import batAvatar from "@/assets/bat-avatar.png";
 import { ProgressOverview, NextStepsCard, LevelAdvancementCard } from "@/components/ProgressDashboard";
+import { StreakCard } from "@/components/StreakCard";
 
 const DashboardPage = () => {
   const { t } = useLanguage();
@@ -20,6 +21,9 @@ const DashboardPage = () => {
             </h1>
           </div>
         </div>
+
+        {/* Streak */}
+        <StreakCard />
 
         {/* Progress Dashboard Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

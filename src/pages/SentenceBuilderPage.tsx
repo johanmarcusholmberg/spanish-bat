@@ -6,11 +6,13 @@ import { sentenceExercises } from "@/data/sentenceBuilder";
 import { getItemsForLevel } from "@/data/spanishData";
 import { Puzzle, Check, ArrowRight, RotateCcw } from "lucide-react";
 import { useProgress } from "@/contexts/ProgressContext";
+import { useStreak } from "@/contexts/StreakContext";
 
 const SentenceBuilderPage = () => {
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const { updateProgress } = useProgress();
+  const { logActivity } = useStreak();
   const [exerciseIndex, setExerciseIndex] = useState(0);
   const [selected, setSelected] = useState<string[]>([]);
   const [available, setAvailable] = useState<string[]>([]);
@@ -68,10 +70,11 @@ const SentenceBuilderPage = () => {
   }, [selected, current]);
 
   const handleNext = useCallback(() => {
+    logActivity();
     const newIndex = exerciseIndex + 1;
     updateProgress("sentences", newIndex, exercises.length);
     setExerciseIndex((i) => i + 1);
-  }, [exerciseIndex, exercises.length, updateProgress]);
+  }, [exerciseIndex, exercises.length, updateProgress, logActivity]);
 
   const handleReset = useCallback(() => {
     if (current) {

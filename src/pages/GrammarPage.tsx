@@ -8,6 +8,7 @@ import {
   Lock, Trophy, ArrowRight, RotateCcw, GraduationCap, Pencil, Star, ArrowUp
 } from "lucide-react";
 import { useProgress } from "@/contexts/ProgressContext";
+import { useStreak } from "@/contexts/StreakContext";
 
 type LessonStep = "learn" | "practice" | "result";
 
@@ -35,6 +36,7 @@ const GrammarPage = () => {
   const { t, language } = useLanguage();
   const { user, updateProfile } = useAuth();
   const { updateProgress: updateGlobalProgress } = useProgress();
+  const { logActivity } = useStreak();
   const [openLesson, setOpenLesson] = useState<string | null>(null);
   const [step, setStep] = useState<LessonStep>("learn");
   const [progress, setProgress] = useState<Record<string, LessonProgress>>({});
@@ -158,6 +160,7 @@ const GrammarPage = () => {
         // Update global progress
         const completedLessons = Object.values(newProgress).filter(p => p.completed).length;
         updateGlobalProgress("grammar", completedLessons, lessons.length);
+        logActivity();
       }
 
       setExerciseResults(finalResults);
