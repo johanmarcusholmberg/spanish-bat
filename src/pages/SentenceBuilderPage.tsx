@@ -50,6 +50,11 @@ const SentenceBuilderPage = () => {
     setAvailable((a) => [...a, word]);
   }, [result]);
 
+  const correctWordAt = useCallback((index: number): boolean => {
+    if (!current) return false;
+    return selected[index] === current.correctOrder[index];
+  }, [selected, current]);
+
   const handleCheck = useCallback(() => {
     if (!current) return;
     const isCorrect = selected.join(" ") === current.correctOrder.join(" ");
@@ -104,21 +109,24 @@ const SentenceBuilderPage = () => {
           {selected.length === 0 && (
             <span className="text-muted-foreground text-sm">{t("tapWordsToOrder")}</span>
           )}
-          {selected.map((word, i) => (
-            <button
-              key={`sel-${i}`}
-              onClick={() => handleDeselectWord(word, i)}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
-                result === "correct"
-                  ? "bg-secondary text-secondary-foreground"
-                  : result === "incorrect"
-                  ? "bg-destructive/10 text-destructive"
-                  : "gradient-peach text-primary-foreground shadow-warm hover:opacity-90"
-              }`}
-            >
-              {word}
-            </button>
-          ))}
+          {selected.map((word, i) => {
+            const wordCorrect = result ? correctWordAt(i) : null;
+            return (
+              <button
+                key={`sel-${i}`}
+                onClick={() => handleDeselectWord(word, i)}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
+                  wordCorrect === true
+                    ? "bg-secondary text-secondary-foreground ring-2 ring-secondary"
+                    : wordCorrect === false
+                    ? "bg-destructive/15 text-destructive ring-2 ring-destructive"
+                    : "gradient-peach text-primary-foreground shadow-warm hover:opacity-90"
+                }`}
+              >
+                {word}
+              </button>
+            );
+          })}
         </div>
 
         {/* Available words */}
@@ -143,6 +151,15 @@ const SentenceBuilderPage = () => {
           </div>
         )}
 
+        {/* Text indication */}
+        {result && (
+          <p className={`text-sm font-semibold mb-4 ${
+            result === "correct" ? "text-secondary-foreground" : "text-destructive"
+          }`}>
+            {result === "correct" ? `✓ ${t("correct")}` : `✗ ${t("incorrect")}`}
+          </p>
+        )}
+
         {/* Action buttons */}
         {!result ? (
           <div className="flex gap-3">
@@ -163,19 +180,12 @@ const SentenceBuilderPage = () => {
             </button>
           </div>
         ) : (
-          <div className="space-y-3">
-            <div className={`rounded-lg p-3 text-center font-heading font-bold ${
-              result === "correct" ? "bg-secondary/20 text-foreground" : "bg-destructive/10 text-foreground"
-            }`}>
-              {result === "correct" ? t("correct") : t("incorrect")}
-            </div>
-            <button
-              onClick={handleNext}
-              className="w-full py-3 rounded-lg gradient-mint text-secondary-foreground font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
-            >
-              {t("nextQuestion")} <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
+          <button
+            onClick={handleNext}
+            className="w-full py-3 rounded-lg gradient-mint text-secondary-foreground font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
+          >
+            {t("nextQuestion")} <ArrowRight className="h-4 w-4" />
+          </button>
         )}
       </div>
     </AppLayout>
