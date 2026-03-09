@@ -6,6 +6,7 @@ import { readingTexts } from "@/data/readingTexts";
 import { getItemsForLevel } from "@/data/spanishData";
 import { BookOpen, Check, X, ArrowRight } from "lucide-react";
 import { useProgress } from "@/contexts/ProgressContext";
+import { useStreak } from "@/contexts/StreakContext";
 
 const ReadingPage = () => {
   const { t, language } = useLanguage();
