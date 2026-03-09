@@ -7,6 +7,7 @@ import { checkAnswer } from "@/lib/answerUtils";
 import { ArrowLeft, Check, X, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProgress } from "@/contexts/ProgressContext";
+import { useStreak } from "@/contexts/StreakContext";
 
 const pronouns = ["yo", "tú", "él/ella", "nosotros", "vosotros", "ellos"] as const;
 const pronounKeys = ["yo", "tú", "él", "nosotros", "vosotros", "ellos"] as const;
