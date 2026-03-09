@@ -6,6 +6,7 @@ import { verbs, tenseNames, getItemsForLevel } from "@/data/spanishData";
 import { checkAnswer } from "@/lib/answerUtils";
 import { ArrowLeft, Check, X, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useProgress } from "@/contexts/ProgressContext";
 
 const pronouns = ["yo", "tú", "él/ella", "nosotros", "vosotros", "ellos"] as const;
 const pronounKeys = ["yo", "tú", "él", "nosotros", "vosotros", "ellos"] as const;
@@ -14,11 +15,13 @@ const VerbExercisePage = () => {
   const { language, t } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { updateProgress } = useProgress();
   const [selectedTense, setSelectedTense] = useState<string>("presente");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState(0);
+  const [completedVerbs, setCompletedVerbs] = useState(0);
 
   const availableVerbs = useMemo(
     () => getItemsForLevel(verbs, user?.level || "A1"),
@@ -50,6 +53,9 @@ const VerbExercisePage = () => {
   };
 
   const handleNext = () => {
+    const newCompleted = completedVerbs + 1;
+    setCompletedVerbs(newCompleted);
+    updateProgress("exercises", newCompleted, availableVerbs.length);
     setCurrentIndex((prev) => (prev + 1) % availableVerbs.length);
     setAnswers({});
     setShowResults(false);

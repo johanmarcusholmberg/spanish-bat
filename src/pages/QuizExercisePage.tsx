@@ -6,6 +6,7 @@ import { quizItems, getItemsForLevel } from "@/data/spanishData";
 import { checkAnswer } from "@/lib/answerUtils";
 import { ArrowLeft, Check, X, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useProgress } from "@/contexts/ProgressContext";
 
 const categories = ["greetings", "dailyPhrases", "atTheStore", "atTheRestaurant", "vocabulary"];
 
@@ -13,6 +14,7 @@ const QuizExercisePage = () => {
   const { language, t } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { updateProgress } = useProgress();
   const [selectedCategory, setSelectedCategory] = useState<string>("greetings");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answer, setAnswer] = useState("");
@@ -44,6 +46,8 @@ const QuizExercisePage = () => {
   };
 
   const handleNext = () => {
+    const newAnswered = totalAnswered + 1;
+    updateProgress("exercises", newAnswered, available.length);
     setCurrentIndex((prev) => (prev + 1) % available.length);
     setAnswer("");
     setShowResult(false);

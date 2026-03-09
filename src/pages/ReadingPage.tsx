@@ -5,10 +5,12 @@ import AppLayout from "@/components/AppLayout";
 import { readingTexts } from "@/data/readingTexts";
 import { getItemsForLevel } from "@/data/spanishData";
 import { BookOpen, Check, X, ArrowRight } from "lucide-react";
+import { useProgress } from "@/contexts/ProgressContext";
 
 const ReadingPage = () => {
   const { t, language } = useLanguage();
   const { user } = useAuth();
+  const { updateProgress } = useProgress();
   const [textIndex, setTextIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -35,6 +37,8 @@ const ReadingPage = () => {
   const handleSubmit = () => setSubmitted(true);
 
   const handleNext = () => {
+    const newCompleted = textIndex + 1;
+    updateProgress("reading", newCompleted, texts.length);
     setTextIndex((i) => i + 1);
     setAnswers({});
     setSubmitted(false);

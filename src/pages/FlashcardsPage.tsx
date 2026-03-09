@@ -5,6 +5,7 @@ import AppLayout from "@/components/AppLayout";
 import { flashcardData } from "@/data/flashcardData";
 import { getItemsForLevel } from "@/data/spanishData";
 import { RotateCcw, ThumbsUp, ThumbsDown, Layers } from "lucide-react";
+import { useProgress } from "@/contexts/ProgressContext";
 
 interface CardState {
   interval: number; // days until next review
@@ -15,6 +16,7 @@ interface CardState {
 const FlashcardsPage = () => {
   const { t, language } = useLanguage();
   const { user } = useAuth();
+  const { updateProgress } = useProgress();
   const [flipped, setFlipped] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cardStates, setCardStates] = useState<Record<string, CardState>>({});
@@ -66,7 +68,11 @@ const FlashcardsPage = () => {
       }));
 
       if (quality !== "hard") {
-        setSessionScore((s) => ({ ...s, correct: s.correct + 1 }));
+        setSessionScore((s) => {
+          const newCorrect = s.correct + 1;
+          updateProgress("flashcards", newCorrect, allCards.length);
+          return { ...s, correct: newCorrect };
+        });
       } else {
         setSessionScore((s) => ({ ...s, incorrect: s.incorrect + 1 }));
       }

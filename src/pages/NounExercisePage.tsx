@@ -6,15 +6,18 @@ import { nouns, getItemsForLevel } from "@/data/spanishData";
 import { checkAnswer } from "@/lib/answerUtils";
 import { ArrowLeft, Check, X, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useProgress } from "@/contexts/ProgressContext";
 
 const NounExercisePage = () => {
   const { language, t } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { updateProgress } = useProgress();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [genderAnswer, setGenderAnswer] = useState<"el" | "la" | "">("");
   const [translationAnswer, setTranslationAnswer] = useState("");
   const [showResults, setShowResults] = useState(false);
+  const [completedNouns, setCompletedNouns] = useState(0);
 
   const availableNouns = useMemo(
     () => getItemsForLevel(nouns, user?.level || "A1"),
@@ -38,6 +41,9 @@ const NounExercisePage = () => {
   const handleCheck = () => setShowResults(true);
 
   const handleNext = () => {
+    const newCompleted = completedNouns + 1;
+    setCompletedNouns(newCompleted);
+    updateProgress("exercises", newCompleted, availableNouns.length);
     setCurrentIndex((prev) => (prev + 1) % availableNouns.length);
     setGenderAnswer("");
     setTranslationAnswer("");

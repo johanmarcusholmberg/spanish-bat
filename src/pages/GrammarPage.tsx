@@ -7,6 +7,7 @@ import {
   BookOpen, ChevronRight, ChevronDown, Lightbulb, Check, X,
   Lock, Trophy, ArrowRight, RotateCcw, GraduationCap, Pencil, Star, ArrowUp
 } from "lucide-react";
+import { useProgress } from "@/contexts/ProgressContext";
 
 type LessonStep = "learn" | "practice" | "result";
 
@@ -33,6 +34,7 @@ function saveProgress(email: string, progress: Record<string, LessonProgress>) {
 const GrammarPage = () => {
   const { t, language } = useLanguage();
   const { user, updateProfile } = useAuth();
+  const { updateProgress: updateGlobalProgress } = useProgress();
   const [openLesson, setOpenLesson] = useState<string | null>(null);
   const [step, setStep] = useState<LessonStep>("learn");
   const [progress, setProgress] = useState<Record<string, LessonProgress>>({});
@@ -152,6 +154,10 @@ const GrammarPage = () => {
         };
         setProgress(newProgress);
         saveProgress(user.email, newProgress);
+
+        // Update global progress
+        const completedLessons = Object.values(newProgress).filter(p => p.completed).length;
+        updateGlobalProgress("grammar", completedLessons, lessons.length);
       }
 
       setExerciseResults(finalResults);
