@@ -12,10 +12,12 @@ const AdjectiveExercisePage = () => {
   const { language, t } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { updateProgress } = useProgress();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [masculineAnswer, setMasculineAnswer] = useState("");
   const [feminineAnswer, setFeminineAnswer] = useState("");
   const [showResults, setShowResults] = useState(false);
+  const [completedAdj, setCompletedAdj] = useState(0);
 
   const available = useMemo(
     () => getItemsForLevel(adjectives, user?.level || "A1"),
