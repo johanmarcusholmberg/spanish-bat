@@ -57,6 +57,25 @@ export const grammarLessons: GrammarLesson[] = [
         }
       },
       {
+        heading: { sv: "Oregelbundna substantiv", en: "Irregular nouns" },
+        explanation: {
+          sv: "Vissa substantiv följer inte de vanliga reglerna. Viktiga undantag: substantiv som slutar på -ma, -ta, -pa är ofta maskulina trots att de slutar på -a. Några feminina ord kan ha 'el' framför sig när de börjar med betonad a/ha för att undvika upprepning av ljud.",
+          en: "Some nouns don't follow the usual patterns. Important exceptions: nouns ending in -ma, -ta, -pa are often masculine despite ending in -a. Some feminine words use 'el' when starting with stressed a/ha to avoid repetition of sounds."
+        },
+        examples: [
+          { es: "el problema", sv: "problemet", en: "the problem" },
+          { es: "el tema", sv: "temat", en: "the theme" },
+          { es: "el día", sv: "dagen", en: "the day" },
+          { es: "el agua (feminine!)", sv: "vattnet", en: "the water" },
+          { es: "la mano", sv: "handen", en: "the hand" },
+          { es: "la foto", sv: "fotot", en: "the photo" },
+        ],
+        tip: {
+          sv: "Kom ihåg: 'el agua' är femininum! Man säger 'el agua fría' (inte frío).",
+          en: "Remember: 'el agua' is feminine! You say 'el agua fría' (not frío)."
+        }
+      },
+      {
         heading: { sv: "Pluralformer", en: "Plural forms" },
         explanation: {
           sv: "I plural blir 'el' till 'los' och 'la' till 'las'. Substantivet får också en ändelse: -s om det slutar på vokal, -es om det slutar på konsonant.",
@@ -65,6 +84,8 @@ export const grammarLessons: GrammarLesson[] = [
         examples: [
           { es: "los libros", sv: "böckerna", en: "the books" },
           { es: "las casas", sv: "husen", en: "the houses" },
+          { es: "los problemas", sv: "problemen", en: "the problems" },
+          { es: "las aguas", sv: "vattnen", en: "the waters" },
         ]
       }
     ],
@@ -72,10 +93,12 @@ export const grammarLessons: GrammarLesson[] = [
       { type: "fill-blank", question: { sv: "Fyll i rätt artikel", en: "Fill in the correct article" }, prompt: "___ libro", answer: "el", hint: { sv: "'Libro' slutar på -o och är maskulint", en: "'Libro' ends in -o and is masculine" } },
       { type: "fill-blank", question: { sv: "Fyll i rätt artikel", en: "Fill in the correct article" }, prompt: "___ casa", answer: "la", hint: { sv: "'Casa' slutar på -a och är feminint", en: "'Casa' ends in -a and is feminine" } },
       { type: "multiple-choice", question: { sv: "Vilken artikel passar? ___ mesa", en: "Which article fits? ___ mesa" }, answer: "la", options: ["el", "la", "los", "las"], hint: { sv: "'Mesa' är femininum singular", en: "'Mesa' is feminine singular" } },
-      { type: "multiple-choice", question: { sv: "Vilken artikel passar? ___ libros", en: "Which article fits? ___ libros" }, answer: "los", options: ["el", "la", "los", "las"], hint: { sv: "'Libros' är maskulinum plural", en: "'Libros' is masculine plural" } },
-      { type: "fill-blank", question: { sv: "Fyll i rätt artikel", en: "Fill in the correct article" }, prompt: "___ gatos", answer: "los", hint: { sv: "Plural av 'el' är 'los'", en: "Plural of 'el' is 'los'" } },
-      { type: "translate", question: { sv: "Översätt: böckerna", en: "Translate: the books" }, answer: "los libros", hint: { sv: "'Bok' = 'libro' (maskulint), plural", en: "'Book' = 'libro' (masculine), plural" } },
-      { type: "error-correction", question: { sv: "Rätta felet i meningen", en: "Correct the error in the sentence" }, incorrectSentence: "El casa es grande.", answer: "La casa es grande.", hint: { sv: "'Casa' är femininum, ska ha 'la'", en: "'Casa' is feminine, needs 'la'" } },
+      { type: "multiple-choice", question: { sv: "Vilken artikel passar? ___ problema (oregelbundet!)", en: "Which article fits? ___ problema (irregular!)" }, answer: "el", options: ["el", "la", "los", "las"], hint: { sv: "'Problema' slutar på -ma och är maskulint!", en: "'Problema' ends in -ma and is masculine!" } },
+      { type: "fill-blank", question: { sv: "Fyll i rätt artikel", en: "Fill in the correct article" }, prompt: "___ mano", answer: "la", hint: { sv: "Oregelbundet: 'mano' är femininum trots -o!", en: "Irregular: 'mano' is feminine despite -o!" } },
+      { type: "fill-blank", question: { sv: "Fyll i rätt artikel", en: "Fill in the correct article" }, prompt: "___ agua", answer: "el", hint: { sv: "Femininum ord på betonad a använder 'el'", en: "Feminine words with stressed a use 'el'" } },
+      { type: "multiple-choice", question: { sv: "Vilken artikel? ___ día", en: "Which article? ___ día" }, answer: "el", options: ["el", "la", "los", "las"], hint: { sv: "Oregelbundet: 'día' är maskulint!", en: "Irregular: 'día' is masculine!" } },
+      { type: "translate", question: { sv: "Översätt: problemen", en: "Translate: the problems" }, answer: "los problemas", hint: { sv: "'Problema' är maskulint plural", en: "'Problema' is masculine plural" } },
+      { type: "error-correction", question: { sv: "Rätta felet i meningen", en: "Correct the error in the sentence" }, incorrectSentence: "La problema es difícil.", answer: "El problema es difícil.", hint: { sv: "'Problema' är maskulint trots -a", en: "'Problema' is masculine despite -a" } },
     ]
   },
   {
@@ -200,6 +223,23 @@ export const grammarLessons: GrammarLesson[] = [
           { es: "Yo vivo en Suecia.", sv: "Jag bor i Sverige.", en: "I live in Sweden." },
           { es: "Ellos viven aquí.", sv: "De bor här.", en: "They live here." },
         ]
+      },
+      {
+        heading: { sv: "Oregelbundna verb i presens", en: "Irregular verbs in present tense" },
+        explanation: {
+          sv: "Några av de vanligaste verben är helt oregelbundna och måste läras in utantill. De viktigaste är: tener (ha), hacer (göra), poner (lägga), salir (gå ut), venir (komma), decir (säga).",
+          en: "Some of the most common verbs are completely irregular and must be memorized. The most important are: tener (to have), hacer (to do/make), poner (to put), salir (to leave), venir (to come), decir (to say)."
+        },
+        examples: [
+          { es: "Yo tengo un gato.", sv: "Jag har en katt.", en: "I have a cat." },
+          { es: "Tú haces la tarea.", sv: "Du gör läxan.", en: "You do the homework." },
+          { es: "Él viene mañana.", sv: "Han kommer imorgon.", en: "He comes tomorrow." },
+          { es: "Yo salgo a las ocho.", sv: "Jag går ut klockan åtta.", en: "I leave at eight." },
+        ],
+        tip: {
+          sv: "Första person (yo) är ofta mest oregelbunden: tengo, hago, pongo, salgo, vengo, digo.",
+          en: "First person (yo) is often the most irregular: tengo, hago, pongo, salgo, vengo, digo."
+        }
       }
     ],
     exercises: [
@@ -207,9 +247,12 @@ export const grammarLessons: GrammarLesson[] = [
       { type: "fill-blank", question: { sv: "Böj verbet 'comer' (ella)", en: "Conjugate 'comer' (ella)" }, prompt: "Ella ___ fruta.", answer: "come", hint: { sv: "-er verb: él/ella → -e", en: "-er verb: él/ella → -e" } },
       { type: "fill-blank", question: { sv: "Böj verbet 'vivir' (nosotros)", en: "Conjugate 'vivir' (nosotros)" }, prompt: "Nosotros ___ en Madrid.", answer: "vivimos", hint: { sv: "-ir verb: nosotros → -imos", en: "-ir verb: nosotros → -imos" } },
       { type: "multiple-choice", question: { sv: "Tú ___ mucho. (hablar)", en: "Tú ___ a lot. (hablar)" }, answer: "hablas", options: ["hablo", "hablas", "habla", "hablamos"], hint: { sv: "-ar verb: tú → -as", en: "-ar verb: tú → -as" } },
-      { type: "multiple-choice", question: { sv: "Ellos ___ aquí. (vivir)", en: "They ___ here. (vivir)" }, answer: "viven", options: ["vivo", "vives", "vivimos", "viven"], hint: { sv: "-ir verb: ellos → -en", en: "-ir verb: ellos → -en" } },
-      { type: "translate", question: { sv: "Översätt: Jag äter pizza.", en: "Translate: I eat pizza." }, answer: "Yo como pizza.", hint: { sv: "comer → como (yo)", en: "comer → como (yo)" } },
-      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Nosotros hablan español.", answer: "Nosotros hablamos español.", hint: { sv: "Nosotros → -amos", en: "Nosotros → -amos" } },
+      { type: "fill-blank", question: { sv: "Böj oregelbundet verb 'tener' (yo)", en: "Conjugate irregular 'tener' (yo)" }, prompt: "Yo ___ un gato.", answer: "tengo", hint: { sv: "Oregelbundet: tener → tengo", en: "Irregular: tener → tengo" } },
+      { type: "fill-blank", question: { sv: "Böj oregelbundet verb 'hacer' (tú)", en: "Conjugate irregular 'hacer' (tú)" }, prompt: "Tú ___ la tarea.", answer: "haces", hint: { sv: "hacer → haces", en: "hacer → haces" } },
+      { type: "multiple-choice", question: { sv: "Yo ___ a las ocho. (salir)", en: "I ___ at eight. (salir)" }, answer: "salgo", options: ["salo", "sale", "salgo", "sales"], hint: { sv: "Oregelbundet: salir → salgo", en: "Irregular: salir → salgo" } },
+      { type: "multiple-choice", question: { sv: "Él ___ mañana. (venir)", en: "He ___ tomorrow. (venir)" }, answer: "viene", options: ["vene", "viene", "vien", "vengo"], hint: { sv: "venir → viene", en: "venir → viene" } },
+      { type: "translate", question: { sv: "Översätt: Jag har en katt.", en: "Translate: I have a cat." }, answer: "Yo tengo un gato.", hint: { sv: "tener → tengo (oregelbundet)", en: "tener → tengo (irregular)" } },
+      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Yo teno un perro.", answer: "Yo tengo un perro.", hint: { sv: "tener är oregelbundet: tengo", en: "tener is irregular: tengo" } },
     ]
   },
   {
@@ -243,15 +286,34 @@ export const grammarLessons: GrammarLesson[] = [
           sv: "Adjektivet kommer oftast EFTER substantivet på spanska, till skillnad från svenskan.",
           en: "The adjective usually comes AFTER the noun in Spanish, unlike in English/Swedish."
         }
+      },
+      {
+        heading: { sv: "Oregelbundna adjektiv", en: "Irregular adjectives" },
+        explanation: {
+          sv: "Vissa adjektiv förkortas när de står FÖRE ett maskulint substantiv: bueno → buen, malo → mal, grande → gran, primero → primer, tercero → tercer. 'Grande' blir 'gran' före BÅDE maskulina och feminina substantiv och betyder då 'fantastisk' istället för 'stor'.",
+          en: "Some adjectives shorten when placed BEFORE a masculine noun: bueno → buen, malo → mal, grande → gran, primero → primer, tercero → tercer. 'Grande' becomes 'gran' before BOTH masculine and feminine nouns and then means 'great' instead of 'big'."
+        },
+        examples: [
+          { es: "Un buen amigo. (Un amigo bueno = också ok)", sv: "En bra vän.", en: "A good friend." },
+          { es: "Un mal día.", sv: "En dålig dag.", en: "A bad day." },
+          { es: "Un gran hombre. / Una gran mujer.", sv: "En fantastisk man. / En fantastisk kvinna.", en: "A great man. / A great woman." },
+          { es: "El primer día. / La primera semana.", sv: "Den första dagen. / Den första veckan.", en: "The first day. / The first week." },
+        ],
+        tip: {
+          sv: "Efter substantivet används hela formen: 'un amigo bueno', 'un hombre grande'.",
+          en: "After the noun, use the full form: 'un amigo bueno', 'un hombre grande'."
+        }
       }
     ],
     exercises: [
       { type: "fill-blank", question: { sv: "Skriv rätt form av 'alto' (femininum)", en: "Write correct form of 'alto' (feminine)" }, prompt: "La chica es ___.", answer: "alta", hint: { sv: "-o → -a i femininum", en: "-o → -a in feminine" } },
       { type: "fill-blank", question: { sv: "Skriv rätt pluralform av 'alto' (maskulinum)", en: "Write correct plural of 'alto' (masculine)" }, prompt: "Los chicos son ___.", answer: "altos", hint: { sv: "Plural: lägg till -s", en: "Plural: add -s" } },
       { type: "multiple-choice", question: { sv: "Las casas son ___. (grande)", en: "The houses are ___. (grande)" }, answer: "grandes", options: ["grande", "grandes", "grando", "grandos"], hint: { sv: "'Grande' slutar på -e, plural = -es", en: "'Grande' ends in -e, plural = -es" } },
-      { type: "multiple-choice", question: { sv: "La mujer es ___. (inteligente)", en: "The woman is ___. (inteligente)" }, answer: "inteligente", options: ["inteligento", "inteligenta", "inteligente", "inteligentes"], hint: { sv: "Adjektiv på -e ändras inte för genus", en: "Adjectives ending in -e don't change for gender" } },
-      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "La chica es alto.", answer: "La chica es alta.", hint: { sv: "Femininum kräver -a", en: "Feminine requires -a" } },
-      { type: "translate", question: { sv: "Översätt: Pojkarna är långa.", en: "Translate: The boys are tall." }, answer: "Los chicos son altos.", hint: { sv: "Maskulinum plural av 'alto'", en: "Masculine plural of 'alto'" } },
+      { type: "fill-blank", question: { sv: "Förkorta 'bueno' före maskulint substantiv", en: "Shorten 'bueno' before masculine noun" }, prompt: "Un ___ amigo.", answer: "buen", hint: { sv: "Före maskulint substantiv: bueno → buen", en: "Before masculine noun: bueno → buen" } },
+      { type: "fill-blank", question: { sv: "Förkorta 'grande' före substantiv", en: "Shorten 'grande' before noun" }, prompt: "Un ___ hombre.", answer: "gran", hint: { sv: "Grande → gran före substantiv", en: "Grande → gran before noun" } },
+      { type: "multiple-choice", question: { sv: "El ___ día. (primero)", en: "The ___ day. (primero)" }, answer: "primer", options: ["primero", "primer", "primera", "primeres"], hint: { sv: "Primero → primer före maskulint", en: "Primero → primer before masculine" } },
+      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Un malo día.", answer: "Un mal día.", hint: { sv: "Malo → mal före maskulint substantiv", en: "Malo → mal before masculine noun" } },
+      { type: "translate", question: { sv: "Översätt: En fantastisk kvinna.", en: "Translate: A great woman." }, answer: "Una gran mujer.", hint: { sv: "Grande → gran före substantiv (fantastisk)", en: "Grande → gran before noun (great)" } },
     ]
   },
   // A2
@@ -282,15 +344,35 @@ export const grammarLessons: GrammarLesson[] = [
           { es: "Comí paella en Valencia.", sv: "Jag åt paella i Valencia.", en: "I ate paella in Valencia." },
           { es: "Vivieron en Madrid.", sv: "De bodde i Madrid.", en: "They lived in Madrid." },
         ]
+      },
+      {
+        heading: { sv: "Oregelbundna verb i preteritum", en: "Irregular verbs in preterite" },
+        explanation: {
+          sv: "Många vanliga verb har oregelbunden preteritum med speciella stammar. De använder ändelserna: -e, -iste, -o, -imos, -isteis, -ieron (utan accenter!). Viktigaste verben: ser/ir → fui, hacer → hice, tener → tuve, estar → estuve, poder → pude, poner → puse, saber → supe, venir → vine, querer → quise, decir → dije.",
+          en: "Many common verbs have irregular preterite forms with special stems. They use the endings: -e, -iste, -o, -imos, -isteis, -ieron (no accents!). Most important verbs: ser/ir → fui, hacer → hice, tener → tuve, estar → estuve, poder → pude, poner → puse, saber → supe, venir → vine, querer → quise, decir → dije."
+        },
+        examples: [
+          { es: "Fui al cine ayer.", sv: "Jag gick på bio igår.", en: "I went to the cinema yesterday." },
+          { es: "Hice la tarea.", sv: "Jag gjorde läxan.", en: "I did the homework." },
+          { es: "Tuvimos una fiesta.", sv: "Vi hade en fest.", en: "We had a party." },
+          { es: "Ella estuvo en Madrid.", sv: "Hon var i Madrid.", en: "She was in Madrid." },
+        ],
+        tip: {
+          sv: "Notera: Ser och ir har SAMMA preteritumform (fui, fuiste, fue...)!",
+          en: "Note: Ser and ir have the SAME preterite form (fui, fuiste, fue...)!"
+        }
       }
     ],
     exercises: [
       { type: "fill-blank", question: { sv: "Böj 'hablar' i preteritum (yo)", en: "Conjugate 'hablar' in preterite (yo)" }, prompt: "Yo ___ con María ayer.", answer: "hablé", hint: { sv: "-ar verb: yo → -é", en: "-ar verb: yo → -é" } },
       { type: "fill-blank", question: { sv: "Böj 'comer' i preteritum (yo)", en: "Conjugate 'comer' in preterite (yo)" }, prompt: "Yo ___ paella en Valencia.", answer: "comí", hint: { sv: "-er verb: yo → -í", en: "-er verb: yo → -í" } },
       { type: "multiple-choice", question: { sv: "Ella ___ un vestido. (comprar)", en: "She ___ a dress. (comprar)" }, answer: "compró", options: ["compré", "compraste", "compró", "compraron"], hint: { sv: "Ella → tredje person singular", en: "Ella → third person singular" } },
-      { type: "multiple-choice", question: { sv: "Ellos ___ en Madrid. (vivir)", en: "They ___ in Madrid. (vivir)" }, answer: "vivieron", options: ["viví", "viviste", "vivió", "vivieron"], hint: { sv: "Ellos → tredje person plural", en: "Ellos → third person plural" } },
-      { type: "translate", question: { sv: "Översätt: Jag pratade med María igår.", en: "Translate: I spoke with María yesterday." }, answer: "Yo hablé con María ayer.", hint: { sv: "hablar → hablé (yo, preteritum)", en: "hablar → hablé (yo, preterite)" } },
-      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Yo hablo con María ayer.", answer: "Yo hablé con María ayer.", hint: { sv: "'Ayer' kräver preteritum", en: "'Ayer' requires preterite" } },
+      { type: "fill-blank", question: { sv: "Böj oregelbundet 'ir' i preteritum (yo)", en: "Conjugate irregular 'ir' in preterite (yo)" }, prompt: "Yo ___ al cine ayer.", answer: "fui", hint: { sv: "Oregelbundet: ir → fui", en: "Irregular: ir → fui" } },
+      { type: "fill-blank", question: { sv: "Böj oregelbundet 'hacer' i preteritum (yo)", en: "Conjugate irregular 'hacer' in preterite (yo)" }, prompt: "Yo ___ la tarea.", answer: "hice", hint: { sv: "hacer → hice", en: "hacer → hice" } },
+      { type: "multiple-choice", question: { sv: "Nosotros ___ una fiesta. (tener)", en: "We ___ a party. (tener)" }, answer: "tuvimos", options: ["tenimos", "tuvimos", "tenemos", "tuvieron"], hint: { sv: "Oregelbundet: tener → tuv- + imos", en: "Irregular: tener → tuv- + imos" } },
+      { type: "multiple-choice", question: { sv: "Ella ___ en Madrid. (estar)", en: "She ___ in Madrid. (estar)" }, answer: "estuvo", options: ["estaba", "está", "estuvo", "estuve"], hint: { sv: "estar → estuvo (oregelbundet)", en: "estar → estuvo (irregular)" } },
+      { type: "translate", question: { sv: "Översätt: Jag gjorde läxan.", en: "Translate: I did the homework." }, answer: "Yo hice la tarea.", hint: { sv: "hacer → hice (oregelbundet)", en: "hacer → hice (irregular)" } },
+      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Yo fué al cine.", answer: "Yo fui al cine.", hint: { sv: "Yo fui (inte fué - ingen accent!)", en: "Yo fui (not fué - no accent!)" } },
     ]
   },
   {
@@ -343,23 +425,42 @@ export const grammarLessons: GrammarLesson[] = [
         ]
       },
       {
+        heading: { sv: "Oregelbundna komparativa former", en: "Irregular comparative forms" },
+        explanation: {
+          sv: "Vissa adjektiv har oregelbundna komparativa former: bueno → mejor (bättre), malo → peor (sämre), grande → mayor (äldre/större), pequeño → menor (yngre/mindre). Dessa används UTAN 'más'.",
+          en: "Some adjectives have irregular comparative forms: bueno → mejor (better), malo → peor (worse), grande → mayor (older/bigger), pequeño → menor (younger/smaller). These are used WITHOUT 'más'."
+        },
+        examples: [
+          { es: "Este vino es mejor que ese.", sv: "Det här vinet är bättre än det där.", en: "This wine is better than that one." },
+          { es: "Mi nota es peor que la tuya.", sv: "Mitt betyg är sämre än ditt.", en: "My grade is worse than yours." },
+          { es: "Mi hermano mayor.", sv: "Min storebror (äldre bror).", en: "My older brother." },
+        ],
+        tip: {
+          sv: "Säg INTE 'más mejor' eller 'más peor' – det är fel!",
+          en: "Do NOT say 'más mejor' or 'más peor' – it's wrong!"
+        }
+      },
+      {
         heading: { sv: "Superlativ", en: "Superlative" },
         explanation: {
-          sv: "Superlativ bildas med 'el/la más + adjektiv' eller oregelbundna former som 'mejor' (bäst) och 'peor' (sämst).",
-          en: "Superlative is formed with 'el/la más + adjective' or irregular forms like 'mejor' (best) and 'peor' (worst)."
+          sv: "Superlativ bildas med 'el/la más + adjektiv'. Oregelbundna former: el mejor (bäst), el peor (sämst), el mayor (äldst), el menor (yngst).",
+          en: "Superlative is formed with 'el/la más + adjective'. Irregular forms: el mejor (best), el peor (worst), el mayor (oldest), el menor (youngest)."
         },
         examples: [
           { es: "Es la ciudad más bonita de España.", sv: "Det är den vackraste staden i Spanien.", en: "It's the most beautiful city in Spain." },
           { es: "Es el mejor restaurante.", sv: "Det är den bästa restaurangen.", en: "It's the best restaurant." },
+          { es: "Es el peor día de mi vida.", sv: "Det är den sämsta dagen i mitt liv.", en: "It's the worst day of my life." },
         ]
       }
     ],
     exercises: [
       { type: "fill-blank", question: { sv: "Fyll i: María es ___ alta que Pedro.", en: "Fill in: María is ___ tall than Pedro." }, prompt: "María es ___ alta que Pedro.", answer: "más", hint: { sv: "Mer = más", en: "More = más" } },
+      { type: "multiple-choice", question: { sv: "Este vino es ___ que ese. (bueno - bättre)", en: "This wine is ___ than that one. (bueno - better)" }, answer: "mejor", options: ["más bueno", "mejor", "más mejor", "buenor"], hint: { sv: "Oregelbundet: bueno → mejor", en: "Irregular: bueno → mejor" } },
+      { type: "fill-blank", question: { sv: "Fyll i oregelbunden form av 'malo' (sämre)", en: "Fill in irregular form of 'malo' (worse)" }, prompt: "Mi nota es ___ que la tuya.", answer: "peor", hint: { sv: "malo → peor (oregelbunden komparativ)", en: "malo → peor (irregular comparative)" } },
       { type: "multiple-choice", question: { sv: "Es ___ restaurante. (bäst)", en: "It's ___ restaurant. (best)" }, answer: "el mejor", options: ["el más bueno", "el mejor", "el más mejor", "el bueno"], hint: { sv: "'Bueno' har oregelbunden superlativ: mejor", en: "'Bueno' has irregular superlative: mejor" } },
       { type: "fill-blank", question: { sv: "Este libro es ___ interesante que el otro. (mindre)", en: "This book is ___ interesting than the other. (less)" }, prompt: "Este libro es ___ interesante que el otro.", answer: "menos", hint: { sv: "Mindre = menos", en: "Less = menos" } },
-      { type: "translate", question: { sv: "Översätt: Det är den vackraste staden.", en: "Translate: It's the most beautiful city." }, answer: "Es la ciudad más bonita.", hint: { sv: "la + más + adjektiv", en: "la + más + adjective" } },
-      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "María es más alta de Pedro.", answer: "María es más alta que Pedro.", hint: { sv: "Jämförelse: más...que (inte de)", en: "Comparison: más...que (not de)" } },
+      { type: "translate", question: { sv: "Översätt: Det är den sämsta dagen.", en: "Translate: It's the worst day." }, answer: "Es el peor día.", hint: { sv: "Oregelbunden superlativ: peor", en: "Irregular superlative: peor" } },
+      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Este vino es más mejor.", answer: "Este vino es mejor.", hint: { sv: "Säg INTE 'más mejor' - bara 'mejor'", en: "Do NOT say 'más mejor' - just 'mejor'" } },
     ]
   },
   // B1
