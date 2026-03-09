@@ -87,7 +87,7 @@ export const ProgressProvider = ({ children }: { children: ReactNode }) => {
       newProgress.overall = overall;
 
       // Save to localStorage
-      localStorage.setItem(`progress_${user?.username || "guest"}`, JSON.stringify(newProgress));
+      localStorage.setItem(`progress_${user?.email || "guest"}`, JSON.stringify(newProgress));
 
       return newProgress;
     });
