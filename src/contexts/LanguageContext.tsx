@@ -53,7 +53,7 @@ const translations: Translations = {
   exercises: { sv: "Övningar", en: "Exercises" },
   profile: { sv: "Profil", en: "Profile" },
   logout: { sv: "Logga ut", en: "Log out" },
-  welcomeBack: { sv: "Välkommen tillbaka!", en: "Welcome back!" },
+  welcomeBack: { sv: "Välkommen tillbaka,", en: "Welcome back," },
   chooseExercise: { sv: "Välj en övning för att börja lära dig:", en: "Choose an exercise to start learning:" },
 
   // Exercises
