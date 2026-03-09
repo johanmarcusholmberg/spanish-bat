@@ -14,8 +14,8 @@ const ProfilePage = () => {
   const [learningFrom, setLearningFrom] = useState<"sv" | "en">(user?.learningFrom || "sv");
   const [saved, setSaved] = useState(false);
 
-  const handleSave = () => {
-    updateProfile({ displayName, level, learningFrom });
+  const handleSave = async () => {
+    await updateProfile({ displayName, level, learningFrom });
     setLanguage(learningFrom);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
