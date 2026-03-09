@@ -344,6 +344,23 @@ export const grammarLessons: GrammarLesson[] = [
           { es: "Comí paella en Valencia.", sv: "Jag åt paella i Valencia.", en: "I ate paella in Valencia." },
           { es: "Vivieron en Madrid.", sv: "De bodde i Madrid.", en: "They lived in Madrid." },
         ]
+      },
+      {
+        heading: { sv: "Oregelbundna verb i preteritum", en: "Irregular verbs in preterite" },
+        explanation: {
+          sv: "Många vanliga verb har oregelbunden preteritum med speciella stammar. De använder ändelserna: -e, -iste, -o, -imos, -isteis, -ieron (utan accenter!). Viktigaste verben: ser/ir → fui, hacer → hice, tener → tuve, estar → estuve, poder → pude, poner → puse, saber → supe, venir → vine, querer → quise, decir → dije.",
+          en: "Many common verbs have irregular preterite forms with special stems. They use the endings: -e, -iste, -o, -imos, -isteis, -ieron (no accents!). Most important verbs: ser/ir → fui, hacer → hice, tener → tuve, estar → estuve, poder → pude, poner → puse, saber → supe, venir → vine, querer → quise, decir → dije."
+        },
+        examples: [
+          { es: "Fui al cine ayer.", sv: "Jag gick på bio igår.", en: "I went to the cinema yesterday." },
+          { es: "Hice la tarea.", sv: "Jag gjorde läxan.", en: "I did the homework." },
+          { es: "Tuvimos una fiesta.", sv: "Vi hade en fest.", en: "We had a party." },
+          { es: "Ella estuvo en Madrid.", sv: "Hon var i Madrid.", en: "She was in Madrid." },
+        ],
+        tip: {
+          sv: "Notera: Ser och ir har SAMMA preteritumform (fui, fuiste, fue...)!",
+          en: "Note: Ser and ir have the SAME preterite form (fui, fuiste, fue...)!"
+        }
       }
     ],
     exercises: [
