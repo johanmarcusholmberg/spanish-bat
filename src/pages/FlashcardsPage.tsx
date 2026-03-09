@@ -16,6 +16,7 @@ interface CardState {
 const FlashcardsPage = () => {
   const { t, language } = useLanguage();
   const { user } = useAuth();
+  const { updateProgress } = useProgress();
   const [flipped, setFlipped] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cardStates, setCardStates] = useState<Record<string, CardState>>({});
