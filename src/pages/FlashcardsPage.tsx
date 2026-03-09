@@ -95,6 +95,7 @@ const FlashcardsPage = () => {
         setSessionScore((s) => ({ ...s, incorrect: s.incorrect + 1 }));
       }
 
+      logActivity();
       setFlipped(false);
       setCurrentIndex((i) => i + 1);
     },
