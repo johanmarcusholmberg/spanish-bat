@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import batAvatar from "@/assets/bat-avatar.png";
 import { ProgressOverview, NextStepsCard, LevelAdvancementCard } from "@/components/ProgressDashboard";
-import { BookOpen, Type, Palette, HelpCircle, GraduationCap, Layers, FileText, Puzzle } from "lucide-react";
+import { GraduationCap, Layers, FileText, Puzzle } from "lucide-react";
 
 const DashboardPage = () => {
   const { t } = useLanguage();
@@ -19,14 +19,8 @@ const DashboardPage = () => {
     { key: "sentenceBuilder", icon: Puzzle, path: "/learn/sentences", color: "gradient-mint" },
   ];
 
-  const exercises = [
-    { key: "verbs", icon: BookOpen, path: "/exercises/verbs", color: "gradient-peach" },
-    { key: "nouns", icon: Type, path: "/exercises/nouns", color: "gradient-mint" },
-    { key: "adjectives", icon: Palette, path: "/exercises/adjectives", color: "gradient-peach" },
-    { key: "quiz", icon: HelpCircle, path: "/exercises/quiz", color: "gradient-mint" },
-  ];
 
-  const renderGrid = (items: typeof exercises) => (
+  const renderGrid = (items: typeof learnItems) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {items.map((ex) => (
         <button
@@ -79,11 +73,6 @@ const DashboardPage = () => {
           <GraduationCap className="h-5 w-5" /> {t("learn")}
         </h2>
         {renderGrid(learnItems)}
-
-        <h2 className="font-heading font-bold text-foreground text-lg flex items-center gap-2">
-          <BookOpen className="h-5 w-5" /> {t("practice")}
-        </h2>
-        {renderGrid(exercises)}
       </div>
     </AppLayout>
   );
