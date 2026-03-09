@@ -247,9 +247,12 @@ export const grammarLessons: GrammarLesson[] = [
       { type: "fill-blank", question: { sv: "Böj verbet 'comer' (ella)", en: "Conjugate 'comer' (ella)" }, prompt: "Ella ___ fruta.", answer: "come", hint: { sv: "-er verb: él/ella → -e", en: "-er verb: él/ella → -e" } },
       { type: "fill-blank", question: { sv: "Böj verbet 'vivir' (nosotros)", en: "Conjugate 'vivir' (nosotros)" }, prompt: "Nosotros ___ en Madrid.", answer: "vivimos", hint: { sv: "-ir verb: nosotros → -imos", en: "-ir verb: nosotros → -imos" } },
       { type: "multiple-choice", question: { sv: "Tú ___ mucho. (hablar)", en: "Tú ___ a lot. (hablar)" }, answer: "hablas", options: ["hablo", "hablas", "habla", "hablamos"], hint: { sv: "-ar verb: tú → -as", en: "-ar verb: tú → -as" } },
-      { type: "multiple-choice", question: { sv: "Ellos ___ aquí. (vivir)", en: "They ___ here. (vivir)" }, answer: "viven", options: ["vivo", "vives", "vivimos", "viven"], hint: { sv: "-ir verb: ellos → -en", en: "-ir verb: ellos → -en" } },
-      { type: "translate", question: { sv: "Översätt: Jag äter pizza.", en: "Translate: I eat pizza." }, answer: "Yo como pizza.", hint: { sv: "comer → como (yo)", en: "comer → como (yo)" } },
-      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Nosotros hablan español.", answer: "Nosotros hablamos español.", hint: { sv: "Nosotros → -amos", en: "Nosotros → -amos" } },
+      { type: "fill-blank", question: { sv: "Böj oregelbundet verb 'tener' (yo)", en: "Conjugate irregular 'tener' (yo)" }, prompt: "Yo ___ un gato.", answer: "tengo", hint: { sv: "Oregelbundet: tener → tengo", en: "Irregular: tener → tengo" } },
+      { type: "fill-blank", question: { sv: "Böj oregelbundet verb 'hacer' (tú)", en: "Conjugate irregular 'hacer' (tú)" }, prompt: "Tú ___ la tarea.", answer: "haces", hint: { sv: "hacer → haces", en: "hacer → haces" } },
+      { type: "multiple-choice", question: { sv: "Yo ___ a las ocho. (salir)", en: "I ___ at eight. (salir)" }, answer: "salgo", options: ["salo", "sale", "salgo", "sales"], hint: { sv: "Oregelbundet: salir → salgo", en: "Irregular: salir → salgo" } },
+      { type: "multiple-choice", question: { sv: "Él ___ mañana. (venir)", en: "He ___ tomorrow. (venir)" }, answer: "viene", options: ["vene", "viene", "vien", "vengo"], hint: { sv: "venir → viene", en: "venir → viene" } },
+      { type: "translate", question: { sv: "Översätt: Jag har en katt.", en: "Translate: I have a cat." }, answer: "Yo tengo un gato.", hint: { sv: "tener → tengo (oregelbundet)", en: "tener → tengo (irregular)" } },
+      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Yo teno un perro.", answer: "Yo tengo un perro.", hint: { sv: "tener är oregelbundet: tengo", en: "tener is irregular: tengo" } },
     ]
   },
   {
