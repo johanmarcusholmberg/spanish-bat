@@ -18,6 +18,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const navItems = [
     { to: "/dashboard", icon: Home, label: t("dashboard") },
     { to: "/exercises", icon: BookOpen, label: t("exercises") },
+    { to: "/stats", icon: BarChart3, label: t("statistics") },
     { to: "/profile", icon: User, label: t("profile") },
   ];
 
