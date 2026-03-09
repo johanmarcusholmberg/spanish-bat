@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { useAuth } from "./AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CategoryProgress {
   completed: number;
@@ -34,8 +35,11 @@ const LEVEL_REQUIREMENTS = {
   C2: { grammar: 15, flashcards: 75, reading: 10, sentences: 40, exercises: 40 },
 };
 
+const calcPercentage = (completed: number, total: number) =>
+  total > 0 ? Math.min(100, Math.round((completed / total) * 100)) : 0;
+
 export const ProgressProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const [progress, setProgress] = useState<LevelProgress>({
     grammar: { completed: 0, total: 5, percentage: 0 },
     flashcards: { completed: 0, total: 20, percentage: 0 },
@@ -45,38 +49,66 @@ export const ProgressProvider = ({ children }: { children: ReactNode }) => {
     overall: 0,
   });
 
+  // Load from DB on mount / user change
   useEffect(() => {
-    // Load progress from localStorage
-    const savedProgress = localStorage.getItem(`progress_${user?.email || "guest"}`);
-    if (savedProgress) {
-      setProgress(JSON.parse(savedProgress));
-    } else {
-      // Initialize with current level requirements
-      const level = user?.level || "A1";
-      const requirements = LEVEL_REQUIREMENTS[level as keyof typeof LEVEL_REQUIREMENTS] || LEVEL_REQUIREMENTS.A1;
-      
-      setProgress({
+    if (!session?.user) return;
+    const level = user?.level || "A1";
+    const requirements = LEVEL_REQUIREMENTS[level as keyof typeof LEVEL_REQUIREMENTS] || LEVEL_REQUIREMENTS.A1;
+
+    const loadFromDB = async () => {
+      const { data } = await supabase
+        .from("user_progress")
+        .select("*")
+        .eq("user_id", session.user.id);
+
+      const base: LevelProgress = {
         grammar: { completed: 0, total: requirements.grammar, percentage: 0 },
         flashcards: { completed: 0, total: requirements.flashcards, percentage: 0 },
         reading: { completed: 0, total: requirements.reading, percentage: 0 },
         sentences: { completed: 0, total: requirements.sentences, percentage: 0 },
         exercises: { completed: 0, total: requirements.exercises, percentage: 0 },
         overall: 0,
-      });
-    }
-  }, [user?.email, user?.level]);
+      };
 
-  const updateProgress = (category: keyof Omit<LevelProgress, "overall">, completed: number, total: number) => {
+      if (data) {
+        for (const row of data) {
+          const cat = row.category as keyof Omit<LevelProgress, "overall">;
+          if (base[cat]) {
+            base[cat] = {
+              completed: row.completed,
+              total: row.total,
+              percentage: calcPercentage(row.completed, row.total),
+            };
+          }
+        }
+      }
+
+      const weights = { grammar: 0.25, flashcards: 0.20, reading: 0.20, sentences: 0.15, exercises: 0.20 };
+      base.overall = Math.round(
+        base.grammar.percentage * weights.grammar +
+        base.flashcards.percentage * weights.flashcards +
+        base.reading.percentage * weights.reading +
+        base.sentences.percentage * weights.sentences +
+        base.exercises.percentage * weights.exercises
+      );
+
+      setProgress(base);
+    };
+
+    loadFromDB();
+  }, [session?.user?.id, user?.level]);
+
+  const updateProgress = useCallback((category: keyof Omit<LevelProgress, "overall">, completed: number, total: number) => {
+    const percentage = calcPercentage(completed, total);
+
     setProgress((prev) => {
-      const percentage = Math.min(100, Math.round((completed / total) * 100));
       const newProgress = {
         ...prev,
         [category]: { completed, total, percentage },
       };
 
-      // Calculate overall progress with weighted average
       const weights = { grammar: 0.25, flashcards: 0.20, reading: 0.20, sentences: 0.15, exercises: 0.20 };
-      const overall = Math.round(
+      newProgress.overall = Math.round(
         newProgress.grammar.percentage * weights.grammar +
         newProgress.flashcards.percentage * weights.flashcards +
         newProgress.reading.percentage * weights.reading +
@@ -84,16 +116,22 @@ export const ProgressProvider = ({ children }: { children: ReactNode }) => {
         newProgress.exercises.percentage * weights.exercises
       );
 
-      newProgress.overall = overall;
-
-      // Save to localStorage
-      localStorage.setItem(`progress_${user?.email || "guest"}`, JSON.stringify(newProgress));
-
       return newProgress;
     });
-  };
 
-  const getNextRecommendation = () => {
+    // Persist to DB
+    if (session?.user) {
+      supabase
+        .from("user_progress")
+        .upsert(
+          { user_id: session.user.id, category, completed, total },
+          { onConflict: "user_id,category" }
+        )
+        .then();
+    }
+  }, [session?.user?.id]);
+
+  const getNextRecommendation = useCallback(() => {
     const categories = [
       { key: "grammar", label: "grammarLessons", path: "/learn/grammar", percentage: progress.grammar.percentage },
       { key: "flashcards", label: "flashcards", path: "/learn/flashcards", percentage: progress.flashcards.percentage },
@@ -102,61 +140,35 @@ export const ProgressProvider = ({ children }: { children: ReactNode }) => {
       { key: "exercises", label: "practice", path: "/exercises", percentage: progress.exercises.percentage },
     ];
 
-    // Priority 1: Find exercises that are almost finished (70-99%)
     const almostFinished = categories
       .filter(cat => cat.percentage >= 70 && cat.percentage < 100)
       .sort((a, b) => b.percentage - a.percentage);
-    
     if (almostFinished.length > 0) {
-      return {
-        category: almostFinished[0].label,
-        path: almostFinished[0].path,
-        reason: "almostFinished"
-      };
+      return { category: almostFinished[0].label, path: almostFinished[0].path, reason: "almostFinished" };
     }
 
-    // Priority 2: If there's a category with 0%, prioritize it
     const zero = categories.find(cat => cat.percentage === 0);
     if (zero) {
-      return {
-        category: zero.label,
-        path: zero.path,
-        reason: "notStarted"
-      };
+      return { category: zero.label, path: zero.path, reason: "notStarted" };
     }
 
-    // Priority 3: Find the category with the lowest progress
-    const lowest = categories.reduce((min, cat) => 
-      cat.percentage < min.percentage ? cat : min
-    );
-
-    // If everything is at 100%, suggest the exercises tab for review
+    const lowest = categories.reduce((min, cat) => cat.percentage < min.percentage ? cat : min);
     if (lowest.percentage >= 100) {
-      return {
-        category: "practice",
-        path: "/exercises",
-        reason: "reviewContent"
-      };
+      return { category: "practice", path: "/exercises", reason: "reviewContent" };
     }
 
-    return {
-      category: lowest.label,
-      path: lowest.path,
-      reason: "lowestProgress"
-    };
-  };
+    return { category: lowest.label, path: lowest.path, reason: "lowestProgress" };
+  }, [progress]);
 
-  const canAdvanceLevel = () => {
-    // User can advance if overall progress >= 80% and all categories have some progress
-    const allCategoriesStarted = 
+  const canAdvanceLevel = useCallback(() => {
+    const allStarted =
       progress.grammar.percentage > 0 &&
       progress.flashcards.percentage > 0 &&
       progress.reading.percentage > 0 &&
       progress.sentences.percentage > 0 &&
       progress.exercises.percentage > 0;
-
-    return progress.overall >= 80 && allCategoriesStarted;
-  };
+    return progress.overall >= 80 && allStarted;
+  }, [progress]);
 
   return (
     <ProgressContext.Provider value={{ progress, updateProgress, getNextRecommendation, canAdvanceLevel }}>
