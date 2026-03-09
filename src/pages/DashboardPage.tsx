@@ -73,11 +73,6 @@ const DashboardPage = () => {
           <GraduationCap className="h-5 w-5" /> {t("learn")}
         </h2>
         {renderGrid(learnItems)}
-
-        <h2 className="font-heading font-bold text-foreground text-lg flex items-center gap-2">
-          <BookOpen className="h-5 w-5" /> {t("practice")}
-        </h2>
-        {renderGrid(exercises)}
       </div>
     </AppLayout>
   );
