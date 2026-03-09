@@ -455,10 +455,12 @@ export const grammarLessons: GrammarLesson[] = [
     ],
     exercises: [
       { type: "fill-blank", question: { sv: "Fyll i: María es ___ alta que Pedro.", en: "Fill in: María is ___ tall than Pedro." }, prompt: "María es ___ alta que Pedro.", answer: "más", hint: { sv: "Mer = más", en: "More = más" } },
+      { type: "multiple-choice", question: { sv: "Este vino es ___ que ese. (bueno - bättre)", en: "This wine is ___ than that one. (bueno - better)" }, answer: "mejor", options: ["más bueno", "mejor", "más mejor", "buenor"], hint: { sv: "Oregelbundet: bueno → mejor", en: "Irregular: bueno → mejor" } },
+      { type: "fill-blank", question: { sv: "Fyll i oregelbunden form av 'malo' (sämre)", en: "Fill in irregular form of 'malo' (worse)" }, prompt: "Mi nota es ___ que la tuya.", answer: "peor", hint: { sv: "malo → peor (oregelbunden komparativ)", en: "malo → peor (irregular comparative)" } },
       { type: "multiple-choice", question: { sv: "Es ___ restaurante. (bäst)", en: "It's ___ restaurant. (best)" }, answer: "el mejor", options: ["el más bueno", "el mejor", "el más mejor", "el bueno"], hint: { sv: "'Bueno' har oregelbunden superlativ: mejor", en: "'Bueno' has irregular superlative: mejor" } },
       { type: "fill-blank", question: { sv: "Este libro es ___ interesante que el otro. (mindre)", en: "This book is ___ interesting than the other. (less)" }, prompt: "Este libro es ___ interesante que el otro.", answer: "menos", hint: { sv: "Mindre = menos", en: "Less = menos" } },
-      { type: "translate", question: { sv: "Översätt: Det är den vackraste staden.", en: "Translate: It's the most beautiful city." }, answer: "Es la ciudad más bonita.", hint: { sv: "la + más + adjektiv", en: "la + más + adjective" } },
-      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "María es más alta de Pedro.", answer: "María es más alta que Pedro.", hint: { sv: "Jämförelse: más...que (inte de)", en: "Comparison: más...que (not de)" } },
+      { type: "translate", question: { sv: "Översätt: Det är den sämsta dagen.", en: "Translate: It's the worst day." }, answer: "Es el peor día.", hint: { sv: "Oregelbunden superlativ: peor", en: "Irregular superlative: peor" } },
+      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Este vino es más mejor.", answer: "Este vino es mejor.", hint: { sv: "Säg INTE 'más mejor' - bara 'mejor'", en: "Do NOT say 'más mejor' - just 'mejor'" } },
     ]
   },
   // B1
