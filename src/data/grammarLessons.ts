@@ -57,6 +57,25 @@ export const grammarLessons: GrammarLesson[] = [
         }
       },
       {
+        heading: { sv: "Oregelbundna substantiv", en: "Irregular nouns" },
+        explanation: {
+          sv: "Vissa substantiv följer inte de vanliga reglerna. Viktiga undantag: substantiv som slutar på -ma, -ta, -pa är ofta maskulina trots att de slutar på -a. Några feminina ord kan ha 'el' framför sig när de börjar med betonad a/ha för att undvika upprepning av ljud.",
+          en: "Some nouns don't follow the usual patterns. Important exceptions: nouns ending in -ma, -ta, -pa are often masculine despite ending in -a. Some feminine words use 'el' when starting with stressed a/ha to avoid repetition of sounds."
+        },
+        examples: [
+          { es: "el problema", sv: "problemet", en: "the problem" },
+          { es: "el tema", sv: "temat", en: "the theme" },
+          { es: "el día", sv: "dagen", en: "the day" },
+          { es: "el agua (feminine!)", sv: "vattnet", en: "the water" },
+          { es: "la mano", sv: "handen", en: "the hand" },
+          { es: "la foto", sv: "fotot", en: "the photo" },
+        ],
+        tip: {
+          sv: "Kom ihåg: 'el agua' är femininum! Man säger 'el agua fría' (inte frío).",
+          en: "Remember: 'el agua' is feminine! You say 'el agua fría' (not frío)."
+        }
+      },
+      {
         heading: { sv: "Pluralformer", en: "Plural forms" },
         explanation: {
           sv: "I plural blir 'el' till 'los' och 'la' till 'las'. Substantivet får också en ändelse: -s om det slutar på vokal, -es om det slutar på konsonant.",
@@ -65,6 +84,8 @@ export const grammarLessons: GrammarLesson[] = [
         examples: [
           { es: "los libros", sv: "böckerna", en: "the books" },
           { es: "las casas", sv: "husen", en: "the houses" },
+          { es: "los problemas", sv: "problemen", en: "the problems" },
+          { es: "las aguas", sv: "vattnen", en: "the waters" },
         ]
       }
     ],
