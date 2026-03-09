@@ -367,9 +367,12 @@ export const grammarLessons: GrammarLesson[] = [
       { type: "fill-blank", question: { sv: "Böj 'hablar' i preteritum (yo)", en: "Conjugate 'hablar' in preterite (yo)" }, prompt: "Yo ___ con María ayer.", answer: "hablé", hint: { sv: "-ar verb: yo → -é", en: "-ar verb: yo → -é" } },
       { type: "fill-blank", question: { sv: "Böj 'comer' i preteritum (yo)", en: "Conjugate 'comer' in preterite (yo)" }, prompt: "Yo ___ paella en Valencia.", answer: "comí", hint: { sv: "-er verb: yo → -í", en: "-er verb: yo → -í" } },
       { type: "multiple-choice", question: { sv: "Ella ___ un vestido. (comprar)", en: "She ___ a dress. (comprar)" }, answer: "compró", options: ["compré", "compraste", "compró", "compraron"], hint: { sv: "Ella → tredje person singular", en: "Ella → third person singular" } },
-      { type: "multiple-choice", question: { sv: "Ellos ___ en Madrid. (vivir)", en: "They ___ in Madrid. (vivir)" }, answer: "vivieron", options: ["viví", "viviste", "vivió", "vivieron"], hint: { sv: "Ellos → tredje person plural", en: "Ellos → third person plural" } },
-      { type: "translate", question: { sv: "Översätt: Jag pratade med María igår.", en: "Translate: I spoke with María yesterday." }, answer: "Yo hablé con María ayer.", hint: { sv: "hablar → hablé (yo, preteritum)", en: "hablar → hablé (yo, preterite)" } },
-      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Yo hablo con María ayer.", answer: "Yo hablé con María ayer.", hint: { sv: "'Ayer' kräver preteritum", en: "'Ayer' requires preterite" } },
+      { type: "fill-blank", question: { sv: "Böj oregelbundet 'ir' i preteritum (yo)", en: "Conjugate irregular 'ir' in preterite (yo)" }, prompt: "Yo ___ al cine ayer.", answer: "fui", hint: { sv: "Oregelbundet: ir → fui", en: "Irregular: ir → fui" } },
+      { type: "fill-blank", question: { sv: "Böj oregelbundet 'hacer' i preteritum (yo)", en: "Conjugate irregular 'hacer' in preterite (yo)" }, prompt: "Yo ___ la tarea.", answer: "hice", hint: { sv: "hacer → hice", en: "hacer → hice" } },
+      { type: "multiple-choice", question: { sv: "Nosotros ___ una fiesta. (tener)", en: "We ___ a party. (tener)" }, answer: "tuvimos", options: ["tenimos", "tuvimos", "tenemos", "tuvieron"], hint: { sv: "Oregelbundet: tener → tuv- + imos", en: "Irregular: tener → tuv- + imos" } },
+      { type: "multiple-choice", question: { sv: "Ella ___ en Madrid. (estar)", en: "She ___ in Madrid. (estar)" }, answer: "estuvo", options: ["estaba", "está", "estuvo", "estuve"], hint: { sv: "estar → estuvo (oregelbundet)", en: "estar → estuvo (irregular)" } },
+      { type: "translate", question: { sv: "Översätt: Jag gjorde läxan.", en: "Translate: I did the homework." }, answer: "Yo hice la tarea.", hint: { sv: "hacer → hice (oregelbundet)", en: "hacer → hice (irregular)" } },
+      { type: "error-correction", question: { sv: "Rätta felet", en: "Correct the error" }, incorrectSentence: "Yo fué al cine.", answer: "Yo fui al cine.", hint: { sv: "Yo fui (inte fué - ingen accent!)", en: "Yo fui (not fué - no accent!)" } },
     ]
   },
   {
