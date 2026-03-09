@@ -104,33 +104,39 @@ const SentenceBuilderPage = () => {
           </p>
         </div>
 
-        {/* Selected words (sentence being built) */}
-        <div className="bg-background rounded-lg border-2 border-dashed border-border p-4 min-h-[56px] mb-4 flex flex-wrap gap-2">
-          {selected.length === 0 && (
-            <span className="text-muted-foreground text-sm">{t("tapWordsToOrder")}</span>
-          )}
-          {selected.map((word, i) => {
-            const wordCorrect = result ? correctWordAt(i) : null;
-            return (
-              <button
-                key={`sel-${i}`}
-                onClick={() => handleDeselectWord(word, i)}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
-                  wordCorrect === true
-                    ? "bg-secondary text-secondary-foreground ring-2 ring-secondary"
-                    : wordCorrect === false
-                    ? "bg-destructive/15 text-destructive ring-2 ring-destructive"
-                    : "gradient-peach text-primary-foreground shadow-warm hover:opacity-90"
-                }`}
-              >
-                {word}
-              </button>
-            );
-          })}
+        {/* Selected words + text indication */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex-1 bg-background rounded-lg border-2 border-dashed border-border p-4 min-h-[56px] flex flex-wrap gap-2">
+            {selected.length === 0 && (
+              <span className="text-muted-foreground text-sm">{t("tapWordsToOrder")}</span>
+            )}
+            {selected.map((word, i) => {
+              const wordCorrect = result ? correctWordAt(i) : null;
+              return (
+                <button
+                  key={`sel-${i}`}
+                  onClick={() => handleDeselectWord(word, i)}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
+                    wordCorrect === true
+                      ? "bg-secondary text-secondary-foreground ring-2 ring-secondary"
+                      : wordCorrect === false
+                      ? "bg-destructive/15 text-destructive ring-2 ring-destructive"
+                      : "gradient-peach text-primary-foreground shadow-warm hover:opacity-90"
+                  }`}
+                >
+                  {word}
+                </button>
+              );
+            })}
+          </div>
+          <div className="w-20 shrink-0 text-sm font-semibold text-center">
+            {result === "correct" && <span className="text-secondary-foreground">✓ {t("correct")}</span>}
+            {result === "incorrect" && <span className="text-destructive">✗ {t("incorrect")}</span>}
+          </div>
         </div>
 
-        {/* Available words */}
-        <div className="flex flex-wrap gap-2 mb-6">
+        {/* Available words — fixed height to prevent layout shift */}
+        <div className="flex flex-wrap gap-2 mb-4 min-h-[40px]">
           {available.map((word, i) => (
             <button
               key={`avail-${i}`}
@@ -143,22 +149,15 @@ const SentenceBuilderPage = () => {
           ))}
         </div>
 
-        {/* Correct answer display */}
-        {result === "incorrect" && (
-          <div className="bg-card rounded-lg p-3 shadow-soft mb-4">
-            <p className="text-sm text-muted-foreground">{t("correctAnswer")}:</p>
-            <p className="font-heading font-bold text-foreground">{current.correctOrder.join(" ")}</p>
-          </div>
-        )}
-
-        {/* Text indication */}
-        {result && (
-          <p className={`text-sm font-semibold mb-4 ${
-            result === "correct" ? "text-secondary-foreground" : "text-destructive"
-          }`}>
-            {result === "correct" ? `✓ ${t("correct")}` : `✗ ${t("incorrect")}`}
-          </p>
-        )}
+        {/* Correct answer display — fixed height to prevent layout shift */}
+        <div className="min-h-[60px] mb-4">
+          {result === "incorrect" && (
+            <div className="bg-card rounded-lg p-3 shadow-soft">
+              <p className="text-sm text-muted-foreground">{t("correctAnswer")}:</p>
+              <p className="font-heading font-bold text-foreground">{current.correctOrder.join(" ")}</p>
+            </div>
+          )}
+        </div>
 
         {/* Action buttons */}
         {!result ? (
