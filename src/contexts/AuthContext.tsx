@@ -28,6 +28,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({
   isLoggedIn: false,
+  isAdmin: false,
   user: null,
   session: null,
   loading: true,
