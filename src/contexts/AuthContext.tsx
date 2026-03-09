@@ -69,6 +69,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         learningFrom: "sv",
       });
     }
+
+    // Check admin role
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", authUser.id)
+      .eq("role", "admin")
+      .maybeSingle();
+    setIsAdmin(!!roleData);
   };
 
   useEffect(() => {
