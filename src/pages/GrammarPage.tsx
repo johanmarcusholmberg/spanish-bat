@@ -154,6 +154,10 @@ const GrammarPage = () => {
         };
         setProgress(newProgress);
         saveProgress(user.email, newProgress);
+
+        // Update global progress
+        const completedLessons = Object.values(newProgress).filter(p => p.completed).length;
+        updateGlobalProgress("grammar", completedLessons, lessons.length);
       }
 
       setExerciseResults(finalResults);
