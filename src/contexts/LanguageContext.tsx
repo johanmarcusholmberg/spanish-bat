@@ -152,6 +152,25 @@ const translations: Translations = {
   atTheStore: { sv: "I affären", en: "At the store" },
   atTheRestaurant: { sv: "På restaurangen", en: "At the restaurant" },
   greetings: { sv: "Hälsningar", en: "Greetings" },
+
+  // Progress Dashboard
+  progressOverview: { sv: "Framsteg översikt", en: "Progress Overview" },
+  trackYourLearning: { sv: "Följ din utveckling och framsteg", en: "Track your development and progress" },
+  overallProgress: { sv: "Totalt framsteg", en: "Overall progress" },
+  nextSteps: { sv: "Nästa steg", en: "Next Steps" },
+  recommendedForYou: { sv: "Rekommenderat för dig", en: "Recommended for you" },
+  recommendationNotStarted: { sv: "Du har inte börjat här än. Börja för att göra framsteg!", en: "You haven't started here yet. Begin to make progress!" },
+  recommendationLowest: { sv: "Detta är ditt svagaste område. Fortsätt öva här!", en: "This is your weakest area. Keep practicing here!" },
+  recommendationReview: { sv: "Fantastiskt! Repetera innehållet för att befästa dina kunskaper.", en: "Amazing! Review the content to consolidate your knowledge." },
+  recommendationContinue: { sv: "Fortsätt lära dig här för bästa resultat.", en: "Continue learning here for best results." },
+  startNow: { sv: "Starta nu", en: "Start now" },
+  levelAdvancement: { sv: "Nivåuppgradering", en: "Level Advancement" },
+  readyToAdvance: { sv: "Du är redo att avancera!", en: "You're ready to advance!" },
+  keepLearning: { sv: "Fortsätt lära dig", en: "Keep learning" },
+  congratulationsAdvance: { sv: "Grattis! Du har uppnått 80% framsteg och är redo att ta dig till nästa nivå.", en: "Congratulations! You've reached 80% progress and are ready to move to the next level." },
+  advanceToNextLevel: { sv: "Gå till nästa nivå", en: "Advance to next level" },
+  progressToAdvance: { sv: "Framsteg för att avancera", en: "Progress to advance" },
+  completeAllCategories: { sv: "Slutför övningar i alla kategorier för att låsa upp nästa nivå", en: "Complete exercises in all categories to unlock the next level" },
 };
 
 interface LanguageContextType {
