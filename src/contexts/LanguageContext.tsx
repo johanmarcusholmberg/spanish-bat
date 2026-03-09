@@ -171,6 +171,8 @@ const translations: Translations = {
   advanceToNextLevel: { sv: "Gå till nästa nivå", en: "Advance to next level" },
   progressToAdvance: { sv: "Framsteg för att avancera", en: "Progress to advance" },
   completeAllCategories: { sv: "Slutför övningar i alla kategorier för att låsa upp nästa nivå", en: "Complete exercises in all categories to unlock the next level" },
+  complete: { sv: "slutfört", en: "complete" },
+  recommendationAlmostFinished: { sv: "Nästan klart! Slutför detta för att öka ditt framsteg.", en: "Almost done! Finish this to boost your progress." },
 };
 
 interface LanguageContextType {
