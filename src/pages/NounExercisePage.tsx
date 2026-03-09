@@ -12,10 +12,12 @@ const NounExercisePage = () => {
   const { language, t } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { updateProgress } = useProgress();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [genderAnswer, setGenderAnswer] = useState<"el" | "la" | "">("");
   const [translationAnswer, setTranslationAnswer] = useState("");
   const [showResults, setShowResults] = useState(false);
+  const [completedNouns, setCompletedNouns] = useState(0);
 
   const availableNouns = useMemo(
     () => getItemsForLevel(nouns, user?.level || "A1"),
