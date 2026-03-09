@@ -17,7 +17,7 @@ const ExercisesPage = () => {
     { key: "reading", progressKey: "reading" as const, icon: FileText, path: "/learn/reading", color: "gradient-peach" },
     { key: "sentenceBuilder", progressKey: "sentences" as const, icon: Puzzle, path: "/learn/sentences", color: "gradient-mint" },
     { key: "conversation", progressKey: "sentences" as const, icon: MessageCircle, path: "/learn/conversation", color: "gradient-peach" },
-    { key: "vocabulary", progressKey: "flashcards" as const, icon: BookMarked, path: "/learn/vocabulary", color: "gradient-mint" },
+    { key: "myDictionary", progressKey: "flashcards" as const, icon: BookMarked, path: "/learn/vocabulary", color: "gradient-mint" },
   ];
 
   const exercises = [
