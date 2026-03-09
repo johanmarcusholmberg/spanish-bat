@@ -425,14 +425,31 @@ export const grammarLessons: GrammarLesson[] = [
         ]
       },
       {
+        heading: { sv: "Oregelbundna komparativa former", en: "Irregular comparative forms" },
+        explanation: {
+          sv: "Vissa adjektiv har oregelbundna komparativa former: bueno → mejor (bättre), malo → peor (sämre), grande → mayor (äldre/större), pequeño → menor (yngre/mindre). Dessa används UTAN 'más'.",
+          en: "Some adjectives have irregular comparative forms: bueno → mejor (better), malo → peor (worse), grande → mayor (older/bigger), pequeño → menor (younger/smaller). These are used WITHOUT 'más'."
+        },
+        examples: [
+          { es: "Este vino es mejor que ese.", sv: "Det här vinet är bättre än det där.", en: "This wine is better than that one." },
+          { es: "Mi nota es peor que la tuya.", sv: "Mitt betyg är sämre än ditt.", en: "My grade is worse than yours." },
+          { es: "Mi hermano mayor.", sv: "Min storebror (äldre bror).", en: "My older brother." },
+        ],
+        tip: {
+          sv: "Säg INTE 'más mejor' eller 'más peor' – det är fel!",
+          en: "Do NOT say 'más mejor' or 'más peor' – it's wrong!"
+        }
+      },
+      {
         heading: { sv: "Superlativ", en: "Superlative" },
         explanation: {
-          sv: "Superlativ bildas med 'el/la más + adjektiv' eller oregelbundna former som 'mejor' (bäst) och 'peor' (sämst).",
-          en: "Superlative is formed with 'el/la más + adjective' or irregular forms like 'mejor' (best) and 'peor' (worst)."
+          sv: "Superlativ bildas med 'el/la más + adjektiv'. Oregelbundna former: el mejor (bäst), el peor (sämst), el mayor (äldst), el menor (yngst).",
+          en: "Superlative is formed with 'el/la más + adjective'. Irregular forms: el mejor (best), el peor (worst), el mayor (oldest), el menor (youngest)."
         },
         examples: [
           { es: "Es la ciudad más bonita de España.", sv: "Det är den vackraste staden i Spanien.", en: "It's the most beautiful city in Spain." },
           { es: "Es el mejor restaurante.", sv: "Det är den bästa restaurangen.", en: "It's the best restaurant." },
+          { es: "Es el peor día de mi vida.", sv: "Det är den sämsta dagen i mitt liv.", en: "It's the worst day of my life." },
         ]
       }
     ],
