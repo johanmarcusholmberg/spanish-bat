@@ -223,6 +223,23 @@ export const grammarLessons: GrammarLesson[] = [
           { es: "Yo vivo en Suecia.", sv: "Jag bor i Sverige.", en: "I live in Sweden." },
           { es: "Ellos viven aquí.", sv: "De bor här.", en: "They live here." },
         ]
+      },
+      {
+        heading: { sv: "Oregelbundna verb i presens", en: "Irregular verbs in present tense" },
+        explanation: {
+          sv: "Några av de vanligaste verben är helt oregelbundna och måste läras in utantill. De viktigaste är: tener (ha), hacer (göra), poner (lägga), salir (gå ut), venir (komma), decir (säga).",
+          en: "Some of the most common verbs are completely irregular and must be memorized. The most important are: tener (to have), hacer (to do/make), poner (to put), salir (to leave), venir (to come), decir (to say)."
+        },
+        examples: [
+          { es: "Yo tengo un gato.", sv: "Jag har en katt.", en: "I have a cat." },
+          { es: "Tú haces la tarea.", sv: "Du gör läxan.", en: "You do the homework." },
+          { es: "Él viene mañana.", sv: "Han kommer imorgon.", en: "He comes tomorrow." },
+          { es: "Yo salgo a las ocho.", sv: "Jag går ut klockan åtta.", en: "I leave at eight." },
+        ],
+        tip: {
+          sv: "Första person (yo) är ofta mest oregelbunden: tengo, hago, pongo, salgo, vengo, digo.",
+          en: "First person (yo) is often the most irregular: tengo, hago, pongo, salgo, vengo, digo."
+        }
       }
     ],
     exercises: [
