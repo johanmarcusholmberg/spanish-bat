@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import AppLayout from "@/components/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -7,7 +7,6 @@ import { useSpanishSTT } from "@/hooks/useSpanishSTT";
 import { useVocabulary } from "@/hooks/useVocabulary";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { normalizeAnswer } from "@/lib/answerUtils";
 import {
   pronunciationByLevel,
   getItemsByType,
@@ -15,9 +14,15 @@ import {
   type PronunciationItem,
 } from "@/data/pronunciationData";
 import {
+  analyzePronunciation,
+  getTips,
+  getEncouragement,
+  type PronunciationAnalysis,
+} from "@/lib/pronunciationAnalysis";
+import {
   Mic, MicOff, Volume2, SkipForward, RotateCcw,
   CheckCircle2, XCircle, BookmarkPlus, ChevronRight,
-  Sparkles, Trophy, Lightbulb,
+  Sparkles, Trophy, Lightbulb, AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SelectionPopup from "@/components/SelectionPopup";
@@ -27,6 +32,7 @@ type Mode = "word" | "phrase" | "sentence" | "repeat" | "random";
 interface AttemptResult {
   item: PronunciationItem;
   spoken: string;
+  score: number;
   success: boolean;
 }
 
@@ -54,6 +60,7 @@ const PronunciationPage = () => {
   const [showSummary, setShowSummary] = useState(false);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [analyzing, setAnalyzing] = useState(false);
+  const [analysis, setAnalysis] = useState<PronunciationAnalysis | null>(null);
   const stoppedManually = useRef(false);
   const evaluatedRef = useRef(false);
 
@@ -120,11 +127,12 @@ const PronunciationPage = () => {
       return;
     }
     if (!isListening) {
-      // Final result ready
       evaluatedRef.current = true;
-      const success = normalizeAnswer(spoken) === normalizeAnswer(currentItem.spanish);
+      const result = analyzePronunciation(currentItem.spanish, spoken);
+      setAnalysis(result);
+      const success = result.score >= 80;
       setResult(success ? "correct" : "incorrect");
-      setHistory(prev => [...prev, { item: currentItem, spoken, success }]);
+      setHistory(prev => [...prev, { item: currentItem, spoken, score: result.score, success }]);
       setAnalyzing(false);
     }
   }, [isListening, transcript, currentItem]);
@@ -144,6 +152,7 @@ const PronunciationPage = () => {
   // Retry current
   const handleRetry = useCallback(() => {
     setResult(null);
+    setAnalysis(null);
     resetTranscript();
   }, [resetTranscript]);
 
@@ -182,35 +191,13 @@ const PronunciationPage = () => {
   ];
 
   const correctCount = history.filter(h => h.success).length;
-  const accuracy = history.length > 0 ? Math.round((correctCount / history.length) * 100) : 0;
+  const avgScore = history.length > 0 ? Math.round(history.reduce((s, h) => s + h.score, 0) / history.length) : 0;
 
-  // Feedback text
-  const getFeedback = () => {
-    if (!result || !currentItem) return null;
-    const spoken = transcript.trim();
-    if (result === "correct") {
-      const msgs = language === "sv"
-        ? ["Perfekt uttal! 🎉", "Utmärkt! Du låter fantastisk! ⭐", "Bra jobbat! Fortsätt så! 💪"]
-        : ["Perfect pronunciation! 🎉", "Excellent! You sound amazing! ⭐", "Great job! Keep it up! 💪"];
-      return msgs[Math.floor(Math.random() * msgs.length)];
-    }
-    // incorrect
-    const target = currentItem.spanish;
-    if (!spoken) {
-      return language === "sv" ? "Jag hörde inget. Försök igen!" : "I didn't catch that. Try again!";
-    }
-    const tNorm = normalizeAnswer(target).split(" ");
-    const sNorm = normalizeAnswer(spoken).split(" ");
-    const mismatched = tNorm.filter((w, i) => sNorm[i] !== w);
-    if (mismatched.length > 0 && mismatched.length < tNorm.length) {
-      const parts = mismatched.slice(0, 3).join(", ");
-      return language === "sv"
-        ? `Nästan! Öva lite mer på: ${parts}`
-        : `Almost! Practice a bit more: ${parts}`;
-    }
-    return language === "sv"
-      ? "Inte riktigt. Lyssna igen och försök en gång till!"
-      : "Not quite. Listen again and give it another try!";
+  // Compute score-based color for the circular indicator
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return "text-green-500";
+    if (score >= 60) return "text-amber-500";
+    return "text-destructive";
   };
 
   // Summary view
@@ -224,8 +211,8 @@ const PronunciationPage = () => {
           </h1>
           <p className="text-muted-foreground mb-6">
             {language === "sv"
-              ? `Du klarade ${correctCount} av ${history.length} (${accuracy}% rätt)`
-              : `You got ${correctCount} of ${history.length} correct (${accuracy}% accuracy)`}
+              ? `Du klarade ${correctCount} av ${history.length} (snittpoäng ${avgScore}%)`
+              : `You got ${correctCount} of ${history.length} correct (avg score ${avgScore}%)`}
           </p>
           <div className="space-y-2 mb-6 text-left">
             {history.map((h, i) => (
@@ -236,10 +223,11 @@ const PronunciationPage = () => {
                 {h.success
                   ? <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
                   : <XCircle className="h-5 w-5 text-destructive shrink-0" />}
-                <div className="min-w-0">
+                <div className="flex-1 min-w-0">
                   <span className="font-medium text-foreground">{h.item.spanish}</span>
                   <span className="text-muted-foreground text-sm ml-2">→ "{h.spoken || "—"}"</span>
                 </div>
+                <span className={cn("text-sm font-bold shrink-0", getScoreColor(h.score))}>{h.score}%</span>
               </div>
             ))}
           </div>
@@ -269,7 +257,7 @@ const PronunciationPage = () => {
           <div className="text-right">
             <span className="text-sm font-medium text-primary">{level}</span>
             {history.length > 0 && (
-              <div className="text-xs text-muted-foreground">{accuracy}% {language === "sv" ? "rätt" : "correct"}</div>
+              <div className="text-xs text-muted-foreground">{avgScore}% {language === "sv" ? "snitt" : "avg"}</div>
             )}
           </div>
         </div>
@@ -412,30 +400,97 @@ const PronunciationPage = () => {
             )}
 
             {/* Result feedback */}
-            {result && (
-              <div className={cn(
-                "mt-4 rounded-xl p-4 text-center transition-all animate-fade-in",
-                result === "correct" ? "bg-green-500/10" : "bg-destructive/10"
-              )}>
-                <div className="flex items-center justify-center gap-2 mb-1">
-                  {result === "correct"
-                    ? <CheckCircle2 className="h-6 w-6 text-green-500" />
-                    : <XCircle className="h-6 w-6 text-destructive" />}
-                  <span className={cn(
-                    "font-bold text-lg",
-                    result === "correct" ? "text-green-600 dark:text-green-400" : "text-destructive"
-                  )}>
-                    {result === "correct"
-                      ? (language === "sv" ? "Rätt!" : "Correct!")
-                      : (language === "sv" ? "Försök igen" : "Try again")}
-                  </span>
+            {result && analysis && currentItem && (
+              <div className="mt-4 rounded-xl border border-border p-4 transition-all animate-fade-in space-y-4">
+                {/* Score + encouragement */}
+                <div className="flex items-center gap-4">
+                  <div className={cn("text-3xl font-bold", getScoreColor(analysis.score))}>
+                    {analysis.score}%
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-foreground">
+                      {getEncouragement(analysis.summary, language)}
+                    </p>
+                    <Progress value={analysis.score} className="h-2 mt-1.5" />
+                  </div>
                 </div>
-                <p className="text-sm text-foreground/80">{getFeedback()}</p>
+
+                {/* Word-by-word breakdown */}
+                {currentItem.type !== "word" && (
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">
+                      {language === "sv" ? "Ord-för-ord analys:" : "Word-by-word analysis:"}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {analysis.wordResults.filter(w => w.status !== "extra").map((w, i) => (
+                        <span
+                          key={i}
+                          className={cn(
+                            "px-2 py-1 rounded-md text-sm font-medium transition-all",
+                            w.status === "correct" && "bg-green-500/15 text-green-700 dark:text-green-400",
+                            w.status === "close" && "bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30",
+                            w.status === "skipped" && "bg-destructive/10 text-destructive line-through",
+                            w.status === "wrong" && "bg-destructive/15 text-destructive",
+                          )}
+                          title={w.spoken ? `${language === "sv" ? "Du sa" : "You said"}: "${w.spoken}"` : undefined}
+                        >
+                          {w.target}
+                          {w.status === "close" && w.spoken && (
+                            <span className="text-xs ml-1 opacity-70">→ {w.spoken}</span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* What you said */}
                 {transcript && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {language === "sv" ? "Du sa" : "You said"}: <span className="font-medium">"{transcript}"</span>
+                  <p className="text-xs text-muted-foreground">
+                    {language === "sv" ? "Du sa" : "You said"}: <span className="font-medium italic">"{transcript}"</span>
                   </p>
                 )}
+
+                {/* Tips */}
+                {analysis.score < 95 && (() => {
+                  const tips = getTips(analysis, currentItem.spanish);
+                  return tips.length > 0 ? (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                        <Lightbulb className="h-3.5 w-3.5" />
+                        {language === "sv" ? "Tips:" : "Tips:"}
+                      </p>
+                      {tips.map((tip, i) => (
+                        <p key={i} className="text-sm text-foreground/80 pl-5">
+                          • {language === "sv" ? tip.sv : tip.en}
+                        </p>
+                      ))}
+                    </div>
+                  ) : null;
+                })()}
+
+                {/* Quick actions inside feedback */}
+                <div className="flex gap-2 flex-wrap pt-1">
+                  <Button variant="outline" size="sm" onClick={handleRetry} className="gap-1">
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    {language === "sv" ? "Försök igen" : "Retry"}
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleListen} className="gap-1">
+                    <Volume2 className="h-3.5 w-3.5" />
+                    {language === "sv" ? "Lyssna igen" : "Listen again"}
+                  </Button>
+                  {analysis.closeWords.length > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1"
+                      onClick={() => speak(analysis.closeWords[0])}
+                    >
+                      <AlertCircle className="h-3.5 w-3.5" />
+                      {language === "sv" ? `Öva "${analysis.closeWords[0]}"` : `Practice "${analysis.closeWords[0]}"`}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -443,12 +498,6 @@ const PronunciationPage = () => {
 
         {/* Action buttons */}
         <div className="flex gap-3 justify-center flex-wrap">
-          {result === "incorrect" && (
-            <Button variant="outline" onClick={handleRetry} className="gap-1.5">
-              <RotateCcw className="h-4 w-4" />
-              {language === "sv" ? "Försök igen" : "Retry"}
-            </Button>
-          )}
           {result && (
             <Button onClick={handleNext} className="gap-1.5">
               {currentIdx >= items.length - 1
@@ -477,7 +526,7 @@ const PronunciationPage = () => {
               {language === "sv" ? "Rätt" : "Correct"}
             </div>
             <div>
-              <div className="text-lg font-bold text-primary">{accuracy}%</div>
+              <div className="text-lg font-bold text-primary">{avgScore}%</div>
               {language === "sv" ? "Precision" : "Accuracy"}
             </div>
           </div>
