@@ -9,8 +9,8 @@ import { useVocabulary } from "@/hooks/useVocabulary";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import SelectionPopup from "@/components/SelectionPopup";
 import {
-  BookPlus,
   Lightbulb,
   Loader2,
   MessageCircle,
@@ -135,9 +135,8 @@ const ConversationPage = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [autoRead, setAutoRead] = useState(false);
-  const [saveWordMode, setSaveWordMode] = useState<number | null>(null);
-  const [selectedText, setSelectedText] = useState("");
-  const [wordTranslation, setWordTranslation] = useState("");
+
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const lastAssistantMsgRef = useRef("");
@@ -265,9 +264,6 @@ const ConversationPage = () => {
       setSelectedScenario(scenario);
       setMessages([]);
       setInput("");
-      setSaveWordMode(null);
-      setSelectedText("");
-      setWordTranslation("");
       setIsLoading(true);
       lastAssistantMsgRef.current = "";
 
@@ -358,10 +354,7 @@ const ConversationPage = () => {
     setMessages([]);
     setInput("");
     setIsLoading(false);
-    setSaveWordMode(null);
-    setSelectedText("");
-    setWordTranslation("");
-    lastAssistantMsgRef.current = "";
+      lastAssistantMsgRef.current = "";
   };
 
   const handleMicToggle = () => {
@@ -380,30 +373,6 @@ const ConversationPage = () => {
     startListening();
   };
 
-  const handleSaveWord = (msgIndex: number) => {
-    if (saveWordMode === msgIndex) {
-      setSaveWordMode(null);
-      setSelectedText("");
-      setWordTranslation("");
-      return;
-    }
-
-    setSaveWordMode(msgIndex);
-    setSelectedText("");
-    setWordTranslation("");
-  };
-
-  const confirmSaveWord = async () => {
-    if (saveWordMode === null) return;
-    if (!selectedText.trim() || !wordTranslation.trim()) return;
-
-    const context = messages[saveWordMode]?.content?.slice(0, 150);
-    await addWord(selectedText, wordTranslation, context);
-
-    setSaveWordMode(null);
-    setSelectedText("");
-    setWordTranslation("");
-  };
 
   return (
     <AppLayout>
@@ -478,7 +447,7 @@ const ConversationPage = () => {
             </div>
 
             <div className="rounded-2xl border bg-card p-4">
-              <div className="max-h-[55vh] space-y-4 overflow-y-auto pr-2">
+              <div ref={messagesContainerRef} className="max-h-[55vh] space-y-4 overflow-y-auto pr-2">
                 {messages.map((msg, i) => (
                   <div
                     key={`${msg.role}-${i}`}
@@ -490,62 +459,22 @@ const ConversationPage = () => {
                   >
                     <p className="whitespace-pre-wrap text-sm leading-6">{msg.content}</p>
 
-                    {msg.role === "assistant" && (
+                    {msg.role === "assistant" && ttsSupported && (
                       <div className="mt-3 flex flex-wrap items-center gap-2">
-                        {ttsSupported && (
-                          <button
-                            type="button"
-                            onClick={() => speak(msg.content)}
-                            className="rounded-md p-1 text-muted-foreground transition hover:text-foreground"
-                            title={language === "sv" ? "Lyssna" : "Listen"}
-                          >
-                            <Volume2 className="h-4 w-4" />
-                          </button>
-                        )}
-
                         <button
                           type="button"
-                          onClick={() => handleSaveWord(i)}
-                          className={`rounded-md p-1 transition ${
-                            saveWordMode === i
-                              ? "text-primary"
-                              : "text-muted-foreground hover:text-foreground"
-                          }`}
-                          title={language === "sv" ? "Spara ord" : "Save word"}
+                          onClick={() => speak(msg.content)}
+                          className="rounded-md p-1 text-muted-foreground transition hover:text-foreground"
+                          title={language === "sv" ? "Lyssna" : "Listen"}
                         >
-                          <BookPlus className="h-4 w-4" />
+                          <Volume2 className="h-4 w-4" />
                         </button>
-                      </div>
-                    )}
-
-                    {saveWordMode === i && (
-                      <div className="mt-3 grid gap-2 rounded-xl border bg-background p-3">
-                        <p className="text-xs text-muted-foreground">
-                          {language === "sv"
-                            ? "Skriv ett ord eller en fras att spara:"
-                            : "Enter a word or phrase to save:"}
-                        </p>
-
-                        <Input
-                          value={selectedText}
-                          onChange={(e) => setSelectedText(e.target.value)}
-                          placeholder={
-                            language === "sv" ? "Spanskt ord/fras" : "Spanish word/phrase"
-                          }
-                        />
-                        <Input
-                          value={wordTranslation}
-                          onChange={(e) => setWordTranslation(e.target.value)}
-                          placeholder={language === "sv" ? "Översättning" : "Translation"}
-                        />
-                        <Button onClick={confirmSaveWord}>
-                          {language === "sv" ? "Spara" : "Save"}
-                        </Button>
                       </div>
                     )}
                   </div>
                 ))}
 
+                <SelectionPopup containerRef={messagesContainerRef as React.RefObject<HTMLElement>} />
                 {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
                   <div className="mr-auto flex max-w-[85%] items-center gap-2 rounded-2xl bg-muted p-4 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />

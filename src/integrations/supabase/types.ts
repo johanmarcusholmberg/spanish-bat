@@ -206,6 +206,8 @@ export type Database = {
           context: string | null
           created_at: string
           id: string
+          item_type: string
+          learned: boolean
           spanish: string
           translation: string
           updated_at: string
@@ -216,6 +218,8 @@ export type Database = {
           context?: string | null
           created_at?: string
           id?: string
+          item_type?: string
+          learned?: boolean
           spanish: string
           translation: string
           updated_at?: string
@@ -226,6 +230,8 @@ export type Database = {
           context?: string | null
           created_at?: string
           id?: string
+          item_type?: string
+          learned?: boolean
           spanish?: string
           translation?: string
           updated_at?: string
