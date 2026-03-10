@@ -152,6 +152,7 @@ const PronunciationPage = () => {
   // Retry current
   const handleRetry = useCallback(() => {
     setResult(null);
+    setAnalysis(null);
     resetTranscript();
   }, [resetTranscript]);
 
