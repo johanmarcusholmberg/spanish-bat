@@ -53,6 +53,9 @@ const PronunciationPage = () => {
   const [history, setHistory] = useState<AttemptResult[]>([]);
   const [showSummary, setShowSummary] = useState(false);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [analyzing, setAnalyzing] = useState(false);
+  const stoppedManually = useRef(false);
+  const evaluatedRef = useRef(false);
 
   // Build items when mode or level changes
   useEffect(() => {
