@@ -53,6 +53,9 @@ const PronunciationPage = () => {
   const [history, setHistory] = useState<AttemptResult[]>([]);
   const [showSummary, setShowSummary] = useState(false);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [analyzing, setAnalyzing] = useState(false);
+  const stoppedManually = useRef(false);
+  const evaluatedRef = useRef(false);
 
   // Build items when mode or level changes
   useEffect(() => {
@@ -88,26 +91,42 @@ const PronunciationPage = () => {
   // Start recording
   const handleRecord = useCallback(() => {
     setResult(null);
+    setAnalyzing(false);
+    stoppedManually.current = false;
     resetTranscript();
     startListening();
   }, [resetTranscript, startListening]);
 
-  // Stop recording and evaluate
+  // Stop recording — show analyzing state immediately
   const handleStopAndEvaluate = useCallback(() => {
+    stoppedManually.current = true;
+    setAnalyzing(true);
     stopListening();
   }, [stopListening]);
 
-  // Evaluate once transcript is ready after stopping
-  const prevListening = useRef(isListening);
+  // Evaluate as soon as transcript updates after manual stop
   useEffect(() => {
-    if (prevListening.current && !isListening && currentItem) {
-      const spoken = transcript.trim();
-      if (!spoken) return;
+    if (stoppedManually.current) evaluatedRef.current = false;
+  }, [currentIdx]);
+
+  useEffect(() => {
+    if (!stoppedManually.current || evaluatedRef.current || !currentItem) return;
+    // Wait until STT is done (isListening false) or we have a transcript
+    const spoken = transcript.trim();
+    if (!spoken && isListening) return; // still recording
+    if (!spoken && !isListening) {
+      // STT ended with nothing
+      setAnalyzing(false);
+      return;
+    }
+    if (!isListening) {
+      // Final result ready
+      evaluatedRef.current = true;
       const success = normalizeAnswer(spoken) === normalizeAnswer(currentItem.spanish);
       setResult(success ? "correct" : "incorrect");
       setHistory(prev => [...prev, { item: currentItem, spoken, success }]);
+      setAnalyzing(false);
     }
-    prevListening.current = isListening;
   }, [isListening, transcript, currentItem]);
 
   // Next item
@@ -379,7 +398,13 @@ const PronunciationPage = () => {
               )}
             </div>
 
-            {/* Live transcript */}
+            {/* Live transcript / analyzing */}
+            {analyzing && !isListening && !result && (
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground min-h-[1.5rem]">
+                <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
+                {language === "sv" ? "Analyserar..." : "Analyzing..."}
+              </div>
+            )}
             {(isListening || interimTranscript) && (
               <p className="text-center text-muted-foreground text-sm italic min-h-[1.5rem]">
                 {interimTranscript || (language === "sv" ? "Lyssnar..." : "Listening...")}
