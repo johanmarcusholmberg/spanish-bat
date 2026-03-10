@@ -642,6 +642,7 @@ const GrammarPage = () => {
           {t("levelOverrideHint")}
         </p>
       </div>
+      <SelectionPopup containerRef={contentRef} />
     </AppLayout>
   );
 };

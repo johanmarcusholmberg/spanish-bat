@@ -227,6 +227,7 @@ const FlashcardsPage = () => {
           </div>
         )}
       </div>
+      <SelectionPopup containerRef={contentRef} />
     </AppLayout>
   );
 };

@@ -194,6 +194,7 @@ const SentenceBuilderPage = () => {
           </button>
         </div>
       </div>
+      <SelectionPopup containerRef={contentRef} />
     </AppLayout>
   );
 };

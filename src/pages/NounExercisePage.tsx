@@ -140,6 +140,7 @@ const NounExercisePage = () => {
           </div>
         </div>
       </div>
+      <SelectionPopup containerRef={contentRef} />
     </AppLayout>
   );
 };

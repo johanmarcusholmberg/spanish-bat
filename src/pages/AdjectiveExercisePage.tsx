@@ -144,6 +144,7 @@ const AdjectiveExercisePage = () => {
           </div>
         </div>
       </div>
+      <SelectionPopup containerRef={contentRef} />
     </AppLayout>
   );
 };

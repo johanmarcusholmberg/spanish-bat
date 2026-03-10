@@ -142,6 +142,7 @@ const ReadingPage = () => {
           </div>
         )}
       </div>
+      <SelectionPopup containerRef={contentRef} />
     </AppLayout>
   );
 };

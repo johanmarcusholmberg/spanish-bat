@@ -149,6 +149,7 @@ const QuizExercisePage = () => {
           </div>
         )}
       </div>
+      <SelectionPopup containerRef={contentRef} />
     </AppLayout>
   );
 };

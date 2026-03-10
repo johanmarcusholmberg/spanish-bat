@@ -165,6 +165,7 @@ const VerbExercisePage = () => {
           </div>
         </div>
       </div>
+      <SelectionPopup containerRef={contentRef} />
     </AppLayout>
   );
 };
