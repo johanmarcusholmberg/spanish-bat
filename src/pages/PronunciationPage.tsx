@@ -526,7 +526,7 @@ const PronunciationPage = () => {
               {language === "sv" ? "Rätt" : "Correct"}
             </div>
             <div>
-              <div className="text-lg font-bold text-primary">{accuracy}%</div>
+              <div className="text-lg font-bold text-primary">{avgScore}%</div>
               {language === "sv" ? "Precision" : "Accuracy"}
             </div>
           </div>
