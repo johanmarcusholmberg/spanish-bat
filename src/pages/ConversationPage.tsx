@@ -9,8 +9,8 @@ import { useVocabulary } from "@/hooks/useVocabulary";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import SelectionPopup from "@/components/SelectionPopup";
 import {
-  BookPlus,
   Lightbulb,
   Loader2,
   MessageCircle,
