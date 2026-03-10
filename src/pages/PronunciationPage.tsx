@@ -60,6 +60,7 @@ const PronunciationPage = () => {
   const [showSummary, setShowSummary] = useState(false);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [analyzing, setAnalyzing] = useState(false);
+  const [analysis, setAnalysis] = useState<PronunciationAnalysis | null>(null);
   const stoppedManually = useRef(false);
   const evaluatedRef = useRef(false);
 
