@@ -29,6 +29,8 @@ const ReadingPage = () => {
     setSubmitted(false);
   }, [user?.level]);
 
+  const contentRef = useRef<HTMLDivElement>(null);
+
   const current = texts[textIndex % texts.length];
   if (!current) return <AppLayout><p>No texts available.</p></AppLayout>;
 
@@ -51,8 +53,6 @@ const ReadingPage = () => {
   const correctCount = submitted
     ? current.questions.filter((q, i) => answers[i] === q.correctIndex).length
     : 0;
-
-  const contentRef = useRef<HTMLDivElement>(null);
 
   return (
     <AppLayout>

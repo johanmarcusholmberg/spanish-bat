@@ -34,6 +34,8 @@ const NounExercisePage = () => {
     setShowResults(false);
   }, [user?.level]);
 
+  const contentRef = useRef<HTMLDivElement>(null);
+
   const current = availableNouns[currentIndex];
   if (!current) return null;
 

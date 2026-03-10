@@ -38,6 +38,8 @@ const VerbExercisePage = () => {
     setScore(0);
   }, [user?.level]);
 
+  const contentRef = useRef<HTMLDivElement>(null);
+
   const currentVerb = availableVerbs[currentIndex];
   if (!currentVerb) return null;
 

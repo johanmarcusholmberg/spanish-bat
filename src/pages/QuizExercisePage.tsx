@@ -38,6 +38,8 @@ const QuizExercisePage = () => {
     setTotalAnswered(0);
   }, [user?.level]);
 
+  const contentRef = useRef<HTMLDivElement>(null);
+
   const current = available[currentIndex % Math.max(available.length, 1)];
 
   const isCorrect = current && checkAnswer(answer, current.answer);

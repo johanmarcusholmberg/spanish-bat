@@ -86,6 +86,8 @@ const SentenceBuilderPage = () => {
     }
   }, [current]);
 
+  const contentRef = useRef<HTMLDivElement>(null);
+
   if (!current) {
     return <AppLayout><p className="text-muted-foreground">No exercises available.</p></AppLayout>;
   }

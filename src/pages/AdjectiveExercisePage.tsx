@@ -34,6 +34,8 @@ const AdjectiveExercisePage = () => {
     setShowResults(false);
   }, [user?.level]);
 
+  const contentRef = useRef<HTMLDivElement>(null);
+
   const current = available[currentIndex];
   if (!current) return null;
 
