@@ -373,30 +373,6 @@ const ConversationPage = () => {
     startListening();
   };
 
-  const handleSaveWord = (msgIndex: number) => {
-    if (saveWordMode === msgIndex) {
-      setSaveWordMode(null);
-      setSelectedText("");
-      setWordTranslation("");
-      return;
-    }
-
-    setSaveWordMode(msgIndex);
-    setSelectedText("");
-    setWordTranslation("");
-  };
-
-  const confirmSaveWord = async () => {
-    if (saveWordMode === null) return;
-    if (!selectedText.trim() || !wordTranslation.trim()) return;
-
-    const context = messages[saveWordMode]?.content?.slice(0, 150);
-    await addWord(selectedText, wordTranslation, context);
-
-    setSaveWordMode(null);
-    setSelectedText("");
-    setWordTranslation("");
-  };
 
   return (
     <AppLayout>
