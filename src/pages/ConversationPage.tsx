@@ -354,10 +354,7 @@ const ConversationPage = () => {
     setMessages([]);
     setInput("");
     setIsLoading(false);
-    setSaveWordMode(null);
-    setSelectedText("");
-    setWordTranslation("");
-    lastAssistantMsgRef.current = "";
+      lastAssistantMsgRef.current = "";
   };
 
   const handleMicToggle = () => {
