@@ -398,7 +398,13 @@ const PronunciationPage = () => {
               )}
             </div>
 
-            {/* Live transcript */}
+            {/* Live transcript / analyzing */}
+            {analyzing && !isListening && !result && (
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground min-h-[1.5rem]">
+                <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
+                {language === "sv" ? "Analyserar..." : "Analyzing..."}
+              </div>
+            )}
             {(isListening || interimTranscript) && (
               <p className="text-center text-muted-foreground text-sm italic min-h-[1.5rem]">
                 {interimTranscript || (language === "sv" ? "Lyssnar..." : "Listening...")}
