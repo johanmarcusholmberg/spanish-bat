@@ -264,9 +264,6 @@ const ConversationPage = () => {
       setSelectedScenario(scenario);
       setMessages([]);
       setInput("");
-      setSaveWordMode(null);
-      setSelectedText("");
-      setWordTranslation("");
       setIsLoading(true);
       lastAssistantMsgRef.current = "";
 
