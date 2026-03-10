@@ -5,7 +5,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { useSpanishSTT } from "@/hooks/useSpanishSTT";
 import { useSpanishTTS } from "@/hooks/useSpanishTTS";
-import { useVocabulary } from "@/hooks/useVocabulary";
 import { useConversationStream } from "@/hooks/useConversationStream";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +18,6 @@ import {
   MicOff,
   RotateCcw,
   Send,
-  Volume2,
   X,
 } from "lucide-react";
 
@@ -128,7 +126,6 @@ const ConversationPage = () => {
     resetTranscript,
     isSupported: sttSupported,
   } = useSpanishSTT();
-  const { addWord } = useVocabulary();
 
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -354,27 +351,6 @@ const ConversationPage = () => {
                     <div className="whitespace-pre-wrap text-sm leading-relaxed">
                       {msg.content}
                     </div>
-
-                    {msg.role === "assistant" && (
-                      <div className="mt-2 flex items-center gap-2">
-                        {ttsSupported && (
-                          <button
-                            onClick={() => speak(msg.content)}
-                            className="rounded-md p-1 text-muted-foreground transition hover:text-foreground"
-                            title={language === "sv" ? "Lyssna" : "Listen"}
-                          >
-                            <Volume2 className="h-4 w-4" />
-                          </button>
-                        )}
-
-                        <SelectionPopup
-                          text={msg.content}
-                          onAdd={async (text, translation) => {
-                            await addWord(text, translation);
-                          }}
-                        />
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}
@@ -389,6 +365,8 @@ const ConversationPage = () => {
               )}
             </div>
           </div>
+
+          <SelectionPopup containerRef={messagesContainerRef} />
 
           <div className="mb-3 flex flex-wrap gap-2">
             <Button
