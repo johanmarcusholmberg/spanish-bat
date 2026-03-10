@@ -36,7 +36,7 @@ import { useVocabulary, VocabularyWord } from "@/hooks/useVocabulary";
 import { useSpanishTTS } from "@/hooks/useSpanishTTS";
 import VocabularyPractice from "@/components/vocabulary/VocabularyPractice";
 
-type FilterType = "all" | "word" | "phrase" | "sentence";
+type FilterType = "all" | "word" | "phrase" | "sentence" | "recent" | "needs_practice";
 type FilterLearned = "all" | "learned" | "unlearned";
 
 const VocabularyPage = () => {
