@@ -145,7 +145,7 @@ const FlashcardsPage = () => {
 
   return (
     <AppLayout>
-      <div className="animate-fade-in max-w-lg mx-auto">
+      <div className="animate-fade-in max-w-lg mx-auto" ref={contentRef}>
         <h1 className="text-2xl font-heading font-bold text-foreground mb-2 flex items-center gap-2">
           <Layers className="h-6 w-6" />
           {t("flashcards")}
