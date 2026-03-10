@@ -211,8 +211,8 @@ const PronunciationPage = () => {
           </h1>
           <p className="text-muted-foreground mb-6">
             {language === "sv"
-              ? `Du klarade ${correctCount} av ${history.length} (${accuracy}% rätt)`
-              : `You got ${correctCount} of ${history.length} correct (${accuracy}% accuracy)`}
+              ? `Du klarade ${correctCount} av ${history.length} (snittpoäng ${avgScore}%)`
+              : `You got ${correctCount} of ${history.length} correct (avg score ${avgScore}%)`}
           </p>
           <div className="space-y-2 mb-6 text-left">
             {history.map((h, i) => (
