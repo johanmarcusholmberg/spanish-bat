@@ -399,30 +399,97 @@ const PronunciationPage = () => {
             )}
 
             {/* Result feedback */}
-            {result && (
-              <div className={cn(
-                "mt-4 rounded-xl p-4 text-center transition-all animate-fade-in",
-                result === "correct" ? "bg-green-500/10" : "bg-destructive/10"
-              )}>
-                <div className="flex items-center justify-center gap-2 mb-1">
-                  {result === "correct"
-                    ? <CheckCircle2 className="h-6 w-6 text-green-500" />
-                    : <XCircle className="h-6 w-6 text-destructive" />}
-                  <span className={cn(
-                    "font-bold text-lg",
-                    result === "correct" ? "text-green-600 dark:text-green-400" : "text-destructive"
-                  )}>
-                    {result === "correct"
-                      ? (language === "sv" ? "Rätt!" : "Correct!")
-                      : (language === "sv" ? "Försök igen" : "Try again")}
-                  </span>
+            {result && analysis && currentItem && (
+              <div className="mt-4 rounded-xl border border-border p-4 transition-all animate-fade-in space-y-4">
+                {/* Score + encouragement */}
+                <div className="flex items-center gap-4">
+                  <div className={cn("text-3xl font-bold", getScoreColor(analysis.score))}>
+                    {analysis.score}%
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-foreground">
+                      {getEncouragement(analysis.summary, language)}
+                    </p>
+                    <Progress value={analysis.score} className="h-2 mt-1.5" />
+                  </div>
                 </div>
-                <p className="text-sm text-foreground/80">{getFeedback()}</p>
+
+                {/* Word-by-word breakdown */}
+                {currentItem.type !== "word" && (
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">
+                      {language === "sv" ? "Ord-för-ord analys:" : "Word-by-word analysis:"}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {analysis.wordResults.filter(w => w.status !== "extra").map((w, i) => (
+                        <span
+                          key={i}
+                          className={cn(
+                            "px-2 py-1 rounded-md text-sm font-medium transition-all",
+                            w.status === "correct" && "bg-green-500/15 text-green-700 dark:text-green-400",
+                            w.status === "close" && "bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30",
+                            w.status === "skipped" && "bg-destructive/10 text-destructive line-through",
+                            w.status === "wrong" && "bg-destructive/15 text-destructive",
+                          )}
+                          title={w.spoken ? `${language === "sv" ? "Du sa" : "You said"}: "${w.spoken}"` : undefined}
+                        >
+                          {w.target}
+                          {w.status === "close" && w.spoken && (
+                            <span className="text-xs ml-1 opacity-70">→ {w.spoken}</span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* What you said */}
                 {transcript && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {language === "sv" ? "Du sa" : "You said"}: <span className="font-medium">"{transcript}"</span>
+                  <p className="text-xs text-muted-foreground">
+                    {language === "sv" ? "Du sa" : "You said"}: <span className="font-medium italic">"{transcript}"</span>
                   </p>
                 )}
+
+                {/* Tips */}
+                {analysis.score < 95 && (() => {
+                  const tips = getTips(analysis, currentItem.spanish);
+                  return tips.length > 0 ? (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                        <Lightbulb className="h-3.5 w-3.5" />
+                        {language === "sv" ? "Tips:" : "Tips:"}
+                      </p>
+                      {tips.map((tip, i) => (
+                        <p key={i} className="text-sm text-foreground/80 pl-5">
+                          • {language === "sv" ? tip.sv : tip.en}
+                        </p>
+                      ))}
+                    </div>
+                  ) : null;
+                })()}
+
+                {/* Quick actions inside feedback */}
+                <div className="flex gap-2 flex-wrap pt-1">
+                  <Button variant="outline" size="sm" onClick={handleRetry} className="gap-1">
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    {language === "sv" ? "Försök igen" : "Retry"}
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleListen} className="gap-1">
+                    <Volume2 className="h-3.5 w-3.5" />
+                    {language === "sv" ? "Lyssna igen" : "Listen again"}
+                  </Button>
+                  {analysis.closeWords.length > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1"
+                      onClick={() => speak(analysis.closeWords[0])}
+                    >
+                      <AlertCircle className="h-3.5 w-3.5" />
+                      {language === "sv" ? `Öva "${analysis.closeWords[0]}"` : `Practice "${analysis.closeWords[0]}"`}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -430,12 +497,6 @@ const PronunciationPage = () => {
 
         {/* Action buttons */}
         <div className="flex gap-3 justify-center flex-wrap">
-          {result === "incorrect" && (
-            <Button variant="outline" onClick={handleRetry} className="gap-1.5">
-              <RotateCcw className="h-4 w-4" />
-              {language === "sv" ? "Försök igen" : "Retry"}
-            </Button>
-          )}
           {result && (
             <Button onClick={handleNext} className="gap-1.5">
               {currentIdx >= items.length - 1
