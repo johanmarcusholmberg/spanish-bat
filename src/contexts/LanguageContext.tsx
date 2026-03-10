@@ -82,6 +82,8 @@ const translations: Translations = {
   conversationDesc: { sv: "Öva vardagssamtal med en AI-partner på spanska", en: "Practice everyday conversations with an AI partner in Spanish" },
   myDictionary: { sv: "Min ordbok", en: "My Dictionary" },
   myDictionaryDesc: { sv: "Dina sparade ord och fraser att öva på", en: "Your saved words and phrases to practice" },
+  pronunciation: { sv: "Uttalsövning", en: "Pronunciation" },
+  pronunciationDesc: { sv: "Öva ditt uttal med ord, fraser och meningar", en: "Practice your pronunciation with words, phrases and sentences" },
   tapToFlip: { sv: "Tryck för att vända", en: "Tap to flip" },
   answer: { sv: "Svar", en: "Answer" },
   hard: { sv: "Svårt", en: "Hard" },
