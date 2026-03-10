@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
@@ -9,6 +9,7 @@ import { useProgress } from "@/contexts/ProgressContext";
 import { useStreak } from "@/contexts/StreakContext";
 import { useSpanishTTS } from "@/hooks/useSpanishTTS";
 import { supabase } from "@/integrations/supabase/client";
+import SelectionPopup from "@/components/SelectionPopup";
 
 interface CardState {
   interval: number; // days until next review
@@ -132,6 +133,8 @@ const FlashcardsPage = () => {
     [currentCard, cardStates, session?.user?.id, allCards.length]
   );
 
+  const contentRef = useRef<HTMLDivElement>(null);
+
   if (!currentCard) {
     return (
       <AppLayout>
@@ -144,7 +147,7 @@ const FlashcardsPage = () => {
 
   return (
     <AppLayout>
-      <div className="animate-fade-in max-w-lg mx-auto">
+      <div className="animate-fade-in max-w-lg mx-auto" ref={contentRef}>
         <h1 className="text-2xl font-heading font-bold text-foreground mb-2 flex items-center gap-2">
           <Layers className="h-6 w-6" />
           {t("flashcards")}
@@ -226,6 +229,7 @@ const FlashcardsPage = () => {
           </div>
         )}
       </div>
+      <SelectionPopup containerRef={contentRef} />
     </AppLayout>
   );
 };

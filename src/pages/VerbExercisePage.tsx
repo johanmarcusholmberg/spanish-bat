@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
@@ -8,6 +8,7 @@ import { ArrowLeft, Check, X, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProgress } from "@/contexts/ProgressContext";
 import { useStreak } from "@/contexts/StreakContext";
+import SelectionPopup from "@/components/SelectionPopup";
 
 const pronouns = ["yo", "tú", "él/ella", "nosotros", "vosotros", "ellos"] as const;
 const pronounKeys = ["yo", "tú", "él", "nosotros", "vosotros", "ellos"] as const;
@@ -36,6 +37,8 @@ const VerbExercisePage = () => {
     setShowResults(false);
     setScore(0);
   }, [user?.level]);
+
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const currentVerb = availableVerbs[currentIndex];
   if (!currentVerb) return null;
@@ -67,7 +70,7 @@ const VerbExercisePage = () => {
 
   return (
     <AppLayout>
-      <div className="animate-fade-in max-w-lg">
+      <div className="animate-fade-in max-w-lg" ref={contentRef}>
         <button onClick={() => navigate("/exercises")} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition mb-4">
           <ArrowLeft className="h-4 w-4" /> {t("exercises")}
         </button>
@@ -164,6 +167,7 @@ const VerbExercisePage = () => {
           </div>
         </div>
       </div>
+      <SelectionPopup containerRef={contentRef} />
     </AppLayout>
   );
 };

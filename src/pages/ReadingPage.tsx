@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
@@ -7,6 +7,7 @@ import { getItemsForLevel } from "@/data/spanishData";
 import { BookOpen, Check, X, ArrowRight } from "lucide-react";
 import { useProgress } from "@/contexts/ProgressContext";
 import { useStreak } from "@/contexts/StreakContext";
+import SelectionPopup from "@/components/SelectionPopup";
 
 const ReadingPage = () => {
   const { t, language } = useLanguage();
@@ -27,6 +28,8 @@ const ReadingPage = () => {
     setAnswers({});
     setSubmitted(false);
   }, [user?.level]);
+
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const current = texts[textIndex % texts.length];
   if (!current) return <AppLayout><p>No texts available.</p></AppLayout>;
@@ -53,7 +56,7 @@ const ReadingPage = () => {
 
   return (
     <AppLayout>
-      <div className="animate-fade-in max-w-2xl mx-auto">
+      <div className="animate-fade-in max-w-2xl mx-auto" ref={contentRef}>
         <h1 className="text-2xl font-heading font-bold text-foreground mb-2 flex items-center gap-2">
           <BookOpen className="h-6 w-6" />
           {t("reading")}
@@ -139,6 +142,7 @@ const ReadingPage = () => {
           </div>
         )}
       </div>
+      <SelectionPopup containerRef={contentRef} />
     </AppLayout>
   );
 };

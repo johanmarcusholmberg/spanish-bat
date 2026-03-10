@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
@@ -7,6 +7,7 @@ import { getItemsForLevel } from "@/data/spanishData";
 import { Puzzle, Check, ArrowRight, RotateCcw } from "lucide-react";
 import { useProgress } from "@/contexts/ProgressContext";
 import { useStreak } from "@/contexts/StreakContext";
+import SelectionPopup from "@/components/SelectionPopup";
 
 const SentenceBuilderPage = () => {
   const { t, language } = useLanguage();
@@ -85,13 +86,15 @@ const SentenceBuilderPage = () => {
     }
   }, [current]);
 
+  const contentRef = useRef<HTMLDivElement>(null);
+
   if (!current) {
     return <AppLayout><p className="text-muted-foreground">No exercises available.</p></AppLayout>;
   }
 
   return (
     <AppLayout>
-      <div className="animate-fade-in max-w-lg mx-auto">
+      <div className="animate-fade-in max-w-lg mx-auto" ref={contentRef}>
         <h1 className="text-2xl font-heading font-bold text-foreground mb-2 flex items-center gap-2">
           <Puzzle className="h-6 w-6" />
           {t("sentenceBuilder")}
@@ -193,6 +196,7 @@ const SentenceBuilderPage = () => {
           </button>
         </div>
       </div>
+      <SelectionPopup containerRef={contentRef} />
     </AppLayout>
   );
 };

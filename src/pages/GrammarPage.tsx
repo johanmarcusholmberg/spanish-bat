@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth, Level } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
@@ -11,6 +11,7 @@ import { useProgress } from "@/contexts/ProgressContext";
 import { useStreak } from "@/contexts/StreakContext";
 import { useSpanishTTS } from "@/hooks/useSpanishTTS";
 import { supabase } from "@/integrations/supabase/client";
+import SelectionPopup from "@/components/SelectionPopup";
 
 type LessonStep = "learn" | "practice" | "result";
 
@@ -217,9 +218,11 @@ const GrammarPage = () => {
     ? Math.round((exerciseResults.filter(Boolean).length / currentLesson.exercises.length) * 100)
     : 0;
 
+  const contentRef = useRef<HTMLDivElement>(null);
+
   return (
     <AppLayout>
-      <div className="animate-fade-in">
+      <div className="animate-fade-in" ref={contentRef}>
         <h1 className="text-2xl font-heading font-bold text-foreground mb-2 flex items-center gap-2">
           <BookOpen className="h-6 w-6" />
           {t("grammarLessons")}
@@ -639,6 +642,7 @@ const GrammarPage = () => {
           {t("levelOverrideHint")}
         </p>
       </div>
+      <SelectionPopup containerRef={contentRef} />
     </AppLayout>
   );
 };
