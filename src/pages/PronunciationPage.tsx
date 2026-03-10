@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import AppLayout from "@/components/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -7,7 +7,6 @@ import { useSpanishSTT } from "@/hooks/useSpanishSTT";
 import { useVocabulary } from "@/hooks/useVocabulary";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { normalizeAnswer } from "@/lib/answerUtils";
 import {
   pronunciationByLevel,
   getItemsByType,
@@ -15,9 +14,15 @@ import {
   type PronunciationItem,
 } from "@/data/pronunciationData";
 import {
+  analyzePronunciation,
+  getTips,
+  getEncouragement,
+  type PronunciationAnalysis,
+} from "@/lib/pronunciationAnalysis";
+import {
   Mic, MicOff, Volume2, SkipForward, RotateCcw,
   CheckCircle2, XCircle, BookmarkPlus, ChevronRight,
-  Sparkles, Trophy, Lightbulb,
+  Sparkles, Trophy, Lightbulb, AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SelectionPopup from "@/components/SelectionPopup";
@@ -27,6 +32,7 @@ type Mode = "word" | "phrase" | "sentence" | "repeat" | "random";
 interface AttemptResult {
   item: PronunciationItem;
   spoken: string;
+  score: number;
   success: boolean;
 }
 
