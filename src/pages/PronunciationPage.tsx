@@ -223,10 +223,11 @@ const PronunciationPage = () => {
                 {h.success
                   ? <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
                   : <XCircle className="h-5 w-5 text-destructive shrink-0" />}
-                <div className="min-w-0">
+                <div className="flex-1 min-w-0">
                   <span className="font-medium text-foreground">{h.item.spanish}</span>
                   <span className="text-muted-foreground text-sm ml-2">→ "{h.spoken || "—"}"</span>
                 </div>
+                <span className={cn("text-sm font-bold shrink-0", getScoreColor(h.score))}>{h.score}%</span>
               </div>
             ))}
           </div>
