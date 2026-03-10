@@ -52,9 +52,11 @@ const ReadingPage = () => {
     ? current.questions.filter((q, i) => answers[i] === q.correctIndex).length
     : 0;
 
+  const contentRef = useRef<HTMLDivElement>(null);
+
   return (
     <AppLayout>
-      <div className="animate-fade-in max-w-2xl mx-auto">
+      <div className="animate-fade-in max-w-2xl mx-auto" ref={contentRef}>
         <h1 className="text-2xl font-heading font-bold text-foreground mb-2 flex items-center gap-2">
           <BookOpen className="h-6 w-6" />
           {t("reading")}
