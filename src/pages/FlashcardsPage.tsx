@@ -133,6 +133,8 @@ const FlashcardsPage = () => {
     [currentCard, cardStates, session?.user?.id, allCards.length]
   );
 
+  const contentRef = useRef<HTMLDivElement>(null);
+
   if (!currentCard) {
     return (
       <AppLayout>
