@@ -135,9 +135,8 @@ const ConversationPage = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [autoRead, setAutoRead] = useState(false);
-  const [saveWordMode, setSaveWordMode] = useState<number | null>(null);
-  const [selectedText, setSelectedText] = useState("");
-  const [wordTranslation, setWordTranslation] = useState("");
+
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const lastAssistantMsgRef = useRef("");
