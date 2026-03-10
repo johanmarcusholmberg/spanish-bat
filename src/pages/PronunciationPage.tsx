@@ -257,7 +257,7 @@ const PronunciationPage = () => {
           <div className="text-right">
             <span className="text-sm font-medium text-primary">{level}</span>
             {history.length > 0 && (
-              <div className="text-xs text-muted-foreground">{accuracy}% {language === "sv" ? "rätt" : "correct"}</div>
+              <div className="text-xs text-muted-foreground">{avgScore}% {language === "sv" ? "snitt" : "avg"}</div>
             )}
           </div>
         </div>
