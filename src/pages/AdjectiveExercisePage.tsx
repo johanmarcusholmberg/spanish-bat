@@ -54,7 +54,7 @@ const AdjectiveExercisePage = () => {
 
   return (
     <AppLayout>
-      <div className="animate-fade-in max-w-lg">
+      <div className="animate-fade-in max-w-lg" ref={contentRef}>
         <button onClick={() => navigate("/exercises")} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition mb-4">
           <ArrowLeft className="h-4 w-4" /> {t("exercises")}
         </button>
