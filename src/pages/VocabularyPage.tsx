@@ -197,6 +197,8 @@ const VocabularyPage = () => {
               <SelectItem value="word">{t("Ord", "Words")}</SelectItem>
               <SelectItem value="phrase">{t("Fraser", "Phrases")}</SelectItem>
               <SelectItem value="sentence">{t("Meningar", "Sentences")}</SelectItem>
+              <SelectItem value="recent">{t("Senaste", "Recent")}</SelectItem>
+              <SelectItem value="needs_practice">{t("Behöver övas", "Needs practice")}</SelectItem>
             </SelectContent>
           </Select>
           <Select value={filterLearned} onValueChange={(v) => setFilterLearned(v as FilterLearned)}>
