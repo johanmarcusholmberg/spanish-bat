@@ -105,7 +105,6 @@ const PronunciationPage = () => {
   }, [stopListening]);
 
   // Evaluate as soon as transcript updates after manual stop
-  const evaluatedRef = useRef(false);
   useEffect(() => {
     if (stoppedManually.current) evaluatedRef.current = false;
   }, [currentIdx]);
