@@ -58,11 +58,20 @@ const VocabularyPage = () => {
   const [editTranslation, setEditTranslation] = useState("");
 
   const filteredWords = useMemo(() => {
+    const now = Date.now();
+    const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
     return words.filter(w => {
       const matchesSearch =
         w.spanish.toLowerCase().includes(search.toLowerCase()) ||
         w.translation.toLowerCase().includes(search.toLowerCase());
-      const matchesType = filterType === "all" || w.item_type === filterType;
+      let matchesType = true;
+      if (filterType === "recent") {
+        matchesType = new Date(w.created_at).getTime() > oneWeekAgo;
+      } else if (filterType === "needs_practice") {
+        matchesType = !w.learned;
+      } else if (filterType !== "all") {
+        matchesType = w.item_type === filterType;
+      }
       const matchesLearned =
         filterLearned === "all" ||
         (filterLearned === "learned" && w.learned) ||
