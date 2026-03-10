@@ -191,7 +191,7 @@ const PronunciationPage = () => {
   ];
 
   const correctCount = history.filter(h => h.success).length;
-  const accuracy = history.length > 0 ? Math.round((correctCount / history.length) * 100) : 0;
+  const avgScore = history.length > 0 ? Math.round(history.reduce((s, h) => s + h.score, 0) / history.length) : 0;
 
   // Compute score-based color for the circular indicator
   const getScoreColor = (score: number) => {
