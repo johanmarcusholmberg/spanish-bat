@@ -193,33 +193,11 @@ const PronunciationPage = () => {
   const correctCount = history.filter(h => h.success).length;
   const accuracy = history.length > 0 ? Math.round((correctCount / history.length) * 100) : 0;
 
-  // Feedback text
-  const getFeedback = () => {
-    if (!result || !currentItem) return null;
-    const spoken = transcript.trim();
-    if (result === "correct") {
-      const msgs = language === "sv"
-        ? ["Perfekt uttal! 🎉", "Utmärkt! Du låter fantastisk! ⭐", "Bra jobbat! Fortsätt så! 💪"]
-        : ["Perfect pronunciation! 🎉", "Excellent! You sound amazing! ⭐", "Great job! Keep it up! 💪"];
-      return msgs[Math.floor(Math.random() * msgs.length)];
-    }
-    // incorrect
-    const target = currentItem.spanish;
-    if (!spoken) {
-      return language === "sv" ? "Jag hörde inget. Försök igen!" : "I didn't catch that. Try again!";
-    }
-    const tNorm = normalizeAnswer(target).split(" ");
-    const sNorm = normalizeAnswer(spoken).split(" ");
-    const mismatched = tNorm.filter((w, i) => sNorm[i] !== w);
-    if (mismatched.length > 0 && mismatched.length < tNorm.length) {
-      const parts = mismatched.slice(0, 3).join(", ");
-      return language === "sv"
-        ? `Nästan! Öva lite mer på: ${parts}`
-        : `Almost! Practice a bit more: ${parts}`;
-    }
-    return language === "sv"
-      ? "Inte riktigt. Lyssna igen och försök en gång till!"
-      : "Not quite. Listen again and give it another try!";
+  // Compute score-based color for the circular indicator
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return "text-green-500";
+    if (score >= 60) return "text-amber-500";
+    return "text-destructive";
   };
 
   // Summary view
