@@ -89,26 +89,43 @@ const PronunciationPage = () => {
   // Start recording
   const handleRecord = useCallback(() => {
     setResult(null);
+    setAnalyzing(false);
+    stoppedManually.current = false;
     resetTranscript();
     startListening();
   }, [resetTranscript, startListening]);
 
-  // Stop recording and evaluate
+  // Stop recording — show analyzing state immediately
   const handleStopAndEvaluate = useCallback(() => {
+    stoppedManually.current = true;
+    setAnalyzing(true);
     stopListening();
   }, [stopListening]);
 
-  // Evaluate once transcript is ready after stopping
-  const prevListening = useRef(isListening);
+  // Evaluate as soon as transcript updates after manual stop
+  const evaluatedRef = useRef(false);
   useEffect(() => {
-    if (prevListening.current && !isListening && currentItem) {
-      const spoken = transcript.trim();
-      if (!spoken) return;
+    if (stoppedManually.current) evaluatedRef.current = false;
+  }, [currentIdx]);
+
+  useEffect(() => {
+    if (!stoppedManually.current || evaluatedRef.current || !currentItem) return;
+    // Wait until STT is done (isListening false) or we have a transcript
+    const spoken = transcript.trim();
+    if (!spoken && isListening) return; // still recording
+    if (!spoken && !isListening) {
+      // STT ended with nothing
+      setAnalyzing(false);
+      return;
+    }
+    if (!isListening) {
+      // Final result ready
+      evaluatedRef.current = true;
       const success = normalizeAnswer(spoken) === normalizeAnswer(currentItem.spanish);
       setResult(success ? "correct" : "incorrect");
       setHistory(prev => [...prev, { item: currentItem, spoken, success }]);
+      setAnalyzing(false);
     }
-    prevListening.current = isListening;
   }, [isListening, transcript, currentItem]);
 
   // Next item
