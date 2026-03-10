@@ -36,7 +36,7 @@ import { useVocabulary, VocabularyWord } from "@/hooks/useVocabulary";
 import { useSpanishTTS } from "@/hooks/useSpanishTTS";
 import VocabularyPractice from "@/components/vocabulary/VocabularyPractice";
 
-type FilterType = "all" | "word" | "phrase" | "sentence";
+type FilterType = "all" | "word" | "phrase" | "sentence" | "recent" | "needs_practice";
 type FilterLearned = "all" | "learned" | "unlearned";
 
 const VocabularyPage = () => {
@@ -58,11 +58,20 @@ const VocabularyPage = () => {
   const [editTranslation, setEditTranslation] = useState("");
 
   const filteredWords = useMemo(() => {
+    const now = Date.now();
+    const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
     return words.filter(w => {
       const matchesSearch =
         w.spanish.toLowerCase().includes(search.toLowerCase()) ||
         w.translation.toLowerCase().includes(search.toLowerCase());
-      const matchesType = filterType === "all" || w.item_type === filterType;
+      let matchesType = true;
+      if (filterType === "recent") {
+        matchesType = new Date(w.created_at).getTime() > oneWeekAgo;
+      } else if (filterType === "needs_practice") {
+        matchesType = !w.learned;
+      } else if (filterType !== "all") {
+        matchesType = w.item_type === filterType;
+      }
       const matchesLearned =
         filterLearned === "all" ||
         (filterLearned === "learned" && w.learned) ||
@@ -188,6 +197,8 @@ const VocabularyPage = () => {
               <SelectItem value="word">{t("Ord", "Words")}</SelectItem>
               <SelectItem value="phrase">{t("Fraser", "Phrases")}</SelectItem>
               <SelectItem value="sentence">{t("Meningar", "Sentences")}</SelectItem>
+              <SelectItem value="recent">{t("Senaste", "Recent")}</SelectItem>
+              <SelectItem value="needs_practice">{t("Behöver övas", "Needs practice")}</SelectItem>
             </SelectContent>
           </Select>
           <Select value={filterLearned} onValueChange={(v) => setFilterLearned(v as FilterLearned)}>
@@ -288,19 +299,19 @@ const VocabularyPage = () => {
                     {word.item_type === "word" ? t("Ord", "Word") : word.item_type === "phrase" ? t("Fras", "Phrase") : t("Mening", "Sentence")}
                   </Badge>
 
-                  {/* Actions */}
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition flex-shrink-0">
+                  {/* Actions - always visible on mobile */}
+                  <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition flex-shrink-0">
                     <button
                       onClick={() => openEdit(word)}
-                      className="text-muted-foreground hover:text-foreground transition p-1"
+                      className="text-muted-foreground hover:text-foreground transition p-1.5"
                     >
-                      <Edit3 className="h-3.5 w-3.5" />
+                      <Edit3 className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
                     </button>
                     <button
                       onClick={() => removeWord(word.id)}
-                      className="text-muted-foreground hover:text-destructive transition p-1"
+                      className="text-muted-foreground hover:text-destructive transition p-1.5"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
                     </button>
                   </div>
                 </CardContent>
