@@ -218,9 +218,11 @@ const GrammarPage = () => {
     ? Math.round((exerciseResults.filter(Boolean).length / currentLesson.exercises.length) * 100)
     : 0;
 
+  const contentRef = useRef<HTMLDivElement>(null);
+
   return (
     <AppLayout>
-      <div className="animate-fade-in">
+      <div className="animate-fade-in" ref={contentRef}>
         <h1 className="text-2xl font-heading font-bold text-foreground mb-2 flex items-center gap-2">
           <BookOpen className="h-6 w-6" />
           {t("grammarLessons")}
