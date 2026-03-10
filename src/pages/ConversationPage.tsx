@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useSpanishSTT } from "@/hooks/useSpanishSTT";
 import { useSpanishTTS } from "@/hooks/useSpanishTTS";
 import { useVocabulary } from "@/hooks/useVocabulary";
+import { useConversationStream } from "@/hooks/useConversationStream";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -58,7 +59,7 @@ const scenarios: Scenario[] = [
   },
   {
     id: "directions",
-    icon: "🧭",
+    icon: "🗺️",
     titleSv: "Fråga om vägen",
     titleEn: "Asking for directions",
     descSv: "Hitta till museet",
@@ -112,12 +113,11 @@ const scenarios: Scenario[] = [
   },
 ];
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/conversation`;
-
 const ConversationPage = () => {
   const { language } = useLanguage();
-  const { user, session } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
+  const { streamChat } = useConversationStream();
   const { speak, stop: stopTTS, isSupported: ttsSupported } = useSpanishTTS();
   const {
     isListening,
@@ -137,7 +137,6 @@ const ConversationPage = () => {
   const [autoRead, setAutoRead] = useState(false);
 
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
-
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const lastAssistantMsgRef = useRef("");
 
@@ -165,100 +164,6 @@ const ConversationPage = () => {
     }
   }, [transcript]);
 
-  const getAuthHeaders = useCallback(() => {
-    if (!session?.access_token) {
-      throw new Error(
-        language === "sv"
-          ? "Du måste vara inloggad för att använda konversationsövningen."
-          : "You need to be signed in to use conversation practice."
-      );
-    }
-
-    return {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${session.access_token}`,
-      apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-    };
-  }, [language, session?.access_token]);
-
-  const streamChat = useCallback(
-    async (
-      allMessages: Message[],
-      scenario: Scenario,
-      onDelta: (text: string) => void
-    ) => {
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          level: user?.level || "A1",
-          scenario: scenario.scenario,
-          learningFrom: user?.learningFrom || "sv",
-          messages: allMessages,
-        }),
-      });
-
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({ error: "Unknown error" }));
-        throw new Error(err.error || `Error ${resp.status}`);
-      }
-
-      if (!resp.body) {
-        throw new Error("No response body");
-      }
-
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-
-        let newlineIndex = buffer.indexOf("\n");
-        while (newlineIndex !== -1) {
-          let line = buffer.slice(0, newlineIndex);
-          buffer = buffer.slice(newlineIndex + 1);
-
-          if (line.endsWith("\r")) {
-            line = line.slice(0, -1);
-          }
-
-          if (!line.trim() || line.startsWith(":")) {
-            newlineIndex = buffer.indexOf("\n");
-            continue;
-          }
-
-          if (!line.startsWith("data: ")) {
-            newlineIndex = buffer.indexOf("\n");
-            continue;
-          }
-
-          const payload = line.slice(6).trim();
-
-          if (payload === "[DONE]") {
-            return;
-          }
-
-          try {
-            const parsed = JSON.parse(payload);
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) {
-              onDelta(content);
-            }
-          } catch {
-            // ignore malformed partial chunk
-          }
-
-          newlineIndex = buffer.indexOf("\n");
-        }
-      }
-    },
-    [getAuthHeaders, user?.learningFrom, user?.level]
-  );
-
   const startConversation = useCallback(
     async (scenario: Scenario) => {
       setSelectedScenario(scenario);
@@ -275,8 +180,7 @@ const ConversationPage = () => {
           setMessages([{ role: "assistant", content: assistantSoFar }]);
         });
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Unknown error";
+        const message = error instanceof Error ? error.message : "Unknown error";
         toast({
           title: language === "sv" ? "Fel" : "Error",
           description: message,
@@ -306,34 +210,21 @@ const ConversationPage = () => {
       try {
         await streamChat(nextMessages, selectedScenario, (chunk) => {
           assistantSoFar += chunk;
-
-          setMessages(() => {
-            return [...nextMessages, { role: "assistant", content: assistantSoFar }];
-          });
+          setMessages([...nextMessages, { role: "assistant", content: assistantSoFar }]);
         });
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Unknown error";
+        const message = error instanceof Error ? error.message : "Unknown error";
         toast({
           title: language === "sv" ? "Fel" : "Error",
           description: message,
           variant: "destructive",
         });
-
         setMessages(nextMessages);
       } finally {
         setIsLoading(false);
       }
     },
-    [
-      isLoading,
-      language,
-      messages,
-      resetTranscript,
-      selectedScenario,
-      streamChat,
-      toast,
-    ]
+    [isLoading, language, messages, resetTranscript, selectedScenario, streamChat, toast]
   );
 
   const sendSpecial = (cmd: string) => {
@@ -354,7 +245,7 @@ const ConversationPage = () => {
     setMessages([]);
     setInput("");
     setIsLoading(false);
-      lastAssistantMsgRef.current = "";
+    lastAssistantMsgRef.current = "";
   };
 
   const handleMicToggle = () => {
@@ -373,185 +264,195 @@ const ConversationPage = () => {
     startListening();
   };
 
-
   return (
     <AppLayout>
-      <div className="mx-auto max-w-5xl space-y-6">
-        {!selectedScenario ? (
-          <>
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <MessageCircle className="h-6 w-6" />
-                <h1 className="text-3xl font-bold">
-                  {language === "sv" ? "Konversationsövning" : "Conversation Practice"}
-                </h1>
-              </div>
-              <p className="text-muted-foreground">
-                {language === "sv"
-                  ? "Öva vardagssamtal med en AI-partner."
-                  : "Practice everyday conversations with an AI partner."}
-              </p>
+      {!selectedScenario ? (
+        <>
+          <div className="mb-8">
+            <div className="mb-2 flex items-center gap-3">
+              <MessageCircle className="h-7 w-7 text-primary" />
+              <h1 className="text-3xl font-bold">
+                {language === "sv" ? "Konversationsövning" : "Conversation Practice"}
+              </h1>
             </div>
+            <p className="text-muted-foreground">
+              {language === "sv"
+                ? "Öva vardagssamtal med en AI-partner."
+                : "Practice everyday conversations with an AI partner."}
+            </p>
+          </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {scenarios.map((scenario) => (
-                <button
-                  key={scenario.id}
-                  type="button"
-                  onClick={() => void startConversation(scenario)}
-                  className="rounded-2xl border bg-card p-5 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-md"
-                >
-                  <div className="mb-3 text-3xl">{scenario.icon}</div>
-                  <h2 className="text-lg font-semibold">
-                    {language === "sv" ? scenario.titleSv : scenario.titleEn}
-                  </h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {language === "sv" ? scenario.descSv : scenario.descEn}
-                  </p>
-                </button>
-              ))}
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="flex flex-col gap-4 rounded-2xl border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {scenarios.map((scenario) => (
+              <button
+                key={scenario.id}
+                onClick={() => void startConversation(scenario)}
+                className="rounded-2xl border bg-card p-5 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+              >
+                <div className="mb-3 text-3xl">{scenario.icon}</div>
+                <h2 className="mb-1 text-lg font-semibold">
+                  {language === "sv" ? scenario.titleSv : scenario.titleEn}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {language === "sv" ? scenario.descSv : scenario.descEn}
+                </p>
+              </button>
+            ))}
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="text-3xl">{selectedScenario.icon}</div>
               <div>
-                <div className="text-3xl">{selectedScenario.icon}</div>
                 <h1 className="text-2xl font-bold">
-                  {language === "sv"
-                    ? selectedScenario.titleSv
-                    : selectedScenario.titleEn}
+                  {language === "sv" ? selectedScenario.titleSv : selectedScenario.titleEn}
                 </h1>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                {ttsSupported && (
-                  <div className="flex items-center gap-2 rounded-lg border px-3 py-2">
-                    <span className="text-sm">
-                      {language === "sv" ? "Auto-läs" : "Auto-read"}
-                    </span>
-                    <Switch checked={autoRead} onCheckedChange={setAutoRead} />
-                  </div>
-                )}
-
-                <Button variant="outline" onClick={resetConversation}>
-                  <RotateCcw className="mr-2 h-4 w-4" />
-                  {language === "sv" ? "Nytt" : "New"}
-                </Button>
-
-                <Button variant="destructive" onClick={endConversation} disabled={isLoading}>
-                  <X className="mr-2 h-4 w-4" />
-                  {language === "sv" ? "Avsluta" : "End"}
-                </Button>
               </div>
             </div>
 
-            <div className="rounded-2xl border bg-card p-4">
-              <div ref={messagesContainerRef} className="max-h-[55vh] space-y-4 overflow-y-auto pr-2">
-                {messages.map((msg, i) => (
+            <div className="flex flex-wrap items-center gap-2">
+              {ttsSupported && (
+                <div className="flex items-center gap-2 rounded-xl border px-3 py-2">
+                  <Switch checked={autoRead} onCheckedChange={setAutoRead} />
+                  <span className="text-sm">
+                    {language === "sv" ? "Auto-läs" : "Auto-read"}
+                  </span>
+                </div>
+              )}
+
+              <Button variant="outline" onClick={resetConversation}>
+                <RotateCcw className="mr-2 h-4 w-4" />
+                {language === "sv" ? "Nytt" : "New"}
+              </Button>
+
+              <Button variant="destructive" onClick={endConversation} disabled={isLoading}>
+                <X className="mr-2 h-4 w-4" />
+                {language === "sv" ? "Avsluta" : "End"}
+              </Button>
+            </div>
+          </div>
+
+          <div
+            ref={messagesContainerRef}
+            className="mb-4 max-h-[55vh] overflow-y-auto rounded-2xl border bg-card p-4"
+          >
+            <div className="space-y-3">
+              {messages.map((msg, i) => (
+                <div
+                  key={i}
+                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                >
                   <div
-                    key={`${msg.role}-${i}`}
-                    className={`rounded-2xl p-4 ${
+                    className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${
                       msg.role === "user"
-                        ? "ml-auto max-w-[85%] bg-primary text-primary-foreground"
-                        : "mr-auto max-w-[85%] bg-muted"
+                        ? "bg-primary text-primary-foreground"
+                        : "border bg-background"
                     }`}
                   >
-                    <p className="whitespace-pre-wrap text-sm leading-6">{msg.content}</p>
+                    <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                      {msg.content}
+                    </div>
 
-                    {msg.role === "assistant" && ttsSupported && (
-                      <div className="mt-3 flex flex-wrap items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => speak(msg.content)}
-                          className="rounded-md p-1 text-muted-foreground transition hover:text-foreground"
-                          title={language === "sv" ? "Lyssna" : "Listen"}
-                        >
-                          <Volume2 className="h-4 w-4" />
-                        </button>
+                    {msg.role === "assistant" && (
+                      <div className="mt-2 flex items-center gap-2">
+                        {ttsSupported && (
+                          <button
+                            onClick={() => speak(msg.content)}
+                            className="rounded-md p-1 text-muted-foreground transition hover:text-foreground"
+                            title={language === "sv" ? "Lyssna" : "Listen"}
+                          >
+                            <Volume2 className="h-4 w-4" />
+                          </button>
+                        )}
+
+                        <SelectionPopup
+                          text={msg.content}
+                          onAdd={async (text, translation) => {
+                            await addWord(text, translation);
+                          }}
+                        />
                       </div>
                     )}
                   </div>
-                ))}
+                </div>
+              ))}
 
-                <SelectionPopup containerRef={messagesContainerRef as React.RefObject<HTMLElement>} />
-                {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
-                  <div className="mr-auto flex max-w-[85%] items-center gap-2 rounded-2xl bg-muted p-4 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    {language === "sv" ? "Skriver..." : "Typing..."}
-                  </div>
-                )}
+              <div ref={messagesEndRef} />
 
-                <div ref={messagesEndRef} />
-              </div>
+              {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {language === "sv" ? "Skriver..." : "Typing..."}
+                </div>
+              )}
             </div>
+          </div>
 
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                onClick={() => sendSpecial("[HINT]")}
-                disabled={isLoading || messages.length === 0}
-              >
-                <Lightbulb className="mr-2 h-4 w-4" />
-                {language === "sv" ? "Ledtråd" : "Hint"}
-              </Button>
+          <div className="mb-3 flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => sendSpecial("[HINT]")}
+              disabled={isLoading || messages.length === 0}
+            >
+              <Lightbulb className="mr-2 h-4 w-4" />
+              {language === "sv" ? "Ledtråd" : "Hint"}
+            </Button>
 
-              <Button
-                variant="outline"
-                onClick={() => sendSpecial("[TRANSLATE]")}
-                disabled={isLoading || messages.length === 0}
-              >
-                {language === "sv" ? "Översätt" : "Translate"}
-              </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => sendSpecial("[TRANSLATE]")}
+              disabled={isLoading || messages.length === 0}
+            >
+              {language === "sv" ? "Översätt" : "Translate"}
+            </Button>
+          </div>
+
+          {isListening && interimTranscript && (
+            <div className="mb-3 rounded-xl border border-dashed p-3 text-sm text-muted-foreground">
+              {interimTranscript}
             </div>
+          )}
 
-            {isListening && interimTranscript && (
-              <div className="rounded-xl border border-dashed p-3 text-sm text-muted-foreground">
-                {interimTranscript}
-              </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void sendMessage(input);
+            }}
+            className="flex items-center gap-2"
+          >
+            {sttSupported && (
+              <Button
+                type="button"
+                variant={isListening ? "destructive" : "outline"}
+                size="icon"
+                onClick={handleMicToggle}
+                disabled={isLoading}
+              >
+                {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </Button>
             )}
 
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                void sendMessage(input);
-              }}
-              className="flex items-center gap-2"
-            >
-              {sttSupported && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleMicToggle}
-                  disabled={isLoading}
-                >
-                  {isListening ? (
-                    <MicOff className="h-4 w-4" />
-                  ) : (
-                    <Mic className="h-4 w-4" />
-                  )}
-                </Button>
-              )}
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={
+                language === "sv" ? "Skriv eller tala spanska..." : "Type or speak Spanish..."
+              }
+              disabled={isLoading || isListening}
+              className="flex-1"
+            />
 
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={
-                  language === "sv"
-                    ? "Skriv eller tala spanska..."
-                    : "Type or speak Spanish..."
-                }
-                disabled={isLoading || isListening}
-                className="flex-1"
-              />
-
-              <Button type="submit" disabled={isLoading || !input.trim()}>
-                <Send className="h-4 w-4" />
-              </Button>
-            </form>
-          </>
-        )}
-      </div>
+            <Button type="submit" disabled={isLoading || !input.trim()}>
+              <Send className="mr-2 h-4 w-4" />
+              {language === "sv" ? "Skicka" : "Send"}
+            </Button>
+          </form>
+        </>
+      )}
     </AppLayout>
   );
 };
