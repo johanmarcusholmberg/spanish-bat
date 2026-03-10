@@ -24,7 +24,8 @@ import SelectionPopup from "@/components/SelectionPopup";
 
 type Mode = "word" | "phrase" | "sentence" | "repeat" | "random";
 
-interface AttemptResult {
+  const [analyzing, setAnalyzing] = useState(false);
+  const stoppedManually = useRef(false);
   item: PronunciationItem;
   spoken: string;
   success: boolean;
