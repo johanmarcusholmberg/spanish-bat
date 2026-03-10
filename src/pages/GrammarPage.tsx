@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth, Level } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
@@ -11,6 +11,7 @@ import { useProgress } from "@/contexts/ProgressContext";
 import { useStreak } from "@/contexts/StreakContext";
 import { useSpanishTTS } from "@/hooks/useSpanishTTS";
 import { supabase } from "@/integrations/supabase/client";
+import SelectionPopup from "@/components/SelectionPopup";
 
 type LessonStep = "learn" | "practice" | "result";
 
