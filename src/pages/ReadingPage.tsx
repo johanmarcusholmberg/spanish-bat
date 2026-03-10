@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
@@ -7,6 +7,7 @@ import { getItemsForLevel } from "@/data/spanishData";
 import { BookOpen, Check, X, ArrowRight } from "lucide-react";
 import { useProgress } from "@/contexts/ProgressContext";
 import { useStreak } from "@/contexts/StreakContext";
+import SelectionPopup from "@/components/SelectionPopup";
 
 const ReadingPage = () => {
   const { t, language } = useLanguage();
