@@ -127,11 +127,12 @@ const PronunciationPage = () => {
       return;
     }
     if (!isListening) {
-      // Final result ready
       evaluatedRef.current = true;
-      const success = normalizeAnswer(spoken) === normalizeAnswer(currentItem.spanish);
+      const result = analyzePronunciation(currentItem.spanish, spoken);
+      setAnalysis(result);
+      const success = result.score >= 80;
       setResult(success ? "correct" : "incorrect");
-      setHistory(prev => [...prev, { item: currentItem, spoken, success }]);
+      setHistory(prev => [...prev, { item: currentItem, spoken, score: result.score, success }]);
       setAnalyzing(false);
     }
   }, [isListening, transcript, currentItem]);
