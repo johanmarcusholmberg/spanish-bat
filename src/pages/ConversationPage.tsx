@@ -9,7 +9,7 @@ import { useConversationStream } from "@/hooks/useConversationStream";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import SelectionPopup from "@/components/SelectionPopup";
+import SentenceWordPicker from "@/components/vocabulary/SentenceWordPicker";
 import {
   Lightbulb,
   Loader2,
