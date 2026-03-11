@@ -318,16 +318,19 @@ const PronunciationPage = () => {
                     ? (language === "sv" ? "Fras" : "Phrase")
                     : (language === "sv" ? "Mening" : "Sentence")}
               </span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9"
-                onClick={handleSave}
-                disabled={savedIds.has(currentItem.id)}
-                title={language === "sv" ? "Spara till ordbok" : "Save to dictionary"}
-              >
-                <BookmarkPlus className={cn("h-5 w-5", savedIds.has(currentItem.id) && "text-primary")} />
-              </Button>
+              {currentItem.type === "word" ? (
+                <SaveWordButton spanish={currentItem.spanish} context="pronunciation" />
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9"
+                  onClick={() => setShowWordPicker(true)}
+                  title={language === "sv" ? "Spara till ordbok" : "Save to dictionary"}
+                >
+                  <BookmarkPlus className="h-5 w-5" />
+                </Button>
+              )}
             </div>
 
             {/* Target text */}
