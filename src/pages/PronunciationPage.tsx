@@ -537,7 +537,14 @@ const PronunciationPage = () => {
           </div>
         )}
       </div>
-      <SelectionPopup containerRef={contentRef} />
+      {currentItem && currentItem.type !== "word" && (
+        <SentenceWordPicker
+          sentence={currentItem.spanish}
+          context="pronunciation"
+          open={showWordPicker}
+          onOpenChange={setShowWordPicker}
+        />
+      )}
     </AppLayout>
   );
 };
