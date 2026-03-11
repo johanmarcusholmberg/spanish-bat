@@ -14,7 +14,7 @@ const DashboardPage = () => {
       <div className="animate-fade-in space-y-6">
         <div>
           <h1 className="text-2xl font-heading font-bold text-foreground">
-            {t("welcomeBack")} {user?.displayName}!
+            {t("welcomeBack")} {user?.displayName}
           </h1>
         </div>
 

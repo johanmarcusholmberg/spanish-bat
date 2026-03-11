@@ -11,6 +11,7 @@ export interface VocabularyWord {
   item_type: string;
   learned: boolean;
   created_at: string;
+  usage_example?: string;
 }
 
 export const useVocabulary = () => {
@@ -51,7 +52,8 @@ export const useVocabulary = () => {
     context?: string,
     category: string = "conversation",
     learned: boolean = false,
-    item_type: string = "word"
+    item_type: string = "word",
+    usage_example?: string,
   ) => {
     if (!userId) return false;
 
@@ -65,6 +67,7 @@ export const useVocabulary = () => {
         category,
         learned,
         item_type,
+        ...(usage_example ? { usage_example } : {}),
       } as any, { onConflict: "user_id,spanish" });
 
     if (error) {
@@ -74,7 +77,7 @@ export const useVocabulary = () => {
     }
 
     await fetchWords();
-    toast({ title: "Sparat!", description: `"${spanish}" har lagts till i din ordbok` });
+    toast({ title: "Sparat", description: `"${spanish}" har lagts till i din ordbok` });
     return true;
   }, [userId, fetchWords, toast]);
 
@@ -92,7 +95,7 @@ export const useVocabulary = () => {
     return true;
   }, []);
 
-  const updateWord = useCallback(async (id: string, updates: Partial<Pick<VocabularyWord, "spanish" | "translation" | "learned" | "item_type" | "category">>) => {
+  const updateWord = useCallback(async (id: string, updates: Partial<Pick<VocabularyWord, "spanish" | "translation" | "learned" | "item_type" | "category" | "usage_example">>) => {
     const { error } = await supabase
       .from("user_vocabulary")
       .update(updates as any)

@@ -25,7 +25,8 @@ import {
   Sparkles, Trophy, Lightbulb, AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import SelectionPopup from "@/components/SelectionPopup";
+import SaveWordButton from "@/components/vocabulary/SaveWordButton";
+import SentenceWordPicker from "@/components/vocabulary/SentenceWordPicker";
 
 type Mode = "word" | "phrase" | "sentence" | "repeat" | "random";
 
@@ -49,6 +50,7 @@ const PronunciationPage = () => {
 
   const level = user?.level ?? "A1";
   const contentRef = useRef<HTMLDivElement>(null);
+  const [showWordPicker, setShowWordPicker] = useState(false);
 
   // Mode & state
   const [mode, setMode] = useState<Mode>("word");
@@ -316,16 +318,19 @@ const PronunciationPage = () => {
                     ? (language === "sv" ? "Fras" : "Phrase")
                     : (language === "sv" ? "Mening" : "Sentence")}
               </span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9"
-                onClick={handleSave}
-                disabled={savedIds.has(currentItem.id)}
-                title={language === "sv" ? "Spara till ordbok" : "Save to dictionary"}
-              >
-                <BookmarkPlus className={cn("h-5 w-5", savedIds.has(currentItem.id) && "text-primary")} />
-              </Button>
+              {currentItem.type === "word" ? (
+                <SaveWordButton spanish={currentItem.spanish} context="pronunciation" />
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9"
+                  onClick={() => setShowWordPicker(true)}
+                  title={language === "sv" ? "Spara till ordbok" : "Save to dictionary"}
+                >
+                  <BookmarkPlus className="h-5 w-5" />
+                </Button>
+              )}
             </div>
 
             {/* Target text */}
@@ -532,7 +537,14 @@ const PronunciationPage = () => {
           </div>
         )}
       </div>
-      <SelectionPopup containerRef={contentRef} />
+      {currentItem && currentItem.type !== "word" && (
+        <SentenceWordPicker
+          sentence={currentItem.spanish}
+          context="pronunciation"
+          open={showWordPicker}
+          onOpenChange={setShowWordPicker}
+        />
+      )}
     </AppLayout>
   );
 };

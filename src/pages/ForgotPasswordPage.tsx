@@ -33,7 +33,7 @@ const ForgotPasswordPage = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-md animate-fade-in text-center">
-          <img src={batAvatar} alt="MurciélagoLingo" className="w-24 h-24 mx-auto mb-4 animate-float" />
+          <img src={batAvatar} alt="Murciélingo" className="w-24 h-24 mx-auto mb-4 animate-float" />
           <h1 className="text-2xl font-heading font-bold text-foreground mb-2">{t("resetSent")}</h1>
           <p className="text-muted-foreground mb-6">{t("resetSentInfo")}</p>
           <button
@@ -63,7 +63,7 @@ const ForgotPasswordPage = () => {
         </button>
 
         <div className="text-center mb-6">
-          <img src={batAvatar} alt="MurciélagoLingo" className="w-20 h-20 mx-auto mb-3" />
+          <img src={batAvatar} alt="Murciélingo" className="w-20 h-20 mx-auto mb-3" />
           <h1 className="text-2xl font-heading font-bold text-foreground">{t("forgotPasswordTitle")}</h1>
           <p className="text-muted-foreground text-sm mt-1">{t("forgotPasswordInfo")}</p>
         </div>

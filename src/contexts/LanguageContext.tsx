@@ -9,8 +9,8 @@ interface Translations {
 const translations: Translations = {
   // Login page
   welcome: { sv: "Välkommen till", en: "Welcome to" },
-  appName: { sv: "MurciélagoLingo", en: "MurciélagoLingo" },
-  appTagline: { sv: "Lär dig spanska på ett roligt sätt!", en: "Learn Spanish the fun way!" },
+  appName: { sv: "Murciélingo", en: "Murciélingo" },
+  appTagline: { sv: "Låt språket eka", en: "Echo the language" },
   username: { sv: "Användarnamn", en: "Username" },
   email: { sv: "E-postadress", en: "Email address" },
   password: { sv: "Lösenord", en: "Password" },

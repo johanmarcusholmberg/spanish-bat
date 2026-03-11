@@ -9,8 +9,9 @@ import { useConversationStream } from "@/hooks/useConversationStream";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import SelectionPopup from "@/components/SelectionPopup";
+import SentenceWordPicker from "@/components/vocabulary/SentenceWordPicker";
 import {
+  BookmarkPlus,
   Lightbulb,
   Loader2,
   MessageCircle,
@@ -132,6 +133,7 @@ const ConversationPage = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [autoRead, setAutoRead] = useState(false);
+  const [pickerMessage, setPickerMessage] = useState<string | null>(null);
 
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -351,6 +353,17 @@ const ConversationPage = () => {
                     <div className="whitespace-pre-wrap text-sm leading-relaxed">
                       {msg.content}
                     </div>
+                    {msg.role === "assistant" && msg.content && !isLoading && (
+                      <div className="mt-2 flex justify-end">
+                        <button
+                          onClick={() => setPickerMessage(msg.content)}
+                          className="text-xs text-muted-foreground hover:text-primary transition flex items-center gap-1"
+                        >
+                          <BookmarkPlus className="h-3.5 w-3.5" />
+                          {language === "sv" ? "Spara ord" : "Save words"}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -366,7 +379,14 @@ const ConversationPage = () => {
             </div>
           </div>
 
-          <SelectionPopup containerRef={messagesContainerRef} />
+          {pickerMessage && (
+            <SentenceWordPicker
+              sentence={pickerMessage}
+              context="conversation"
+              open={!!pickerMessage}
+              onOpenChange={(open) => { if (!open) setPickerMessage(null); }}
+            />
+          )}
 
           <div className="mb-3 flex flex-wrap gap-2">
             <Button

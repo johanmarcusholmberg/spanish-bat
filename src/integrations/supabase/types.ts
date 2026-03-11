@@ -211,6 +211,7 @@ export type Database = {
           spanish: string
           translation: string
           updated_at: string
+          usage_example: string | null
           user_id: string
         }
         Insert: {
@@ -223,6 +224,7 @@ export type Database = {
           spanish: string
           translation: string
           updated_at?: string
+          usage_example?: string | null
           user_id: string
         }
         Update: {
@@ -235,6 +237,7 @@ export type Database = {
           spanish?: string
           translation?: string
           updated_at?: string
+          usage_example?: string | null
           user_id?: string
         }
         Relationships: []

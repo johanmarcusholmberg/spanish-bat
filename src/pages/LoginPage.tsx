@@ -49,7 +49,7 @@ const LoginPage = () => {
 
       <div className="w-full max-w-md" style={{ animation: 'fade-in 0.5s ease-out both' }}>
         <div className="text-center mb-8">
-          <img src={batAvatar} alt="MurciélagoLingo mascot" className="w-28 h-28 mx-auto mb-4 animate-float" />
+          <img src={batAvatar} alt="Murciélingo mascot" className="w-28 h-28 mx-auto mb-4 animate-float" />
           <p className="text-muted-foreground text-sm mb-1">{t("welcome")}</p>
           <h1 className="text-3xl font-heading font-bold text-foreground">{t("appName")}</h1>
           <p className="text-muted-foreground mt-1">{t("appTagline")}</p>
