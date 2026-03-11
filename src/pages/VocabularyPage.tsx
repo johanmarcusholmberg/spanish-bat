@@ -289,7 +289,12 @@ const VocabularyPage = () => {
                       <span className="text-muted-foreground">—</span>
                       <span className="text-muted-foreground truncate">{word.translation}</span>
                     </div>
-                    {word.context && (
+                    {word.usage_example && (
+                      <p className="text-xs text-muted-foreground/80 mt-0.5 truncate">
+                        {word.usage_example}
+                      </p>
+                    )}
+                    {word.context && !word.usage_example && (
                       <p className="text-xs text-muted-foreground/70 italic mt-0.5 truncate">"{word.context}"</p>
                     )}
                   </div>
