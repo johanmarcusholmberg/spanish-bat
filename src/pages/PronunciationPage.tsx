@@ -25,7 +25,8 @@ import {
   Sparkles, Trophy, Lightbulb, AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import SelectionPopup from "@/components/SelectionPopup";
+import SaveWordButton from "@/components/vocabulary/SaveWordButton";
+import SentenceWordPicker from "@/components/vocabulary/SentenceWordPicker";
 
 type Mode = "word" | "phrase" | "sentence" | "repeat" | "random";
 
