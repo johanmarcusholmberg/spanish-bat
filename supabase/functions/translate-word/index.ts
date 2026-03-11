@@ -51,12 +51,12 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a Spanish-${langName} translator. Respond ONLY with a JSON object, no markdown, no explanation. Format: {"translation": "...", "itemType": "${itemType}"}. Translate the Spanish text to ${langName}. Keep it natural and concise.`,
+            content: `You are a Spanish-${langName} translator. Respond ONLY with a JSON object, no markdown, no explanation. Format: {"translation": "...", "itemType": "${itemType}", "usageExample": "..."}. Translate the Spanish text to ${langName}. Also provide a short, practical daily-life example sentence in Spanish that uses this word/phrase naturally. Keep translation natural and concise.`,
           },
           { role: "user", content: trimmed },
         ],
         temperature: 0.1,
-        max_tokens: 200,
+        max_tokens: 300,
       }),
     });
 
@@ -72,13 +72,11 @@ serve(async (req) => {
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content?.trim() || "";
 
-    let parsed: { translation: string; itemType: string };
+    let parsed: { translation: string; itemType: string; usageExample?: string };
     try {
-      // Strip markdown code blocks if present
       const cleaned = content.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
       parsed = JSON.parse(cleaned);
     } catch {
-      // Fallback: use raw content as translation
       parsed = { translation: content, itemType };
     }
 
@@ -86,6 +84,7 @@ serve(async (req) => {
       JSON.stringify({
         translation: parsed.translation || content,
         itemType: parsed.itemType || itemType,
+        usageExample: parsed.usageExample || "",
         original: trimmed,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
