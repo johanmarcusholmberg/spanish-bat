@@ -50,6 +50,7 @@ const PronunciationPage = () => {
 
   const level = user?.level ?? "A1";
   const contentRef = useRef<HTMLDivElement>(null);
+  const [showWordPicker, setShowWordPicker] = useState(false);
 
   // Mode & state
   const [mode, setMode] = useState<Mode>("word");
