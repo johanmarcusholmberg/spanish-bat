@@ -2,19 +2,14 @@ import React, { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTranslate } from "@/hooks/useTranslate";
 import { useVocabulary } from "@/hooks/useVocabulary";
-import { useSpanishTTS } from "@/hooks/useSpanishTTS";
 import { Button } from "@/components/ui/button";
-import { BookmarkPlus, Check, Loader2, Volume2 } from "lucide-react";
+import { BookmarkPlus, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SaveWordButtonProps {
-  /** The Spanish text to save */
   spanish: string;
-  /** Optional context (e.g. which exercise it came from) */
   context?: string;
-  /** Button style variant */
   variant?: "icon" | "button";
-  /** Additional class names */
   className?: string;
 }
 
@@ -48,6 +43,7 @@ const SaveWordButton: React.FC<SaveWordButtonProps> = ({
         "exercise",
         false,
         result.itemType,
+        result.usageExample,
       );
       if (success) setSaved(true);
     }
