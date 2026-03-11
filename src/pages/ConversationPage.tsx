@@ -351,6 +351,17 @@ const ConversationPage = () => {
                     <div className="whitespace-pre-wrap text-sm leading-relaxed">
                       {msg.content}
                     </div>
+                    {msg.role === "assistant" && msg.content && !isLoading && (
+                      <div className="mt-2 flex justify-end">
+                        <button
+                          onClick={() => setPickerMessage(msg.content)}
+                          className="text-xs text-muted-foreground hover:text-primary transition flex items-center gap-1"
+                        >
+                          <BookmarkPlus className="h-3.5 w-3.5" />
+                          {language === "sv" ? "Spara ord" : "Save words"}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -366,7 +377,14 @@ const ConversationPage = () => {
             </div>
           </div>
 
-          <SelectionPopup containerRef={messagesContainerRef} />
+          {pickerMessage && (
+            <SentenceWordPicker
+              sentence={pickerMessage}
+              context="conversation"
+              open={!!pickerMessage}
+              onOpenChange={(open) => { if (!open) setPickerMessage(null); }}
+            />
+          )}
 
           <div className="mb-3 flex flex-wrap gap-2">
             <Button
