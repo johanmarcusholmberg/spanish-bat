@@ -1,0 +1,1 @@
+ALTER TABLE public.user_vocabulary ADD COLUMN IF NOT EXISTS usage_example text;
