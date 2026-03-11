@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import SentenceWordPicker from "@/components/vocabulary/SentenceWordPicker";
 import {
+  BookmarkPlus,
   Lightbulb,
   Loader2,
   MessageCircle,
