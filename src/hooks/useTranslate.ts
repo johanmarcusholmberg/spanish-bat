@@ -5,6 +5,7 @@ interface TranslationResult {
   translation: string;
   itemType: "word" | "phrase" | "sentence";
   original: string;
+  usageExample?: string;
 }
 
 export const useTranslate = () => {
