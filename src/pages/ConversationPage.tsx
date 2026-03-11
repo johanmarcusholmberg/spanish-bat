@@ -133,6 +133,7 @@ const ConversationPage = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [autoRead, setAutoRead] = useState(false);
+  const [pickerMessage, setPickerMessage] = useState<string | null>(null);
 
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
