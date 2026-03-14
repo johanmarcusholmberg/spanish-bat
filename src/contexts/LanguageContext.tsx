@@ -233,14 +233,28 @@ const LanguageContext = createContext<LanguageContextType>({
 });
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguage] = useState<Language>("sv");
+  const [language, setLanguageState] = useState<Language>(() => {
+    return (localStorage.getItem("publicLanguage") as Language) || "sv";
+  });
+  const [profileLanguage, setProfileLanguage] = useState<Language | null>(null);
+
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang);
+    localStorage.setItem("publicLanguage", lang);
+  };
+
+  const setProfileLang = (lang: Language) => {
+    setProfileLanguage(lang);
+  };
+
+  const activeLang = profileLanguage ?? language;
 
   const t = (key: string): string => {
-    return translations[key]?.[language] || key;
+    return translations[key]?.[activeLang] || key;
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language: activeLang, setLanguage, t, setProfileLang } as any}>
       {children}
     </LanguageContext.Provider>
   );
