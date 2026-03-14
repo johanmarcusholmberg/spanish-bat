@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import Footer from "@/components/Footer";
 import logo from "@/assets/murcielago-logo.png";
 import { Home, BookOpen, User, LogOut, BarChart3, Moon, Sun, Shield } from "lucide-react";
 
@@ -88,6 +89,8 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
       <main className="max-w-4xl mx-auto p-4 md:p-6">
         {children}
       </main>
+
+      <Footer />
 
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-1 z-50">

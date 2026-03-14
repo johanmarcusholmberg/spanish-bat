@@ -7,7 +7,7 @@ import { User, Save, Check } from "lucide-react";
 const levels: Level[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
 const ProfilePage = () => {
-  const { t, setLanguage } = useLanguage();
+  const { t, setLanguage, setProfileLang } = useLanguage() as any;
   const { user, updateProfile } = useAuth();
   const [displayName, setDisplayName] = useState(user?.displayName || "");
   const [level, setLevel] = useState<Level>(user?.level || "A1");
@@ -16,7 +16,7 @@ const ProfilePage = () => {
 
   const handleSave = async () => {
     await updateProfile({ displayName, level, learningFrom });
-    setLanguage(learningFrom);
+    setProfileLang?.(learningFrom);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { User, Session } from "@supabase/supabase-js";
 
 export type Level = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
@@ -46,6 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const { setProfileLang } = useLanguage();
 
   const fetchProfile = async (authUser: User) => {
     const { data } = await supabase
@@ -54,12 +56,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .eq("user_id", authUser.id)
       .single();
 
+    const lang = data ? (data.learning_from as "sv" | "en") || "sv" : "sv";
     if (data) {
       setUser({
         displayName: data.display_name || authUser.email?.split("@")[0] || "",
         email: authUser.email || "",
         level: (data.level as Level) || "A1",
-        learningFrom: (data.learning_from as "sv" | "en") || "sv",
+        learningFrom: lang,
       });
     } else {
       setUser({
@@ -69,6 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         learningFrom: "sv",
       });
     }
+    setProfileLang?.(lang);
 
     // Check admin role
     const { data: roleData } = await supabase
@@ -123,6 +127,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
+    setProfileLang?.(null);
   };
 
   const resetPassword = async (email: string): Promise<string | null> => {
