@@ -70,8 +70,8 @@ const pages: Record<string, { sv: { title: string; body: string }; en: { title: 
 };
 
 const StaticPage = () => {
-  const { page } = useParams<{ page: string }>();
-  const { language } = useLanguage();
+  const location = useLocation();
+  const page = location.pathname.replace("/", "");
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
