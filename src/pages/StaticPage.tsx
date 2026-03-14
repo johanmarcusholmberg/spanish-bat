@@ -72,6 +72,7 @@ const pages: Record<string, { sv: { title: string; body: string }; en: { title: 
 const StaticPage = () => {
   const location = useLocation();
   const page = location.pathname.replace("/", "");
+  const { language } = useLanguage();
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
