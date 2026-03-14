@@ -56,12 +56,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .eq("user_id", authUser.id)
       .single();
 
+    const lang = data ? (data.learning_from as "sv" | "en") || "sv" : "sv";
     if (data) {
       setUser({
         displayName: data.display_name || authUser.email?.split("@")[0] || "",
         email: authUser.email || "",
         level: (data.level as Level) || "A1",
-        learningFrom: (data.learning_from as "sv" | "en") || "sv",
+        learningFrom: lang,
       });
     } else {
       setUser({
@@ -71,6 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         learningFrom: "sv",
       });
     }
+    setProfileLang?.(lang);
 
     // Check admin role
     const { data: roleData } = await supabase
