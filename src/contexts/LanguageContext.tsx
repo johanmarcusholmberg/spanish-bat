@@ -202,6 +202,22 @@ const translations: Translations = {
   adminCount: { sv: "Administratörer", en: "Administrators" },
   adminRoles: { sv: "Roller", en: "Roles" },
   registered: { sv: "Registrerad", en: "Registered" },
+
+  // Footer
+  footerAbout: { sv: "Om oss", en: "About us" },
+  footerContact: { sv: "Kontakta oss", en: "Contact us" },
+  footerFaq: { sv: "Vanliga frågor", en: "FAQ / Help" },
+  footerHowItWorks: { sv: "Hur det fungerar", en: "How it works" },
+  footerPrivacy: { sv: "Integritetspolicy", en: "Privacy Policy" },
+  footerTerms: { sv: "Användarvillkor", en: "Terms of Service" },
+  footerCookies: { sv: "Cookiepolicy", en: "Cookie Policy" },
+  footerReport: { sv: "Rapportera problem", en: "Report a problem" },
+  footerRights: { sv: "Alla rättigheter förbehållna.", en: "All rights reserved." },
+
+  // Login
+  loginMissingFields: { sv: "Fyll i e-post och lösenord", en: "Enter email and password" },
+  signInWithApple: { sv: "Logga in med Apple", en: "Sign in with Apple" },
+  registerWithApple: { sv: "Registrera med Apple", en: "Sign up with Apple" },
 };
 
 interface LanguageContextType {
