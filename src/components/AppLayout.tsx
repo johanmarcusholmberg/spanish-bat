@@ -90,6 +90,8 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         {children}
       </main>
 
+      <Footer />
+
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-1 z-50">
         <div className="flex justify-around">
