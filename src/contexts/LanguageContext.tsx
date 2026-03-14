@@ -224,6 +224,7 @@ interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
+  setProfileLang?: (lang: Language | null) => void;
 }
 
 const LanguageContext = createContext<LanguageContextType>({
