@@ -7,6 +7,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ProgressProvider } from "@/contexts/ProgressContext";
 import { StreakProvider } from "@/contexts/StreakContext";
+import ScrollToTop from "@/components/ScrollToTop";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
@@ -28,6 +29,8 @@ import PronunciationPage from "./pages/PronunciationPage";
 import StatsPage from "./pages/StatsPage";
 import NotFound from "./pages/NotFound";
 import AdminPage from "./pages/AdminPage";
+import ContactPage from "./pages/ContactPage";
+import StaticPage from "./pages/StaticPage";
 
 const queryClient = new QueryClient();
 
@@ -39,29 +42,39 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const AppRoutes = () => (
-  <Routes>
-    <Route path="/" element={<LoginPage />} />
-    <Route path="/register" element={<RegisterPage />} />
-    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-    <Route path="/reset-password" element={<ResetPasswordPage />} />
-    <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-    <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-    <Route path="/exercises" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
-    <Route path="/exercises/verbs" element={<ProtectedRoute><VerbExercisePage /></ProtectedRoute>} />
-    <Route path="/exercises/nouns" element={<ProtectedRoute><NounExercisePage /></ProtectedRoute>} />
-    <Route path="/exercises/adjectives" element={<ProtectedRoute><AdjectiveExercisePage /></ProtectedRoute>} />
-    <Route path="/exercises/quiz" element={<ProtectedRoute><QuizExercisePage /></ProtectedRoute>} />
-    <Route path="/learn/grammar" element={<ProtectedRoute><GrammarPage /></ProtectedRoute>} />
-    <Route path="/learn/flashcards" element={<ProtectedRoute><FlashcardsPage /></ProtectedRoute>} />
-    <Route path="/learn/reading" element={<ProtectedRoute><ReadingPage /></ProtectedRoute>} />
-    <Route path="/learn/sentences" element={<ProtectedRoute><SentenceBuilderPage /></ProtectedRoute>} />
-    <Route path="/learn/conversation" element={<ProtectedRoute><ConversationPage /></ProtectedRoute>} />
-    <Route path="/learn/vocabulary" element={<ProtectedRoute><VocabularyPage /></ProtectedRoute>} />
-    <Route path="/learn/pronunciation" element={<ProtectedRoute><PronunciationPage /></ProtectedRoute>} />
-    <Route path="/stats" element={<ProtectedRoute><StatsPage /></ProtectedRoute>} />
-    <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
-    <Route path="*" element={<NotFound />} />
-  </Routes>
+  <>
+    <ScrollToTop />
+    <Routes>
+      <Route path="/" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/contact" element={<ContactPage />} />
+      <Route path="/about" element={<StaticPage />} />
+      <Route path="/faq" element={<StaticPage />} />
+      <Route path="/how-it-works" element={<StaticPage />} />
+      <Route path="/privacy" element={<StaticPage />} />
+      <Route path="/terms" element={<StaticPage />} />
+      <Route path="/cookies" element={<StaticPage />} />
+      <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      <Route path="/exercises" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
+      <Route path="/exercises/verbs" element={<ProtectedRoute><VerbExercisePage /></ProtectedRoute>} />
+      <Route path="/exercises/nouns" element={<ProtectedRoute><NounExercisePage /></ProtectedRoute>} />
+      <Route path="/exercises/adjectives" element={<ProtectedRoute><AdjectiveExercisePage /></ProtectedRoute>} />
+      <Route path="/exercises/quiz" element={<ProtectedRoute><QuizExercisePage /></ProtectedRoute>} />
+      <Route path="/learn/grammar" element={<ProtectedRoute><GrammarPage /></ProtectedRoute>} />
+      <Route path="/learn/flashcards" element={<ProtectedRoute><FlashcardsPage /></ProtectedRoute>} />
+      <Route path="/learn/reading" element={<ProtectedRoute><ReadingPage /></ProtectedRoute>} />
+      <Route path="/learn/sentences" element={<ProtectedRoute><SentenceBuilderPage /></ProtectedRoute>} />
+      <Route path="/learn/conversation" element={<ProtectedRoute><ConversationPage /></ProtectedRoute>} />
+      <Route path="/learn/vocabulary" element={<ProtectedRoute><VocabularyPage /></ProtectedRoute>} />
+      <Route path="/learn/pronunciation" element={<ProtectedRoute><PronunciationPage /></ProtectedRoute>} />
+      <Route path="/stats" element={<ProtectedRoute><StatsPage /></ProtectedRoute>} />
+      <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  </>
 );
 
 const App = () => (
