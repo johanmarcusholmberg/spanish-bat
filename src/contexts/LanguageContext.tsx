@@ -244,7 +244,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("publicLanguage", lang);
   };
 
-  const setProfileLang = (lang: Language) => {
+  const setProfileLang = (lang: Language | null) => {
     setProfileLanguage(lang);
   };
 

@@ -127,7 +127,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
-    setProfileLang?.(null as any);
+    setProfileLang?.(null);
   };
 
   const resetPassword = async (email: string): Promise<string | null> => {
