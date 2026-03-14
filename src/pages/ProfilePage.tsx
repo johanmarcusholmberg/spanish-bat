@@ -16,7 +16,7 @@ const ProfilePage = () => {
 
   const handleSave = async () => {
     await updateProfile({ displayName, level, learningFrom });
-    setLanguage(learningFrom);
+    setProfileLang?.(learningFrom);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
