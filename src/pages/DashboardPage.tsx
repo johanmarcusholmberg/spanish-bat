@@ -4,18 +4,27 @@ import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import { ProgressOverview, NextStepsCard, LevelAdvancementCard } from "@/components/ProgressDashboard";
 import { StreakCard } from "@/components/StreakCard";
+import MurciMascot from "@/components/MurciMascot";
 
 const DashboardPage = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
+
+  const greeting = language === "sv"
+    ? "Redo att öva idag? 💪"
+    : "Ready to practice today? 💪";
 
   return (
     <AppLayout>
       <div className="animate-fade-in space-y-6">
-        <div>
-          <h1 className="text-2xl font-heading font-bold text-foreground">
-            {t("welcomeBack")} {user?.displayName}
-          </h1>
+        <div className="flex items-center gap-4">
+          <MurciMascot size="sm" mood="happy" />
+          <div>
+            <h1 className="text-2xl font-heading font-bold text-foreground">
+              {t("welcomeBack")} {user?.displayName}
+            </h1>
+            <p className="text-sm text-muted-foreground">{greeting}</p>
+          </div>
         </div>
 
         {/* Streak */}

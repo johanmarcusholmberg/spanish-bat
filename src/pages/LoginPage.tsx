@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import LanguageToggle from "@/components/LanguageToggle";
 import Footer from "@/components/Footer";
-import batAvatar from "@/assets/bat-avatar.png";
+import MurciMascot from "@/components/MurciMascot";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 const LoginPage = () => {
@@ -57,8 +57,8 @@ const LoginPage = () => {
 
         <div className="w-full max-w-md" style={{ animation: 'fade-in 0.5s ease-out both' }}>
           <div className="text-center mb-8">
-            <img src={batAvatar} alt="Murciélingo mascot" className="w-28 h-28 mx-auto mb-4 animate-float" />
-            <p className="text-muted-foreground text-sm mb-1">{t("welcome")}</p>
+            <MurciMascot size="lg" mood="happy" />
+            <p className="text-muted-foreground text-sm mb-1 mt-4">{t("welcome")}</p>
             <h1 className="text-3xl font-heading font-bold text-foreground">{t("appName")}</h1>
             <p className="text-muted-foreground mt-1">{t("appTagline")}</p>
           </div>
