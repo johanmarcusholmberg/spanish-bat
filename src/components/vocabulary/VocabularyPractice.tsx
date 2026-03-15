@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import MurciMascot from "@/components/MurciMascot";
 import {
   ArrowLeft,
   Check,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 
 type PracticeMode = "select" | "flashcard" | "multiple_choice" | "typing" | "sentence_completion";
+type TranslationDirection = "es_to_native" | "native_to_es";
 
 interface Props {
   words: VocabularyWord[];
@@ -34,6 +36,10 @@ const MODES = [
 
 const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => Math.random() - 0.5);
 
+/** Pick a random direction, biased 50/50 */
+const pickDirection = (): TranslationDirection =>
+  Math.random() < 0.5 ? "es_to_native" : "native_to_es";
+
 const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggleLearned }) => {
   const { language } = useLanguage();
   const { speak, isSupported: ttsSupported } = useSpanishTTS();
@@ -41,6 +47,7 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
 
   const [mode, setMode] = useState<PracticeMode>("select");
   const [queue, setQueue] = useState<VocabularyWord[]>([]);
+  const [directions, setDirections] = useState<TranslationDirection[]>([]);
   const [current, setCurrent] = useState(0);
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
@@ -63,9 +70,21 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
   const [scChecked, setScChecked] = useState(false);
   const [scCorrect, setScCorrect] = useState(false);
 
+  const currentDirection = directions[current] ?? "es_to_native";
+
+  /** Get the "prompt" text based on direction */
+  const getPrompt = (word: VocabularyWord, dir: TranslationDirection) =>
+    dir === "es_to_native" ? word.spanish : word.translation;
+
+  /** Get the "answer" text based on direction */
+  const getAnswer = (word: VocabularyWord, dir: TranslationDirection) =>
+    dir === "es_to_native" ? word.translation : word.spanish;
+
   const startMode = useCallback((m: PracticeMode) => {
     const shuffled = shuffle(words).slice(0, 10);
+    const dirs = shuffled.map(() => pickDirection());
     setQueue(shuffled);
+    setDirections(dirs);
     setCurrent(0);
     setScore(0);
     setTotal(shuffled.length);
@@ -79,17 +98,16 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
     setMode(m);
 
     if (m === "multiple_choice") {
-      generateMcOptions(shuffled[0], shuffled);
+      generateMcOptions(shuffled[0], shuffled, dirs[0]);
     }
   }, [words]);
 
-  const generateMcOptions = (word: VocabularyWord, pool: VocabularyWord[]) => {
-    const correct = word.translation;
+  const generateMcOptions = (word: VocabularyWord, pool: VocabularyWord[], dir: TranslationDirection) => {
+    const correct = getAnswer(word, dir);
     const distractors = shuffle(allWords.filter(w => w.id !== word.id))
       .slice(0, 3)
-      .map(w => w.translation);
+      .map(w => getAnswer(w, dir));
     const opts = shuffle([correct, ...distractors.slice(0, 3)]);
-    // Ensure correct answer is in options
     if (!opts.includes(correct)) opts[0] = correct;
     setMcOptions(opts);
     setMcSelected(null);
@@ -110,19 +128,31 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
     setScChecked(false);
 
     if (mode === "multiple_choice") {
-      generateMcOptions(queue[next], queue);
+      generateMcOptions(queue[next], queue, directions[next]);
     }
-  }, [current, queue, mode]);
+  }, [current, queue, mode, directions]);
 
   const card = queue[current];
   const progress = queue.length > 0 ? ((current + 1) / queue.length) * 100 : 0;
 
+  const dirLabel = currentDirection === "es_to_native"
+    ? t("🇪🇸 → Översätt", "🇪🇸 → Translate")
+    : t("→ 🇪🇸 Skriv på spanska", "→ 🇪🇸 Write in Spanish");
+
   // Result screen
   if (showResult) {
     const pct = Math.round((score / total) * 100);
+    const murciMood = pct >= 80 ? "celebrating" : pct >= 50 ? "encouraging" : "thinking";
+    const murciMsg = pct >= 80
+      ? t("Fantastiskt! 🎉", "Amazing! 🎉")
+      : pct >= 50
+        ? t("Bra jobbat! Fortsätt öva!", "Good job! Keep practicing!")
+        : t("Övning ger färdighet! 💪", "Practice makes perfect! 💪");
+
     return (
       <div className="animate-fade-in space-y-6 max-w-md mx-auto">
         <h2 className="text-2xl font-bold text-center">{t("Resultat", "Results")}</h2>
+        <MurciMascot size="md" mood={murciMood} message={murciMsg} className="mx-auto" />
         <Card>
           <CardContent className="p-6 text-center space-y-3">
             <p className="text-4xl font-bold text-primary">{pct}%</p>
@@ -153,7 +183,7 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
           <h2 className="text-2xl font-bold">{t("Välj övningstyp", "Choose practice type")}</h2>
         </div>
         <p className="text-muted-foreground text-sm">
-          {words.length} {t("ord att öva på", "words to practice")}
+          {words.length} {t("ord att öva på", "words to practice")} · {t("Blandar översättningsriktning", "Mixed translation directions")}
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
           {MODES.filter(m => words.length >= m.minWords).map((m) => (
@@ -173,6 +203,14 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
 
   if (!card) return null;
 
+  const prompt = getPrompt(card, currentDirection);
+  const answer = getAnswer(card, currentDirection);
+
+  // Direction badge
+  const DirectionBadge = () => (
+    <Badge variant="secondary" className="text-[10px]">{dirLabel}</Badge>
+  );
+
   // FLASHCARD MODE
   if (mode === "flashcard") {
     return (
@@ -181,7 +219,10 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
           <Button variant="ghost" size="sm" onClick={() => setMode("select")}>
             <ArrowLeft className="h-4 w-4 mr-1" /> {t("Tillbaka", "Back")}
           </Button>
-          <span className="text-sm text-muted-foreground">{current + 1}/{queue.length}</span>
+          <div className="flex items-center gap-2">
+            <DirectionBadge />
+            <span className="text-sm text-muted-foreground">{current + 1}/{queue.length}</span>
+          </div>
         </div>
         <Progress value={progress} className="h-2" />
         <Card
@@ -189,8 +230,8 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
           onClick={() => setFlipped(!flipped)}
         >
           <CardContent className="p-8 text-center">
-            <p className="text-2xl font-bold">{flipped ? card.translation : card.spanish}</p>
-            {!flipped && ttsSupported && (
+            <p className="text-2xl font-bold">{flipped ? answer : prompt}</p>
+            {!flipped && currentDirection === "es_to_native" && ttsSupported && (
               <button onClick={(e) => { e.stopPropagation(); speak(card.spanish); }} className="mt-3 text-muted-foreground hover:text-foreground">
                 <Volume2 className="h-5 w-5" />
               </button>
@@ -212,21 +253,24 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
 
   // MULTIPLE CHOICE MODE
   if (mode === "multiple_choice") {
-    const isCorrect = mcSelected === card.translation;
+    const isCorrect = mcSelected === answer;
     return (
       <div className="animate-fade-in space-y-4 max-w-md mx-auto">
         <div className="flex items-center justify-between">
           <Button variant="ghost" size="sm" onClick={() => setMode("select")}>
             <ArrowLeft className="h-4 w-4 mr-1" /> {t("Tillbaka", "Back")}
           </Button>
-          <span className="text-sm text-muted-foreground">{current + 1}/{queue.length}</span>
+          <div className="flex items-center gap-2">
+            <DirectionBadge />
+            <span className="text-sm text-muted-foreground">{current + 1}/{queue.length}</span>
+          </div>
         </div>
         <Progress value={progress} className="h-2" />
         <Card>
           <CardContent className="p-6 text-center">
             <p className="text-sm text-muted-foreground mb-1">{t("Vad betyder:", "What does this mean:")}</p>
-            <p className="text-xl font-bold">{card.spanish}</p>
-            {ttsSupported && (
+            <p className="text-xl font-bold">{prompt}</p>
+            {currentDirection === "es_to_native" && ttsSupported && (
               <button onClick={() => speak(card.spanish)} className="mt-2 text-muted-foreground hover:text-foreground">
                 <Volume2 className="h-4 w-4" />
               </button>
@@ -237,7 +281,7 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
           {mcOptions.map((opt, i) => {
             let cls = "border bg-card hover:bg-muted";
             if (mcSelected) {
-              if (opt === card.translation) cls = "border-2 border-primary bg-primary/10";
+              if (opt === answer) cls = "border-2 border-primary bg-primary/10";
               else if (opt === mcSelected) cls = "border-2 border-destructive bg-destructive/10";
             }
             return (
@@ -246,7 +290,7 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
                 disabled={!!mcSelected}
                 onClick={() => {
                   setMcSelected(opt);
-                  if (opt === card.translation) setScore(s => s + 1);
+                  if (opt === answer) setScore(s => s + 1);
                 }}
                 className={`rounded-lg p-3 text-left text-sm transition ${cls}`}
               >
@@ -269,9 +313,9 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
   // TYPING MODE
   if (mode === "typing") {
     const checkTyping = () => {
-      const correct = card.translation.toLowerCase().trim();
-      const answer = typedAnswer.toLowerCase().trim();
-      const isCorrect = correct === answer;
+      const correct = answer.toLowerCase().trim();
+      const typed = typedAnswer.toLowerCase().trim();
+      const isCorrect = correct === typed;
       setTypingCorrect(isCorrect);
       setTypingChecked(true);
       if (isCorrect) setScore(s => s + 1);
@@ -283,14 +327,17 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
           <Button variant="ghost" size="sm" onClick={() => setMode("select")}>
             <ArrowLeft className="h-4 w-4 mr-1" /> {t("Tillbaka", "Back")}
           </Button>
-          <span className="text-sm text-muted-foreground">{current + 1}/{queue.length}</span>
+          <div className="flex items-center gap-2">
+            <DirectionBadge />
+            <span className="text-sm text-muted-foreground">{current + 1}/{queue.length}</span>
+          </div>
         </div>
         <Progress value={progress} className="h-2" />
         <Card>
           <CardContent className="p-6 text-center">
             <p className="text-sm text-muted-foreground mb-1">{t("Översätt:", "Translate:")}</p>
-            <p className="text-xl font-bold">{card.spanish}</p>
-            {ttsSupported && (
+            <p className="text-xl font-bold">{prompt}</p>
+            {currentDirection === "es_to_native" && ttsSupported && (
               <button onClick={() => speak(card.spanish)} className="mt-2 text-muted-foreground hover:text-foreground">
                 <Volume2 className="h-4 w-4" />
               </button>
@@ -301,14 +348,16 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
           <Input
             value={typedAnswer}
             onChange={(e) => setTypedAnswer(e.target.value)}
-            placeholder={t("Skriv översättningen...", "Type the translation...")}
+            placeholder={currentDirection === "native_to_es"
+              ? t("Skriv på spanska...", "Type in Spanish...")
+              : t("Skriv översättningen...", "Type the translation...")}
             disabled={typingChecked}
             autoFocus
             className={typingChecked ? (typingCorrect ? "border-primary" : "border-destructive") : ""}
           />
           {typingChecked && !typingCorrect && (
             <p className="text-sm text-destructive mt-2">
-              {t("Rätt svar:", "Correct answer:")} <span className="font-medium">{card.translation}</span>
+              {t("Rätt svar:", "Correct answer:")} <span className="font-medium">{answer}</span>
             </p>
           )}
           {typingChecked && typingCorrect && (
@@ -326,7 +375,6 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
 
   // SENTENCE COMPLETION MODE
   if (mode === "sentence_completion") {
-    // Create a fill-in-the-blank from the spanish word
     const spanishWord = card.spanish;
     const blankLength = Math.max(3, spanishWord.length);
     const blanks = "_".repeat(blankLength);
@@ -334,8 +382,8 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
 
     const checkSc = () => {
       const correct = spanishWord.toLowerCase().trim();
-      const answer = scAnswer.toLowerCase().trim();
-      const isCorrect = correct === answer;
+      const typed = scAnswer.toLowerCase().trim();
+      const isCorrect = correct === typed;
       setScCorrect(isCorrect);
       setScChecked(true);
       if (isCorrect) setScore(s => s + 1);

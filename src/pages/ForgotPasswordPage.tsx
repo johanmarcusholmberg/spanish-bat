@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import LanguageToggle from "@/components/LanguageToggle";
-import batAvatar from "@/assets/bat-avatar.png";
+import MurciMascot from "@/components/MurciMascot";
 import { ArrowLeft, Mail, Loader2 } from "lucide-react";
 
 const ForgotPasswordPage = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { resetPassword } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -33,8 +33,8 @@ const ForgotPasswordPage = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-md animate-fade-in text-center">
-          <img src={batAvatar} alt="Murciélingo" className="w-24 h-24 mx-auto mb-4 animate-float" />
-          <h1 className="text-2xl font-heading font-bold text-foreground mb-2">{t("resetSent")}</h1>
+          <MurciMascot size="lg" mood="encouraging" message={language === "sv" ? "Kolla din inkorg! 📬" : "Check your inbox! 📬"} />
+          <h1 className="text-2xl font-heading font-bold text-foreground mb-2 mt-4">{t("resetSent")}</h1>
           <p className="text-muted-foreground mb-6">{t("resetSentInfo")}</p>
           <button
             onClick={() => navigate("/")}
@@ -63,8 +63,8 @@ const ForgotPasswordPage = () => {
         </button>
 
         <div className="text-center mb-6">
-          <img src={batAvatar} alt="Murciélingo" className="w-20 h-20 mx-auto mb-3" />
-          <h1 className="text-2xl font-heading font-bold text-foreground">{t("forgotPasswordTitle")}</h1>
+          <MurciMascot size="md" mood="thinking" />
+          <h1 className="text-2xl font-heading font-bold text-foreground mt-3">{t("forgotPasswordTitle")}</h1>
           <p className="text-muted-foreground text-sm mt-1">{t("forgotPasswordInfo")}</p>
         </div>
 
