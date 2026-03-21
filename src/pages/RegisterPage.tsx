@@ -28,13 +28,18 @@ const RegisterPage = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isValid) return;
+    if (!isValid) {
+      toast({
+        title: language === "sv" ? "Fyll i alla fält korrekt" : "Please fill in all fields correctly",
+        variant: "destructive",
+      });
+      return;
+    }
     setLoading(true);
-    setError("");
     const err = await signUp(email, password);
     setLoading(false);
     if (err) {
-      setError(err);
+      toast({ title: err, variant: "destructive" });
     } else {
       setRegistered(true);
     }
