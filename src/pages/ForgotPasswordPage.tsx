@@ -18,13 +18,15 @@ const ForgotPasswordPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email) {
+      toast({ title: language === "sv" ? "Ange din e-postadress" : "Enter your email address", variant: "destructive" });
+      return;
+    }
     setLoading(true);
-    setError("");
     const err = await resetPassword(email);
     setLoading(false);
     if (err) {
-      setError(err);
+      toast({ title: err, variant: "destructive" });
     } else {
       setSent(true);
     }
