@@ -56,6 +56,12 @@ const AppRoutes = () => (
       <Route path="/privacy" element={<StaticPage />} />
       <Route path="/terms" element={<StaticPage />} />
       <Route path="/cookies" element={<StaticPage />} />
+      <Route path="/accessibility" element={<StaticPage />} />
+      <Route path="/support" element={<StaticPage />} />
+      <Route path="/pricing" element={<StaticPage />} />
+      <Route path="/changelog" element={<StaticPage />} />
+      <Route path="/delete-account" element={<StaticPage />} />
+      <Route path="/feedback" element={<StaticPage />} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="/exercises" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />

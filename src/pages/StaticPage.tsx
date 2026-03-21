@@ -67,6 +67,66 @@ const pages: Record<string, { sv: { title: string; body: string }; en: { title: 
       body: "We use cookies to keep you logged in and save your preferences (like dark mode and language). We do not use tracking cookies or third-party cookies for marketing.",
     },
   },
+  accessibility: {
+    sv: {
+      title: "Tillgänglighet",
+      body: "Vi strävar efter att göra Murciélingo tillgängligt för alla. Appen är designad med tydliga kontraster, responsiv layout och stöd för skärmläsare. Om du upplever tillgänglighetsproblem, kontakta oss gärna så åtgärdar vi det.",
+    },
+    en: {
+      title: "Accessibility",
+      body: "We strive to make Murciélingo accessible to everyone. The app is designed with clear contrasts, responsive layout and screen reader support. If you experience accessibility issues, please contact us and we'll address them.",
+    },
+  },
+  support: {
+    sv: {
+      title: "Support / Hjälpcenter",
+      body: "**Behöver du hjälp?**\nAnvänd kontaktformuläret för att nå oss.\n\n**Vanliga lösningar:**\n- **Inloggningsproblem:** Prova att återställa ditt lösenord via 'Glömt lösenord'.\n- **Appen laddar inte:** Rensa webbläsarens cache och försök igen.\n- **Framsteg saknas:** Se till att du är inloggad med rätt konto.\n- **Ljudproblem:** Kontrollera att din enhet inte är på tyst läge.",
+    },
+    en: {
+      title: "Support / Help center",
+      body: "**Need help?**\nUse the contact form to reach us.\n\n**Common solutions:**\n- **Login issues:** Try resetting your password via 'Forgot password'.\n- **App won't load:** Clear your browser cache and try again.\n- **Missing progress:** Make sure you're logged in with the correct account.\n- **Audio issues:** Check that your device is not on silent mode.",
+    },
+  },
+  pricing: {
+    sv: {
+      title: "Priser / Planer",
+      body: "**Gratis plan**\nAlla grundfunktioner är helt gratis – övningar, grammatik, ordbok, uttal och konversation.\n\n**Premium (kommer snart)**\nVi arbetar på avancerade funktioner som personliga studieplaner, offlineläge och utökade AI-konversationer. Håll utkik!",
+    },
+    en: {
+      title: "Pricing / Plans",
+      body: "**Free plan**\nAll core features are completely free – exercises, grammar, dictionary, pronunciation and conversation.\n\n**Premium (coming soon)**\nWe're working on advanced features like personalized study plans, offline mode and extended AI conversations. Stay tuned!",
+    },
+  },
+  changelog: {
+    sv: {
+      title: "Nyheter",
+      body: "**Mars 2026**\n- Murci-maskoten introducerad som lärpartner\n- Dubbelriktade översättningsövningar\n- Förbättrad ordbok med användningsexempel\n- Kontaktformulär och utökad footer\n\n**Februari 2026**\n- AI-konversationsövning lanserad\n- Uttalsövning med taligenkänning\n- Grammatiklektioner med interaktiva övningar\n- SRS-flashcards (smart repetition)",
+    },
+    en: {
+      title: "What's new",
+      body: "**March 2026**\n- Murci mascot introduced as learning partner\n- Bidirectional translation exercises\n- Improved dictionary with usage examples\n- Contact form and expanded footer\n\n**February 2026**\n- AI conversation practice launched\n- Pronunciation practice with speech recognition\n- Grammar lessons with interactive exercises\n- SRS flashcards (spaced repetition)",
+    },
+  },
+  "delete-account": {
+    sv: {
+      title: "Radera konto / Dataförfrågan",
+      body: "**Radera ditt konto**\nOm du vill radera ditt konto och all tillhörande data, kontakta oss via kontaktformuläret med ämnet 'Kontoproblem'. Vi behandlar din begäran inom 30 dagar.\n\n**Begär din data**\nEnligt GDPR har du rätt att begära en kopia av dina personuppgifter. Kontakta oss så skickar vi en export.\n\n**Vad raderas:**\n- Profil och inställningar\n- Övningsframsteg och statistik\n- Sparade ord i ordboken\n- Streaks och aktivitetslogg",
+    },
+    en: {
+      title: "Delete account / Data request",
+      body: "**Delete your account**\nIf you want to delete your account and all associated data, contact us via the contact form with the subject 'Account issue'. We'll process your request within 30 days.\n\n**Request your data**\nUnder GDPR you have the right to request a copy of your personal data. Contact us and we'll send you an export.\n\n**What gets deleted:**\n- Profile and settings\n- Exercise progress and statistics\n- Saved words in dictionary\n- Streaks and activity log",
+    },
+  },
+  feedback: {
+    sv: {
+      title: "Feedback / Community",
+      body: "**Vi vill höra från dig!**\nDin feedback hjälper oss att förbättra Murciélingo. Använd kontaktformuläret för att skicka förslag, rapportera buggar eller bara berätta vad du tycker.\n\n**Funktionsförslag**\nHar du en idé om en ny funktion? Skicka den till oss! Vi prioriterar förslag baserat på efterfrågan.\n\n**Communityn**\nVi bygger en gemenskap av språkelever. Mer information kommer snart!",
+    },
+    en: {
+      title: "Feedback / Community",
+      body: "**We want to hear from you!**\nYour feedback helps us improve Murciélingo. Use the contact form to send suggestions, report bugs, or just tell us what you think.\n\n**Feature requests**\nHave an idea for a new feature? Send it to us! We prioritize suggestions based on demand.\n\n**Community**\nWe're building a community of language learners. More info coming soon!",
+    },
+  },
 };
 
 const StaticPage = () => {
