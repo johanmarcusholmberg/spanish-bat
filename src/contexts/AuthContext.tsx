@@ -10,6 +10,8 @@ interface UserProfile {
   email: string;
   level: Level;
   learningFrom: "sv" | "en";
+  onboardingCompleted: boolean;
+  placementTestCompleted: boolean;
 }
 
 interface AuthContextType {
