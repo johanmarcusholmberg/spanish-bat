@@ -68,12 +68,27 @@ const ContactPage = () => {
       email: email.trim(),
       user_id: session?.user?.id || null,
     } as any);
-    setLoading(false);
 
     if (error) {
+      setLoading(false);
       toast({ title: language === "sv" ? "Något gick fel" : "Something went wrong", variant: "destructive" });
       return;
     }
+
+    // Notify app owner
+    try {
+      await supabase.functions.invoke("contact-notify", {
+        body: {
+          subject,
+          message: message.trim(),
+          email: email.trim(),
+          user_id: session?.user?.id || null,
+        },
+      });
+    } catch (notifyErr) {
+      console.error("Notification failed:", notifyErr);
+    }
+    setLoading(false);
 
     localStorage.setItem(RATE_LIMIT_KEY, String(Date.now()));
     setSent(true);

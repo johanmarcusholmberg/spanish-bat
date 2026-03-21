@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
 import LanguageToggle from "@/components/LanguageToggle";
 import MurciMascot from "@/components/MurciMascot";
 import { Eye, EyeOff, ArrowLeft, Check, X, Loader2 } from "lucide-react";
@@ -27,13 +28,18 @@ const RegisterPage = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isValid) return;
+    if (!isValid) {
+      toast({
+        title: language === "sv" ? "Fyll i alla fält korrekt" : "Please fill in all fields correctly",
+        variant: "destructive",
+      });
+      return;
+    }
     setLoading(true);
-    setError("");
     const err = await signUp(email, password);
     setLoading(false);
     if (err) {
-      setError(err);
+      toast({ title: err, variant: "destructive" });
     } else {
       setRegistered(true);
     }
@@ -143,7 +149,7 @@ const RegisterPage = () => {
               )}
             </div>
 
-            {error && <p className="text-destructive text-sm">{error}</p>}
+            
 
             <button
               type="submit"

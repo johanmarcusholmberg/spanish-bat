@@ -213,6 +213,12 @@ const translations: Translations = {
   footerCookies: { sv: "Cookiepolicy", en: "Cookie Policy" },
   footerReport: { sv: "Rapportera problem", en: "Report a problem" },
   footerRights: { sv: "Alla rättigheter förbehållna.", en: "All rights reserved." },
+  footerAccessibility: { sv: "Tillgänglighet", en: "Accessibility" },
+  footerSupport: { sv: "Support / Hjälpcenter", en: "Support / Help center" },
+  footerPricing: { sv: "Priser / Planer", en: "Pricing / Plans" },
+  footerChangelog: { sv: "Nyheter", en: "What's new" },
+  footerDeleteAccount: { sv: "Radera konto / Dataförfrågan", en: "Delete account / Data request" },
+  footerFeedback: { sv: "Feedback / Community", en: "Feedback / Community" },
 
   // Login
   loginMissingFields: { sv: "Fyll i e-post och lösenord", en: "Enter email and password" },

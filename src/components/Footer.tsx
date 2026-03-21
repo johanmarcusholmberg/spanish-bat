@@ -12,9 +12,15 @@ const Footer = () => {
     { label: t("footerContact"), to: "/contact" },
     { label: t("footerFaq"), to: "/faq" },
     { label: t("footerHowItWorks"), to: "/how-it-works" },
+    { label: t("footerSupport"), to: "/support" },
+    { label: t("footerPricing"), to: "/pricing" },
+    { label: t("footerChangelog"), to: "/changelog" },
+    { label: t("footerFeedback"), to: "/feedback" },
+    { label: t("footerAccessibility"), to: "/accessibility" },
     { label: t("footerPrivacy"), to: "/privacy" },
     { label: t("footerTerms"), to: "/terms" },
     { label: t("footerCookies"), to: "/cookies" },
+    { label: t("footerDeleteAccount"), to: "/delete-account" },
     { label: t("footerReport"), to: "/contact?subject=bug" },
   ];
 
