@@ -149,7 +149,7 @@ const RegisterPage = () => {
               )}
             </div>
 
-            {error && <p className="text-destructive text-sm">{error}</p>}
+            
 
             <button
               type="submit"
