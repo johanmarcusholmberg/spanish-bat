@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
 import LanguageToggle from "@/components/LanguageToggle";
 import MurciMascot from "@/components/MurciMascot";
 import { ArrowLeft, Mail, Loader2 } from "lucide-react";
