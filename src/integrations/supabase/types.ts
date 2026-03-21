@@ -132,6 +132,9 @@ export type Database = {
           id: string
           learning_from: string
           level: string
+          onboarding_completed: boolean
+          placement_test_completed: boolean
+          placement_test_score: Json | null
           updated_at: string
           user_id: string
         }
@@ -141,6 +144,9 @@ export type Database = {
           id?: string
           learning_from?: string
           level?: string
+          onboarding_completed?: boolean
+          placement_test_completed?: boolean
+          placement_test_score?: Json | null
           updated_at?: string
           user_id: string
         }
@@ -150,6 +156,9 @@ export type Database = {
           id?: string
           learning_from?: string
           level?: string
+          onboarding_completed?: boolean
+          placement_test_completed?: boolean
+          placement_test_score?: Json | null
           updated_at?: string
           user_id?: string
         }

@@ -10,6 +10,8 @@ interface UserProfile {
   email: string;
   level: Level;
   learningFrom: "sv" | "en";
+  onboardingCompleted: boolean;
+  placementTestCompleted: boolean;
 }
 
 interface AuthContextType {
@@ -63,6 +65,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email: authUser.email || "",
         level: (data.level as Level) || "A1",
         learningFrom: lang,
+        onboardingCompleted: !!(data as any).onboarding_completed,
+        placementTestCompleted: !!(data as any).placement_test_completed,
       });
     } else {
       setUser({
@@ -70,6 +74,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email: authUser.email || "",
         level: "A1",
         learningFrom: "sv",
+        onboardingCompleted: false,
+        placementTestCompleted: false,
       });
     }
     setProfileLang?.(lang);
