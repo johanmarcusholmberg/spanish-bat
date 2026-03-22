@@ -20,8 +20,10 @@ interface CardState {
 const FlashcardsPage = () => {
   const { t, language } = useLanguage();
   const { user, session } = useAuth();
-  const { updateProgress } = useProgress();
+  const { updateProgress, trackLastActivity } = useProgress();
   const { logActivity } = useStreak();
+
+  useEffect(() => { trackLastActivity("flashcards", "/learn/flashcards", t("flashcards")); }, []);
   const { speak, isSupported: ttsSupported } = useSpanishTTS();
   const [flipped, setFlipped] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);

@@ -12,8 +12,10 @@ import SelectionPopup from "@/components/SelectionPopup";
 const ReadingPage = () => {
   const { t, language } = useLanguage();
   const { user } = useAuth();
-  const { updateProgress } = useProgress();
+  const { updateProgress, trackLastActivity } = useProgress();
   const { logActivity } = useStreak();
+
+  useEffect(() => { trackLastActivity("reading", "/learn/reading", t("reading")); }, []);
   const [textIndex, setTextIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);

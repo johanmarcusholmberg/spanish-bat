@@ -14,8 +14,10 @@ const AdjectiveExercisePage = () => {
   const { language, t } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { updateProgress } = useProgress();
+  const { updateProgress, trackLastActivity } = useProgress();
   const { logActivity } = useStreak();
+
+  useEffect(() => { trackLastActivity("exercises", "/exercises/adjectives", t("adjectives")); }, []);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [masculineAnswer, setMasculineAnswer] = useState("");
   const [feminineAnswer, setFeminineAnswer] = useState("");

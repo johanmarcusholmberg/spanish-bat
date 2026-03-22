@@ -179,6 +179,10 @@ const translations: Translations = {
   completeAllCategories: { sv: "Slutför övningar i alla kategorier för att låsa upp nästa nivå", en: "Complete exercises in all categories to unlock the next level" },
   complete: { sv: "slutfört", en: "complete" },
   recommendationAlmostFinished: { sv: "Nästan klart! Slutför detta för att öka ditt framsteg.", en: "Almost done! Finish this to boost your progress." },
+  continueWhereYouLeftOff: { sv: "Fortsätt där du slutade", en: "Continue where you left off" },
+  continueDesc: { sv: "Hoppa tillbaka till din senaste övning", en: "Jump back to your latest exercise" },
+  continueButton: { sv: "Fortsätt", en: "Continue" },
+  noPreviousActivity: { sv: "Starta din första övning!", en: "Start your first exercise!" },
 
   // Streak
   streakTitle: { sv: "Din streak", en: "Your Streak" },
