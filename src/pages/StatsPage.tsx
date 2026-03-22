@@ -12,7 +12,7 @@ import { BarChart3, Target, Flame, TrendingUp } from "lucide-react";
 const StatsPage = () => {
   const { t, language } = useLanguage();
   const { progress } = useProgress();
-  const { streak, getActivityForWeek, getTotalExercises } = useStreak();
+  const { streak, getWeekActivity, getTotalExercises } = useStreak();
   const { user } = useAuth();
 
   const categoryData = useMemo(() => [
