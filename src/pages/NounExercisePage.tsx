@@ -14,8 +14,10 @@ const NounExercisePage = () => {
   const { language, t } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { updateProgress } = useProgress();
+  const { updateProgress, trackLastActivity } = useProgress();
   const { logActivity } = useStreak();
+
+  useEffect(() => { trackLastActivity("exercises", "/exercises/nouns", t("nouns")); }, []);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [genderAnswer, setGenderAnswer] = useState<"el" | "la" | "">("");
   const [translationAnswer, setTranslationAnswer] = useState("");

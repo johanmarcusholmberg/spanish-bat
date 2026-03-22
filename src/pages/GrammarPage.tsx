@@ -27,8 +27,10 @@ const LEVEL_ORDER: Level[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 const GrammarPage = () => {
   const { t, language } = useLanguage();
   const { user, session, updateProfile } = useAuth();
-  const { updateProgress: updateGlobalProgress } = useProgress();
+  const { updateProgress: updateGlobalProgress, trackLastActivity } = useProgress();
   const { logActivity } = useStreak();
+
+  useEffect(() => { trackLastActivity("grammar", "/learn/grammar", t("grammarLessons")); }, []);
   const { speak, isSupported: ttsSupported } = useSpanishTTS();
   const [openLesson, setOpenLesson] = useState<string | null>(null);
   const [step, setStep] = useState<LessonStep>("learn");

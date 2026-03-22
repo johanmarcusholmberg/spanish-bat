@@ -12,8 +12,10 @@ import SelectionPopup from "@/components/SelectionPopup";
 const SentenceBuilderPage = () => {
   const { t, language } = useLanguage();
   const { user } = useAuth();
-  const { updateProgress } = useProgress();
+  const { updateProgress, trackLastActivity } = useProgress();
   const { logActivity } = useStreak();
+
+  useEffect(() => { trackLastActivity("sentences", "/learn/sentences", t("sentenceBuilder")); }, []);
   const [exerciseIndex, setExerciseIndex] = useState(0);
   const [selected, setSelected] = useState<string[]>([]);
   const [available, setAvailable] = useState<string[]>([]);

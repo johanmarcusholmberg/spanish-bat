@@ -16,8 +16,10 @@ const QuizExercisePage = () => {
   const { language, t } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { updateProgress } = useProgress();
+  const { updateProgress, trackLastActivity } = useProgress();
   const { logActivity } = useStreak();
+
+  useEffect(() => { trackLastActivity("exercises", "/exercises/quiz", t("quiz")); }, []);
   const [selectedCategory, setSelectedCategory] = useState<string>("greetings");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answer, setAnswer] = useState("");
