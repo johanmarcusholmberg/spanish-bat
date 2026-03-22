@@ -5,7 +5,7 @@ import { useProgress } from "@/contexts/ProgressContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Star, TrendingUp } from "lucide-react";
+import { ArrowRight, Star, TrendingUp, Play } from "lucide-react";
 
 export const ProgressOverview = () => {
   const { t } = useLanguage();
@@ -38,19 +38,53 @@ export const ProgressOverview = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         {categories.map((cat) => (
-          <div key={cat.key} className="space-y-2">
+          <div key={cat.key} className="space-y-1.5">
             <div className="flex items-center justify-between text-sm">
               <span className="font-medium flex items-center gap-2">
                 <span>{cat.icon}</span>
                 {cat.label}
               </span>
-              <span className="text-muted-foreground">
+              <span className="text-muted-foreground tabular-nums">
                 {cat.data.completed}/{cat.data.total} • {cat.data.percentage}%
               </span>
             </div>
             <Progress value={cat.data.percentage} className="h-2" />
           </div>
         ))}
+      </CardContent>
+    </Card>
+  );
+};
+
+export const ContinueCard = () => {
+  const { t } = useLanguage();
+  const { lastActivity } = useProgress();
+  const navigate = useNavigate();
+
+  if (!lastActivity) return null;
+
+  return (
+    <Card className="border-primary/30 bg-gradient-to-r from-primary/10 to-primary/5">
+      <CardContent className="flex items-center gap-4 py-4">
+        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+          <Play className="h-6 w-6 text-primary fill-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-semibold text-foreground truncate">
+            {t("continueWhereYouLeftOff")}
+          </div>
+          <div className="text-sm text-muted-foreground truncate">
+            {lastActivity.exercise_label}
+          </div>
+        </div>
+        <Button
+          size="sm"
+          onClick={() => navigate(lastActivity.exercise_path)}
+          className="flex-shrink-0 gap-1.5"
+        >
+          {t("continueButton")}
+          <ArrowRight className="h-4 w-4" />
+        </Button>
       </CardContent>
     </Card>
   );

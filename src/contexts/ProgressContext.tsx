@@ -17,9 +17,17 @@ interface LevelProgress {
   overall: number;
 }
 
+interface LastActivity {
+  exercise_type: string;
+  exercise_path: string;
+  exercise_label: string;
+}
+
 interface ProgressContextType {
   progress: LevelProgress;
+  lastActivity: LastActivity | null;
   updateProgress: (category: keyof Omit<LevelProgress, "overall">, completed: number, total: number) => void;
+  trackLastActivity: (type: string, path: string, label: string) => void;
   getNextRecommendation: () => { category: string; path: string; reason: string } | null;
   canAdvanceLevel: () => boolean;
 }
@@ -40,6 +48,7 @@ const calcPercentage = (completed: number, total: number) =>
 
 export const ProgressProvider = ({ children }: { children: ReactNode }) => {
   const { user, session } = useAuth();
+  const [lastActivity, setLastActivity] = useState<LastActivity | null>(null);
   const [progress, setProgress] = useState<LevelProgress>({
     grammar: { completed: 0, total: 5, percentage: 0 },
     flashcards: { completed: 0, total: 20, percentage: 0 },
@@ -49,17 +58,17 @@ export const ProgressProvider = ({ children }: { children: ReactNode }) => {
     overall: 0,
   });
 
-  // Load from DB on mount / user change
   useEffect(() => {
     if (!session?.user) return;
     const level = user?.level || "A1";
     const requirements = LEVEL_REQUIREMENTS[level as keyof typeof LEVEL_REQUIREMENTS] || LEVEL_REQUIREMENTS.A1;
 
     const loadFromDB = async () => {
-      const { data } = await supabase
-        .from("user_progress")
-        .select("*")
-        .eq("user_id", session.user.id);
+      // Load progress and last activity in parallel
+      const [progressResult, lastActivityResult] = await Promise.all([
+        supabase.from("user_progress").select("*").eq("user_id", session.user.id),
+        supabase.from("user_last_activity").select("*").eq("user_id", session.user.id).single(),
+      ]);
 
       const base: LevelProgress = {
         grammar: { completed: 0, total: requirements.grammar, percentage: 0 },
@@ -70,8 +79,8 @@ export const ProgressProvider = ({ children }: { children: ReactNode }) => {
         overall: 0,
       };
 
-      if (data) {
-        for (const row of data) {
+      if (progressResult.data) {
+        for (const row of progressResult.data) {
           const cat = row.category as keyof Omit<LevelProgress, "overall">;
           if (base[cat]) {
             base[cat] = {
@@ -93,6 +102,14 @@ export const ProgressProvider = ({ children }: { children: ReactNode }) => {
       );
 
       setProgress(base);
+
+      if (lastActivityResult.data) {
+        setLastActivity({
+          exercise_type: lastActivityResult.data.exercise_type,
+          exercise_path: lastActivityResult.data.exercise_path,
+          exercise_label: lastActivityResult.data.exercise_label,
+        });
+      }
     };
 
     loadFromDB();
@@ -119,13 +136,26 @@ export const ProgressProvider = ({ children }: { children: ReactNode }) => {
       return newProgress;
     });
 
-    // Persist to DB
     if (session?.user) {
       supabase
         .from("user_progress")
         .upsert(
           { user_id: session.user.id, category, completed, total },
           { onConflict: "user_id,category" }
+        )
+        .then();
+    }
+  }, [session?.user?.id]);
+
+  const trackLastActivity = useCallback((type: string, path: string, label: string) => {
+    setLastActivity({ exercise_type: type, exercise_path: path, exercise_label: label });
+
+    if (session?.user) {
+      supabase
+        .from("user_last_activity")
+        .upsert(
+          { user_id: session.user.id, exercise_type: type, exercise_path: path, exercise_label: label },
+          { onConflict: "user_id" }
         )
         .then();
     }
@@ -171,7 +201,7 @@ export const ProgressProvider = ({ children }: { children: ReactNode }) => {
   }, [progress]);
 
   return (
-    <ProgressContext.Provider value={{ progress, updateProgress, getNextRecommendation, canAdvanceLevel }}>
+    <ProgressContext.Provider value={{ progress, lastActivity, updateProgress, trackLastActivity, getNextRecommendation, canAdvanceLevel }}>
       {children}
     </ProgressContext.Provider>
   );
