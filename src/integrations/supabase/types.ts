@@ -164,6 +164,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_last_activity: {
+        Row: {
+          exercise_label: string
+          exercise_path: string
+          exercise_type: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          exercise_label: string
+          exercise_path: string
+          exercise_type: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          exercise_label?: string
+          exercise_path?: string
+          exercise_type?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_progress: {
         Row: {
           category: string
