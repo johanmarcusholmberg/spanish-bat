@@ -23,7 +23,7 @@ const StatsPage = () => {
     { name: t("practice"), value: progress.exercises.percentage, color: "hsl(14, 91%, 78%)" },
   ], [progress, t]);
 
-  const weekData = getActivityForWeek();
+  const weekData = getWeekActivity();
 
   const activeDays = useMemo(() => {
     return Object.keys(streak.activityLog).length;
