@@ -12,7 +12,8 @@ interface StreakData {
 interface StreakContextType {
   streak: StreakData;
   logActivity: () => void;
-  getActivityForWeek: () => { date: string; count: number; dayLabel: string }[];
+  getWeekActivity: () => { date: string; count: number; dayLabel: string; isToday: boolean; isFuture: boolean }[];
+  getWeekNumber: () => number;
   getTotalExercises: () => number;
 }
 
@@ -26,6 +27,24 @@ const daysBetween = (a: string, b: string) => {
   return Math.floor((db.getTime() - da.getTime()) / (1000 * 60 * 60 * 24));
 };
 
+/** Get ISO week number */
+const getISOWeekNumber = (date: Date): number => {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+};
+
+/** Get Monday of the current ISO week */
+const getMondayOfWeek = (date: Date): Date => {
+  const d = new Date(date);
+  const day = d.getDay(); // 0=Sun,1=Mon,...
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  d.setDate(diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
 export const StreakProvider = ({ children }: { children: ReactNode }) => {
   const { session } = useAuth();
   const [streak, setStreak] = useState<StreakData>({
@@ -35,20 +54,17 @@ export const StreakProvider = ({ children }: { children: ReactNode }) => {
     activityLog: {},
   });
 
-  // Load from DB
   useEffect(() => {
     if (!session?.user) return;
     const userId = session.user.id;
 
     const load = async () => {
-      // Load streak data
       const { data: streakData } = await supabase
         .from("user_streaks")
         .select("*")
         .eq("user_id", userId)
         .single();
 
-      // Load activity log
       const { data: activityData } = await supabase
         .from("activity_log")
         .select("*")
@@ -66,10 +82,8 @@ export const StreakProvider = ({ children }: { children: ReactNode }) => {
       const longestStreak = streakData?.longest_streak || 0;
       const lastActiveDate = streakData?.last_active_date || "";
 
-      // Check if streak is broken
       if (lastActiveDate && daysBetween(lastActiveDate, today) > 1) {
         currentStreak = 0;
-        // Update DB
         await supabase
           .from("user_streaks")
           .upsert({ user_id: userId, current_streak: 0, longest_streak: longestStreak, last_active_date: lastActiveDate }, { onConflict: "user_id" });
@@ -104,7 +118,6 @@ export const StreakProvider = ({ children }: { children: ReactNode }) => {
         activityLog: newLog,
       };
 
-      // Persist streak to DB
       supabase
         .from("user_streaks")
         .upsert(
@@ -113,7 +126,6 @@ export const StreakProvider = ({ children }: { children: ReactNode }) => {
         )
         .then();
 
-      // Persist activity log to DB
       supabase
         .from("activity_log")
         .upsert(
@@ -126,28 +138,39 @@ export const StreakProvider = ({ children }: { children: ReactNode }) => {
     });
   }, [session?.user?.id]);
 
-  const getActivityForWeek = useCallback(() => {
-    const days: { date: string; count: number; dayLabel: string }[] = [];
-    const dayNames = ["Sön", "Mån", "Tis", "Ons", "Tor", "Fre", "Lör"];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
+  /** Returns Mon–Sun of the current week with activity data */
+  const getWeekActivity = useCallback(() => {
+    const today = new Date();
+    const todayStr = getToday();
+    const monday = getMondayOfWeek(today);
+    const dayLabels = ["Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"];
+
+    const days: { date: string; count: number; dayLabel: string; isToday: boolean; isFuture: boolean }[] = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
       const dateStr = d.toISOString().split("T")[0];
       days.push({
         date: dateStr,
         count: streak.activityLog[dateStr] || 0,
-        dayLabel: dayNames[d.getDay()],
+        dayLabel: dayLabels[i],
+        isToday: dateStr === todayStr,
+        isFuture: dateStr > todayStr,
       });
     }
     return days;
   }, [streak.activityLog]);
+
+  const getWeekNumber = useCallback(() => {
+    return getISOWeekNumber(new Date());
+  }, []);
 
   const getTotalExercises = useCallback(() => {
     return Object.values(streak.activityLog).reduce((sum, n) => sum + n, 0);
   }, [streak.activityLog]);
 
   return (
-    <StreakContext.Provider value={{ streak, logActivity, getActivityForWeek, getTotalExercises }}>
+    <StreakContext.Provider value={{ streak, logActivity, getWeekActivity, getWeekNumber, getTotalExercises }}>
       {children}
     </StreakContext.Provider>
   );
