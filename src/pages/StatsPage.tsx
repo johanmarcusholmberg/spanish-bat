@@ -12,7 +12,7 @@ import { BarChart3, Target, Flame, TrendingUp } from "lucide-react";
 const StatsPage = () => {
   const { t, language } = useLanguage();
   const { progress } = useProgress();
-  const { streak, getActivityForWeek, getTotalExercises } = useStreak();
+  const { streak, getWeekActivity, getTotalExercises } = useStreak();
   const { user } = useAuth();
 
   const categoryData = useMemo(() => [
@@ -23,7 +23,7 @@ const StatsPage = () => {
     { name: t("practice"), value: progress.exercises.percentage, color: "hsl(14, 91%, 78%)" },
   ], [progress, t]);
 
-  const weekData = getActivityForWeek();
+  const weekData = getWeekActivity();
 
   const activeDays = useMemo(() => {
     return Object.keys(streak.activityLog).length;
