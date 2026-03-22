@@ -3,7 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth, Level } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/components/AppLayout";
-import { ProgressOverview, NextStepsCard, LevelAdvancementCard } from "@/components/ProgressDashboard";
+import { ProgressOverview, ContinueCard, NextStepsCard, LevelAdvancementCard } from "@/components/ProgressDashboard";
 import { StreakCard } from "@/components/StreakCard";
 import MurciMascot from "@/components/MurciMascot";
 import OnboardingModal from "@/components/OnboardingModal";
