@@ -182,9 +182,9 @@ const translations: Translations = {
 
   // Streak
   streakTitle: { sv: "Din streak", en: "Your Streak" },
-  currentStreak: { sv: "Nuvarande", en: "Current" },
-  longestStreak: { sv: "Längsta", en: "Longest" },
-  totalExercises: { sv: "Totalt", en: "Total" },
+  currentStreak: { sv: "Dagar i rad", en: "Current days" },
+  longestStreak: { sv: "Längsta streak", en: "Longest streak" },
+  totalExercises: { sv: "Totala övningar", en: "Total exercises" },
 
   // Stats
   statistics: { sv: "Statistik", en: "Statistics" },
