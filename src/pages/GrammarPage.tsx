@@ -12,6 +12,8 @@ import { useStreak } from "@/contexts/StreakContext";
 import { useSpanishTTS } from "@/hooks/useSpanishTTS";
 import { supabase } from "@/integrations/supabase/client";
 import SelectionPopup from "@/components/SelectionPopup";
+import LevelPracticeSelector from "@/components/LevelPracticeSelector";
+import SaveWordButton from "@/components/vocabulary/SaveWordButton";
 
 type LessonStep = "learn" | "practice" | "result";
 
