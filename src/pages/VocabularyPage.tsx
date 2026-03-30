@@ -316,10 +316,17 @@ const VocabularyPage = () => {
                     )}
                   </div>
 
-                  {/* Type badge */}
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 flex-shrink-0">
-                    {word.item_type === "word" ? t("Ord", "Word") : word.item_type === "phrase" ? t("Fras", "Phrase") : t("Mening", "Sentence")}
-                  </Badge>
+                  {/* Type/level badges */}
+                  <div className="flex flex-col gap-0.5 flex-shrink-0 items-end">
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                      {word.item_type === "word" ? t("Ord", "Word") : word.item_type === "phrase" ? t("Fras", "Phrase") : t("Mening", "Sentence")}
+                    </Badge>
+                    {word.level && (
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                        {word.level}
+                      </Badge>
+                    )}
+                  </div>
 
                   {/* Actions - always visible on mobile */}
                   <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition flex-shrink-0">
