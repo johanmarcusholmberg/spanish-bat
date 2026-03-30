@@ -76,12 +76,14 @@ const GrammarPage = () => {
     loadFromDB();
   }, [session?.user?.id, user?.level]);
 
-  const userLevel = user?.level || "A1";
+  const userLevel = (user?.level || "A1") as Level;
+  const [practiceLevel, setPracticeLevel] = useState<Level>(userLevel);
 
-  // Only show lessons for the user's CURRENT level
+  useEffect(() => { setPracticeLevel(userLevel); }, [userLevel]);
+
   const lessons = useMemo(
-    () => grammarLessons.filter(l => l.level === userLevel),
-    [userLevel]
+    () => grammarLessons.filter(l => l.level === practiceLevel),
+    [practiceLevel]
   );
 
   // Check if ALL lessons at current level are completed
