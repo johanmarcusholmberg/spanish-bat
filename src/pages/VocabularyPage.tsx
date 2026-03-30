@@ -38,6 +38,7 @@ import VocabularyPractice from "@/components/vocabulary/VocabularyPractice";
 
 type FilterType = "all" | "word" | "phrase" | "sentence" | "recent" | "needs_practice";
 type FilterLearned = "all" | "learned" | "unlearned";
+type FilterSource = "all" | "conversation" | "exercise" | "freestyle" | "manual";
 
 const VocabularyPage = () => {
   const { language } = useLanguage();
@@ -47,6 +48,7 @@ const VocabularyPage = () => {
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<FilterType>("all");
   const [filterLearned, setFilterLearned] = useState<FilterLearned>("all");
+  const [filterSource, setFilterSource] = useState<FilterSource>("all");
   const [showAdd, setShowAdd] = useState(false);
   const [newSpanish, setNewSpanish] = useState("");
   const [newTranslation, setNewTranslation] = useState("");
@@ -76,9 +78,13 @@ const VocabularyPage = () => {
         filterLearned === "all" ||
         (filterLearned === "learned" && w.learned) ||
         (filterLearned === "unlearned" && !w.learned);
-      return matchesSearch && matchesType && matchesLearned;
+      const matchesSource =
+        filterSource === "all" ||
+        (filterSource === "manual" && w.category === "conversation" && !w.context) ||
+        (filterSource !== "manual" && w.category === filterSource);
+      return matchesSearch && matchesType && matchesLearned && matchesSource;
     });
-  }, [words, search, filterType, filterLearned]);
+  }, [words, search, filterType, filterLearned, filterSource]);
 
   const stats = useMemo(() => ({
     total: words.length,
