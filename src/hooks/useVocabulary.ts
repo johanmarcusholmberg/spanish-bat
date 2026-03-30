@@ -12,6 +12,8 @@ export interface VocabularyWord {
   learned: boolean;
   created_at: string;
   usage_example?: string;
+  level?: string;
+  topic_tags?: string[];
 }
 
 export const useVocabulary = () => {
@@ -54,6 +56,8 @@ export const useVocabulary = () => {
     learned: boolean = false,
     item_type: string = "word",
     usage_example?: string,
+    level?: string,
+    topic_tags?: string[],
   ) => {
     if (!userId) return false;
 
@@ -68,6 +72,8 @@ export const useVocabulary = () => {
         learned,
         item_type,
         ...(usage_example ? { usage_example } : {}),
+        ...(level ? { level } : {}),
+        ...(topic_tags?.length ? { topic_tags } : {}),
       } as any, { onConflict: "user_id,spanish" });
 
     if (error) {
