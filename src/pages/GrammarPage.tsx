@@ -370,18 +370,21 @@ const GrammarPage = () => {
                             </p>
                             <div className="bg-background rounded-md p-3 space-y-1.5 mb-3">
                               {section.examples.map((ex, ei) => (
-                                <div key={ei} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-sm">
-                                  <span className="font-semibold text-accent-foreground flex items-center gap-1">
-                                    {ex.es}
-                                    {ttsSupported && (
-                                      <button onClick={() => speak(ex.es)} className="text-muted-foreground hover:text-primary transition p-0.5" type="button" aria-label="Lyssna">
-                                        <Volume2 className="h-3.5 w-3.5" />
-                                      </button>
-                                    )}
-                                  </span>
-                                  <span className="text-muted-foreground">
-                                    — {language === "sv" ? ex.sv : ex.en}
-                                  </span>
+                                <div key={ei} className="flex items-start gap-1 sm:gap-3 text-sm">
+                                  <div className="flex-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                                    <span className="font-semibold text-accent-foreground flex items-center gap-1">
+                                      {ex.es}
+                                      {ttsSupported && (
+                                        <button onClick={() => speak(ex.es)} className="text-muted-foreground hover:text-primary transition p-0.5" type="button" aria-label="Lyssna">
+                                          <Volume2 className="h-3.5 w-3.5" />
+                                        </button>
+                                      )}
+                                    </span>
+                                    <span className="text-muted-foreground">
+                                      — {language === "sv" ? ex.sv : ex.en}
+                                    </span>
+                                  </div>
+                                  <SaveWordButton spanish={ex.es} context={`${lesson.title[language]} – ${section.heading[language]}`} />
                                 </div>
                               ))}
                             </div>
