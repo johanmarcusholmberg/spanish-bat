@@ -271,7 +271,9 @@ export type Database = {
           id: string
           item_type: string
           learned: boolean
+          level: string | null
           spanish: string
+          topic_tags: string[] | null
           translation: string
           updated_at: string
           usage_example: string | null
@@ -284,7 +286,9 @@ export type Database = {
           id?: string
           item_type?: string
           learned?: boolean
+          level?: string | null
           spanish: string
+          topic_tags?: string[] | null
           translation: string
           updated_at?: string
           usage_example?: string | null
@@ -297,7 +301,9 @@ export type Database = {
           id?: string
           item_type?: string
           learned?: boolean
+          level?: string | null
           spanish?: string
+          topic_tags?: string[] | null
           translation?: string
           updated_at?: string
           usage_example?: string | null
