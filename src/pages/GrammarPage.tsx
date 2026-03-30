@@ -12,6 +12,8 @@ import { useStreak } from "@/contexts/StreakContext";
 import { useSpanishTTS } from "@/hooks/useSpanishTTS";
 import { supabase } from "@/integrations/supabase/client";
 import SelectionPopup from "@/components/SelectionPopup";
+import LevelPracticeSelector from "@/components/LevelPracticeSelector";
+import SaveWordButton from "@/components/vocabulary/SaveWordButton";
 
 type LessonStep = "learn" | "practice" | "result";
 
@@ -74,12 +76,14 @@ const GrammarPage = () => {
     loadFromDB();
   }, [session?.user?.id, user?.level]);
 
-  const userLevel = user?.level || "A1";
+  const userLevel = (user?.level || "A1") as Level;
+  const [practiceLevel, setPracticeLevel] = useState<Level>(userLevel);
 
-  // Only show lessons for the user's CURRENT level
+  useEffect(() => { setPracticeLevel(userLevel); }, [userLevel]);
+
   const lessons = useMemo(
-    () => grammarLessons.filter(l => l.level === userLevel),
-    [userLevel]
+    () => grammarLessons.filter(l => l.level === practiceLevel),
+    [practiceLevel]
   );
 
   // Check if ALL lessons at current level are completed
@@ -231,11 +235,14 @@ const GrammarPage = () => {
         </h1>
         <p className="text-muted-foreground mb-4 text-sm">{t("grammarDesc")}</p>
 
-        {/* Current level indicator + progress */}
-        <div className="bg-card rounded-lg p-4 shadow-soft mb-6 flex items-center justify-between">
-          <div>
-            <span className="text-xs text-muted-foreground uppercase tracking-wider">{t("currentLevel")}</span>
-            <h2 className="font-heading font-bold text-foreground text-lg">{t(`level${userLevel}`)}</h2>
+        {/* Level selector + progress */}
+        <div className="bg-card rounded-lg p-4 shadow-soft mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div>
+              <span className="text-xs text-muted-foreground uppercase tracking-wider">{t("currentLevel")}</span>
+              <h2 className="font-heading font-bold text-foreground text-lg">{t(`level${practiceLevel}`)}</h2>
+            </div>
+            <LevelPracticeSelector practiceLevel={practiceLevel} onLevelChange={setPracticeLevel} />
           </div>
           <div className="text-right">
             <span className="text-xs text-muted-foreground">{t("progressLabel")}</span>
@@ -363,18 +370,21 @@ const GrammarPage = () => {
                             </p>
                             <div className="bg-background rounded-md p-3 space-y-1.5 mb-3">
                               {section.examples.map((ex, ei) => (
-                                <div key={ei} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-sm">
-                                  <span className="font-semibold text-accent-foreground flex items-center gap-1">
-                                    {ex.es}
-                                    {ttsSupported && (
-                                      <button onClick={() => speak(ex.es)} className="text-muted-foreground hover:text-primary transition p-0.5" type="button" aria-label="Lyssna">
-                                        <Volume2 className="h-3.5 w-3.5" />
-                                      </button>
-                                    )}
-                                  </span>
-                                  <span className="text-muted-foreground">
-                                    — {language === "sv" ? ex.sv : ex.en}
-                                  </span>
+                                <div key={ei} className="flex items-start gap-1 sm:gap-3 text-sm">
+                                  <div className="flex-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                                    <span className="font-semibold text-accent-foreground flex items-center gap-1">
+                                      {ex.es}
+                                      {ttsSupported && (
+                                        <button onClick={() => speak(ex.es)} className="text-muted-foreground hover:text-primary transition p-0.5" type="button" aria-label="Lyssna">
+                                          <Volume2 className="h-3.5 w-3.5" />
+                                        </button>
+                                      )}
+                                    </span>
+                                    <span className="text-muted-foreground">
+                                      — {language === "sv" ? ex.sv : ex.en}
+                                    </span>
+                                  </div>
+                                  <SaveWordButton spanish={ex.es} context={`${lesson.title[language]} – ${section.heading[language]}`} />
                                 </div>
                               ))}
                             </div>
