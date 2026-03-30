@@ -235,11 +235,14 @@ const GrammarPage = () => {
         </h1>
         <p className="text-muted-foreground mb-4 text-sm">{t("grammarDesc")}</p>
 
-        {/* Current level indicator + progress */}
-        <div className="bg-card rounded-lg p-4 shadow-soft mb-6 flex items-center justify-between">
-          <div>
-            <span className="text-xs text-muted-foreground uppercase tracking-wider">{t("currentLevel")}</span>
-            <h2 className="font-heading font-bold text-foreground text-lg">{t(`level${userLevel}`)}</h2>
+        {/* Level selector + progress */}
+        <div className="bg-card rounded-lg p-4 shadow-soft mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div>
+              <span className="text-xs text-muted-foreground uppercase tracking-wider">{t("currentLevel")}</span>
+              <h2 className="font-heading font-bold text-foreground text-lg">{t(`level${practiceLevel}`)}</h2>
+            </div>
+            <LevelPracticeSelector practiceLevel={practiceLevel} onLevelChange={setPracticeLevel} />
           </div>
           <div className="text-right">
             <span className="text-xs text-muted-foreground">{t("progressLabel")}</span>
