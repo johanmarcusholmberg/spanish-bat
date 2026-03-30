@@ -185,7 +185,6 @@ const translations: Translations = {
   noPreviousActivity: { sv: "Starta din första övning!", en: "Start your first exercise!" },
   confirmLevelUp: { sv: "Bekräfta nivåuppgradering", en: "Confirm Level Up" },
   maxLevelReached: { sv: "Du har nått den högsta nivån! 🎉", en: "You've reached the highest level! 🎉" },
-  stayCurrentLevel: { sv: "Stanna kvar", en: "Stay here" },
   practiceLevel: { sv: "Öva nivå", en: "Practice level" },
   currentLevelTag: { sv: "nuvarande", en: "current" },
   reviewTag: { sv: "repetition", en: "review" },
