@@ -173,7 +173,7 @@ const translations: Translations = {
   levelAdvancement: { sv: "Nivåuppgradering", en: "Level Advancement" },
   readyToAdvance: { sv: "Du är redo att avancera!", en: "You're ready to advance!" },
   keepLearning: { sv: "Fortsätt lära dig", en: "Keep learning" },
-  congratulationsAdvance: { sv: "Grattis! Du har uppnått 80% framsteg och är redo att ta dig till nästa nivå.", en: "Congratulations! You've reached 80% progress and are ready to move to the next level." },
+  congratulationsAdvance: { sv: "Grattis! Du har nått 80% och är redo för nästa nivå.", en: "Congratulations! You've reached 80% and are ready for the next level." },
   advanceToNextLevel: { sv: "Gå till nästa nivå", en: "Advance to next level" },
   progressToAdvance: { sv: "Framsteg för att avancera", en: "Progress to advance" },
   completeAllCategories: { sv: "Slutför övningar i alla kategorier för att låsa upp nästa nivå", en: "Complete exercises in all categories to unlock the next level" },
@@ -183,6 +183,12 @@ const translations: Translations = {
   continueDesc: { sv: "Hoppa tillbaka till din senaste övning", en: "Jump back to your latest exercise" },
   continueButton: { sv: "Fortsätt", en: "Continue" },
   noPreviousActivity: { sv: "Starta din första övning!", en: "Start your first exercise!" },
+  confirmLevelUp: { sv: "Bekräfta nivåuppgradering", en: "Confirm Level Up" },
+  maxLevelReached: { sv: "Du har nått den högsta nivån! 🎉", en: "You've reached the highest level! 🎉" },
+  stayCurrentLevel: { sv: "Stanna kvar", en: "Stay here" },
+  practiceLevel: { sv: "Öva nivå", en: "Practice level" },
+  currentLevelTag: { sv: "nuvarande", en: "current" },
+  reviewTag: { sv: "repetition", en: "review" },
 
   // Streak
   streakTitle: { sv: "Din streak", en: "Your Streak" },
