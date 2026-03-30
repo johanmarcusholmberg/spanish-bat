@@ -1,15 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth, Level } from "@/contexts/AuthContext";
 import { useProgress } from "@/contexts/ProgressContext";
 import AppLayout from "@/components/AppLayout";
 import { Progress } from "@/components/ui/progress";
+import LevelPracticeSelector from "@/components/LevelPracticeSelector";
 import { BookOpen, Type, Palette, HelpCircle, GraduationCap, Layers, FileText, Puzzle, MessageCircle, BookMarked, Mic } from "lucide-react";
 
 const ExercisesPage = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const { progress } = useProgress();
   const navigate = useNavigate();
+  const [practiceLevel, setPracticeLevel] = useState<Level>((user?.level || "A1") as Level);
 
   const learnItems = [
     { key: "grammarLessons", progressKey: "grammar" as const, icon: GraduationCap, path: "/learn/grammar", color: "gradient-peach" },
@@ -100,11 +104,14 @@ const ExercisesPage = () => {
   return (
     <AppLayout>
       <div className="animate-fade-in">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <h1 className="text-2xl font-heading font-bold text-foreground">{t("exercises")}</h1>
-          <div className="text-right">
-            <div className="text-2xl font-bold text-primary">{progress.overall}%</div>
-            <div className="text-xs text-muted-foreground">{t("overallProgress")}</div>
+          <div className="flex items-center gap-4">
+            <LevelPracticeSelector practiceLevel={practiceLevel} onLevelChange={setPracticeLevel} />
+            <div className="text-right">
+              <div className="text-2xl font-bold text-primary">{progress.overall}%</div>
+              <div className="text-xs text-muted-foreground">{t("overallProgress")}</div>
+            </div>
           </div>
         </div>
 

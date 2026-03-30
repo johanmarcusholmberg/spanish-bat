@@ -80,32 +80,32 @@ const DashboardPage = () => {
 
   return (
     <AppLayout>
-      <div className="animate-fade-in space-y-6">
-        <div className="flex items-center gap-4">
+      <div className="animate-fade-in space-y-5">
+        {/* Header */}
+        <div className="flex items-center gap-3">
           <MurciMascot size="sm" mood="happy" />
-          <div>
-            <h1 className="text-2xl font-heading font-bold text-foreground">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-heading font-bold text-foreground truncate">
               {t("welcomeBack")} {user?.displayName}
             </h1>
             <p className="text-sm text-muted-foreground">{greeting}</p>
           </div>
         </div>
 
+        {/* 1. Continue where you left off */}
         <ContinueCard />
+
+        {/* 2. Weekly streak */}
         <StreakCard />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
+        {/* 3. Progress + Next steps + Level advancement */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <div className="lg:col-span-2 space-y-5">
             <ProgressOverview />
-            <div className="hidden lg:block">
-              <LevelAdvancementCard />
-            </div>
           </div>
-          <div className="space-y-6">
+          <div className="space-y-5">
             <NextStepsCard />
-            <div className="lg:hidden">
-              <LevelAdvancementCard />
-            </div>
+            <LevelAdvancementCard />
           </div>
         </div>
       </div>
