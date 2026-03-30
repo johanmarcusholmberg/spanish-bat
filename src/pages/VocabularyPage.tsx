@@ -191,8 +191,7 @@ const VocabularyPage = () => {
           )}
         </div>
 
-        {/* Filters */}
-        <div className="flex gap-2 items-center">
+        <div className="flex flex-wrap gap-2 items-center">
           <Filter className="h-4 w-4 text-muted-foreground" />
           <Select value={filterType} onValueChange={(v) => setFilterType(v as FilterType)}>
             <SelectTrigger className="w-[120px] h-8 text-xs">
@@ -215,6 +214,18 @@ const VocabularyPage = () => {
               <SelectItem value="all">{t("Alla", "All")}</SelectItem>
               <SelectItem value="learned">{t("Lärda", "Learned")}</SelectItem>
               <SelectItem value="unlearned">{t("Ej lärda", "Unlearned")}</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filterSource} onValueChange={(v) => setFilterSource(v as FilterSource)}>
+            <SelectTrigger className="w-[120px] h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("Alla källor", "All sources")}</SelectItem>
+              <SelectItem value="conversation">{t("Konversation", "Conversation")}</SelectItem>
+              <SelectItem value="exercise">{t("Övningar", "Exercises")}</SelectItem>
+              <SelectItem value="freestyle">{t("Freestyle", "Freestyle")}</SelectItem>
+              <SelectItem value="manual">{t("Manuellt", "Manual")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
