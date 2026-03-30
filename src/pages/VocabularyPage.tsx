@@ -38,6 +38,7 @@ import VocabularyPractice from "@/components/vocabulary/VocabularyPractice";
 
 type FilterType = "all" | "word" | "phrase" | "sentence" | "recent" | "needs_practice";
 type FilterLearned = "all" | "learned" | "unlearned";
+type FilterSource = "all" | "conversation" | "exercise" | "freestyle" | "manual";
 
 const VocabularyPage = () => {
   const { language } = useLanguage();
@@ -47,6 +48,7 @@ const VocabularyPage = () => {
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<FilterType>("all");
   const [filterLearned, setFilterLearned] = useState<FilterLearned>("all");
+  const [filterSource, setFilterSource] = useState<FilterSource>("all");
   const [showAdd, setShowAdd] = useState(false);
   const [newSpanish, setNewSpanish] = useState("");
   const [newTranslation, setNewTranslation] = useState("");
@@ -76,9 +78,13 @@ const VocabularyPage = () => {
         filterLearned === "all" ||
         (filterLearned === "learned" && w.learned) ||
         (filterLearned === "unlearned" && !w.learned);
-      return matchesSearch && matchesType && matchesLearned;
+      const matchesSource =
+        filterSource === "all" ||
+        (filterSource === "manual" && w.category === "conversation" && !w.context) ||
+        (filterSource !== "manual" && w.category === filterSource);
+      return matchesSearch && matchesType && matchesLearned && matchesSource;
     });
-  }, [words, search, filterType, filterLearned]);
+  }, [words, search, filterType, filterLearned, filterSource]);
 
   const stats = useMemo(() => ({
     total: words.length,
@@ -185,8 +191,7 @@ const VocabularyPage = () => {
           )}
         </div>
 
-        {/* Filters */}
-        <div className="flex gap-2 items-center">
+        <div className="flex flex-wrap gap-2 items-center">
           <Filter className="h-4 w-4 text-muted-foreground" />
           <Select value={filterType} onValueChange={(v) => setFilterType(v as FilterType)}>
             <SelectTrigger className="w-[120px] h-8 text-xs">
@@ -209,6 +214,18 @@ const VocabularyPage = () => {
               <SelectItem value="all">{t("Alla", "All")}</SelectItem>
               <SelectItem value="learned">{t("Lärda", "Learned")}</SelectItem>
               <SelectItem value="unlearned">{t("Ej lärda", "Unlearned")}</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filterSource} onValueChange={(v) => setFilterSource(v as FilterSource)}>
+            <SelectTrigger className="w-[120px] h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("Alla källor", "All sources")}</SelectItem>
+              <SelectItem value="conversation">{t("Konversation", "Conversation")}</SelectItem>
+              <SelectItem value="exercise">{t("Övningar", "Exercises")}</SelectItem>
+              <SelectItem value="freestyle">{t("Freestyle", "Freestyle")}</SelectItem>
+              <SelectItem value="manual">{t("Manuellt", "Manual")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -299,10 +316,17 @@ const VocabularyPage = () => {
                     )}
                   </div>
 
-                  {/* Type badge */}
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 flex-shrink-0">
-                    {word.item_type === "word" ? t("Ord", "Word") : word.item_type === "phrase" ? t("Fras", "Phrase") : t("Mening", "Sentence")}
-                  </Badge>
+                  {/* Type/level badges */}
+                  <div className="flex flex-col gap-0.5 flex-shrink-0 items-end">
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                      {word.item_type === "word" ? t("Ord", "Word") : word.item_type === "phrase" ? t("Fras", "Phrase") : t("Mening", "Sentence")}
+                    </Badge>
+                    {word.level && (
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                        {word.level}
+                      </Badge>
+                    )}
+                  </div>
 
                   {/* Actions - always visible on mobile */}
                   <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition flex-shrink-0">

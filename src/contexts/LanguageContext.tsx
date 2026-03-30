@@ -233,6 +233,10 @@ const translations: Translations = {
   loginMissingFields: { sv: "Fyll i e-post och lösenord", en: "Enter email and password" },
   signInWithApple: { sv: "Logga in med Apple", en: "Sign in with Apple" },
   registerWithApple: { sv: "Registrera med Apple", en: "Sign up with Apple" },
+
+  // Freestyle
+  freestyle: { sv: "Freestyle", en: "Freestyle" },
+  freestyleDesc: { sv: "Välj ämne och öva fritt på din nivå", en: "Choose a topic and practice freely at your level" },
 };
 
 interface LanguageContextType {
