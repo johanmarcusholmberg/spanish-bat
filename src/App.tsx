@@ -26,6 +26,7 @@ import SentenceBuilderPage from "./pages/SentenceBuilderPage";
 import ConversationPage from "./pages/ConversationPage";
 import VocabularyPage from "./pages/VocabularyPage";
 import PronunciationPage from "./pages/PronunciationPage";
+import FreestylePage from "./pages/FreestylePage";
 import StatsPage from "./pages/StatsPage";
 import NotFound from "./pages/NotFound";
 import AdminPage from "./pages/AdminPage";
