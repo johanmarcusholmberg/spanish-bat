@@ -11,15 +11,16 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import SentenceWordPicker from "@/components/vocabulary/SentenceWordPicker";
 import {
+  ArrowLeft,
   BookmarkPlus,
+  CheckCircle2,
   Lightbulb,
   Loader2,
   MessageCircle,
   Mic,
   MicOff,
-  RotateCcw,
+  Pencil,
   Send,
-  X,
 } from "lucide-react";
 
 interface Message {
@@ -134,6 +135,8 @@ const ConversationPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [autoRead, setAutoRead] = useState(false);
   const [pickerMessage, setPickerMessage] = useState<string | null>(null);
+  const [freestyleInput, setFreestyleInput] = useState("");
+  const [showFreestyleForm, setShowFreestyleForm] = useState(false);
 
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -145,7 +148,6 @@ const ConversationPage = () => {
 
   useEffect(() => {
     if (!autoRead || !ttsSupported || isLoading) return;
-
     const lastMsg = messages[messages.length - 1];
     if (
       lastMsg?.role === "assistant" &&
@@ -158,9 +160,7 @@ const ConversationPage = () => {
   }, [messages, autoRead, ttsSupported, isLoading, speak]);
 
   useEffect(() => {
-    if (transcript) {
-      setInput(transcript);
-    }
+    if (transcript) setInput(transcript);
   }, [transcript]);
 
   const startConversation = useCallback(
@@ -172,7 +172,6 @@ const ConversationPage = () => {
       lastAssistantMsgRef.current = "";
 
       let assistantSoFar = "";
-
       try {
         await streamChat([], scenario, (chunk) => {
           assistantSoFar += chunk;
@@ -180,11 +179,7 @@ const ConversationPage = () => {
         });
       } catch (error) {
         const message = error instanceof Error ? error.message : "Unknown error";
-        toast({
-          title: language === "sv" ? "Fel" : "Error",
-          description: message,
-          variant: "destructive",
-        });
+        toast({ title: language === "sv" ? "Fel" : "Error", description: message, variant: "destructive" });
       } finally {
         setIsLoading(false);
       }
@@ -192,20 +187,32 @@ const ConversationPage = () => {
     [language, streamChat, toast]
   );
 
+  const handleFreestyleStart = () => {
+    if (!freestyleInput.trim()) return;
+    const customScenario: Scenario = {
+      id: "freestyle",
+      icon: "✏️",
+      titleSv: freestyleInput.trim(),
+      titleEn: freestyleInput.trim(),
+      descSv: "",
+      descEn: "",
+      scenario: freestyleInput.trim(),
+    };
+    setShowFreestyleForm(false);
+    void startConversation(customScenario);
+  };
+
   const sendMessage = useCallback(
     async (text: string) => {
       if (!selectedScenario || !text.trim() || isLoading) return;
-
       const userMsg: Message = { role: "user", content: text.trim() };
       const nextMessages = [...messages, userMsg];
-
       setMessages(nextMessages);
       setInput("");
       resetTranscript();
       setIsLoading(true);
 
       let assistantSoFar = "";
-
       try {
         await streamChat(nextMessages, selectedScenario, (chunk) => {
           assistantSoFar += chunk;
@@ -213,11 +220,7 @@ const ConversationPage = () => {
         });
       } catch (error) {
         const message = error instanceof Error ? error.message : "Unknown error";
-        toast({
-          title: language === "sv" ? "Fel" : "Error",
-          description: message,
-          variant: "destructive",
-        });
+        toast({ title: language === "sv" ? "Fel" : "Error", description: message, variant: "destructive" });
         setMessages(nextMessages);
       } finally {
         setIsLoading(false);
@@ -227,9 +230,7 @@ const ConversationPage = () => {
   );
 
   const sendSpecial = (cmd: string) => {
-    if (!isLoading) {
-      void sendMessage(cmd);
-    }
+    if (!isLoading) void sendMessage(cmd);
   };
 
   const endConversation = () => {
@@ -238,12 +239,13 @@ const ConversationPage = () => {
     void sendMessage("[END]");
   };
 
-  const resetConversation = () => {
+  const goBack = () => {
     stopTTS();
     setSelectedScenario(null);
     setMessages([]);
     setInput("");
     setIsLoading(false);
+    setShowFreestyleForm(false);
     lastAssistantMsgRef.current = "";
   };
 
@@ -251,13 +253,10 @@ const ConversationPage = () => {
     if (isListening) {
       stopListening();
       if (transcript.trim()) {
-        setTimeout(() => {
-          void sendMessage(transcript.trim());
-        }, 100);
+        setTimeout(() => void sendMessage(transcript.trim()), 100);
       }
       return;
     }
-
     resetTranscript();
     setInput("");
     startListening();
@@ -297,18 +296,79 @@ const ConversationPage = () => {
                 </p>
               </button>
             ))}
+
+            {/* Freestyle / Custom scenario card */}
+            {!showFreestyleForm ? (
+              <button
+                onClick={() => setShowFreestyleForm(true)}
+                className="rounded-2xl border-2 border-dashed border-primary/30 bg-card p-5 text-left shadow-sm transition hover:-translate-y-1 hover:border-primary/60 hover:shadow-md"
+              >
+                <div className="mb-3 text-3xl">
+                  <Pencil className="h-8 w-8 text-primary" />
+                </div>
+                <h2 className="mb-1 text-lg font-semibold">
+                  {language === "sv" ? "Eget scenario" : "Custom scenario"}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {language === "sv"
+                    ? "Beskriv din egen situation att öva"
+                    : "Describe your own situation to practice"}
+                </p>
+              </button>
+            ) : (
+              <div className="rounded-2xl border-2 border-primary/40 bg-card p-5 shadow-sm">
+                <div className="mb-3 flex items-center gap-2">
+                  <Pencil className="h-5 w-5 text-primary" />
+                  <h2 className="text-lg font-semibold">
+                    {language === "sv" ? "Eget scenario" : "Custom scenario"}
+                  </h2>
+                </div>
+                <p className="mb-3 text-sm text-muted-foreground">
+                  {language === "sv"
+                    ? "Beskriv situationen på engelska eller svenska"
+                    : "Describe the situation in English or Swedish"}
+                </p>
+                <Input
+                  value={freestyleInput}
+                  onChange={(e) => setFreestyleInput(e.target.value)}
+                  placeholder={
+                    language === "sv"
+                      ? "T.ex. köpa biljett på tågstationen..."
+                      : "E.g. buying a train ticket at the station..."
+                  }
+                  className="mb-3"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleFreestyleStart();
+                  }}
+                />
+                <div className="flex gap-2">
+                  <Button onClick={handleFreestyleStart} disabled={!freestyleInput.trim()} size="sm">
+                    {language === "sv" ? "Starta" : "Start"}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setShowFreestyleForm(false);
+                      setFreestyleInput("");
+                    }}
+                  >
+                    {language === "sv" ? "Avbryt" : "Cancel"}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </>
       ) : (
         <>
+          {/* Header */}
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="text-3xl">{selectedScenario.icon}</div>
-              <div>
-                <h1 className="text-2xl font-bold">
-                  {language === "sv" ? selectedScenario.titleSv : selectedScenario.titleEn}
-                </h1>
-              </div>
+              <h1 className="text-2xl font-bold">
+                {language === "sv" ? selectedScenario.titleSv : selectedScenario.titleEn}
+              </h1>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
@@ -321,18 +381,14 @@ const ConversationPage = () => {
                 </div>
               )}
 
-              <Button variant="outline" onClick={resetConversation}>
-                <RotateCcw className="mr-2 h-4 w-4" />
-                {language === "sv" ? "Nytt" : "New"}
-              </Button>
-
-              <Button variant="destructive" onClick={endConversation} disabled={isLoading}>
-                <X className="mr-2 h-4 w-4" />
-                {language === "sv" ? "Avsluta" : "End"}
+              <Button variant="outline" onClick={goBack}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                {language === "sv" ? "Tillbaka" : "Go back"}
               </Button>
             </div>
           </div>
 
+          {/* Messages */}
           <div
             ref={messagesContainerRef}
             className="mb-4 max-h-[55vh] overflow-y-auto rounded-2xl border bg-card p-4"
@@ -384,14 +440,18 @@ const ConversationPage = () => {
               sentence={pickerMessage}
               context="conversation"
               open={!!pickerMessage}
-              onOpenChange={(open) => { if (!open) setPickerMessage(null); }}
+              onOpenChange={(open) => {
+                if (!open) setPickerMessage(null);
+              }}
             />
           )}
 
-          <div className="mb-3 flex flex-wrap gap-2">
+          {/* Helper actions + End */}
+          <div className="mb-3 flex flex-wrap items-center gap-2">
             <Button
               type="button"
               variant="outline"
+              size="sm"
               onClick={() => sendSpecial("[HINT]")}
               disabled={isLoading || messages.length === 0}
             >
@@ -402,19 +462,34 @@ const ConversationPage = () => {
             <Button
               type="button"
               variant="outline"
+              size="sm"
               onClick={() => sendSpecial("[TRANSLATE]")}
               disabled={isLoading || messages.length === 0}
             >
               {language === "sv" ? "Översätt" : "Translate"}
             </Button>
+
+            <div className="ml-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={endConversation}
+                disabled={isLoading || messages.length === 0}
+              >
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+                {language === "sv" ? "Avsluta & sammanfatta" : "Finish & summarize"}
+              </Button>
+            </div>
           </div>
 
+          {/* Interim transcript */}
           {isListening && interimTranscript && (
             <div className="mb-3 rounded-xl border border-dashed p-3 text-sm text-muted-foreground">
               {interimTranscript}
             </div>
           )}
 
+          {/* Input */}
           <form
             onSubmit={(e) => {
               e.preventDefault();
