@@ -17,13 +17,11 @@ const ExercisesPage = () => {
 
   const learnItems = [
     { key: "grammarLessons", progressKey: "grammar" as const, icon: GraduationCap, path: "/learn/grammar", color: "gradient-peach" },
-    { key: "flashcards", progressKey: "flashcards" as const, icon: Layers, path: "/learn/flashcards", color: "gradient-mint" },
     { key: "reading", progressKey: "reading" as const, icon: FileText, path: "/learn/reading", color: "gradient-peach" },
     { key: "sentenceBuilder", progressKey: "sentences" as const, icon: Puzzle, path: "/learn/sentences", color: "gradient-mint" },
     { key: "conversation", progressKey: "sentences" as const, icon: MessageCircle, path: "/learn/conversation", color: "gradient-peach" },
     { key: "myDictionary", progressKey: "flashcards" as const, icon: BookMarked, path: "/learn/vocabulary", color: "gradient-mint" },
     { key: "pronunciation", progressKey: "exercises" as const, icon: Mic, path: "/learn/pronunciation", color: "gradient-peach" },
-    { key: "freestyle", progressKey: "exercises" as const, icon: Zap, path: "/exercises/freestyle", color: "gradient-mint" },
   ];
 
   const exercises = [
