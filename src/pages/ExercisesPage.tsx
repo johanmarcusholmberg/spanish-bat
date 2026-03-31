@@ -67,8 +67,9 @@ const ExercisesPage = () => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {exercises.map((ex) => {
-          const pKey = (ex as any).progressKey as keyof typeof progress | undefined;
-          const categoryProgress = pKey ? progress[pKey] : progress.exercises;
+          const pKey = (ex as any).progressKey as string | undefined;
+          const catKey = (pKey || "exercises") as "grammar" | "flashcards" | "reading" | "sentences" | "exercises";
+          const categoryProgress = progress[catKey] as { completed: number; total: number; percentage: number };
           const thisCompleted = categoryProgress.completed;
           const thisTotal = Math.max(categoryProgress.total, 1);
           const thisPercentage = categoryProgress.percentage;
