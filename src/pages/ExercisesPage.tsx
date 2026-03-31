@@ -64,16 +64,14 @@ const ExercisesPage = () => {
   );
 
   const renderExercisesGrid = () => {
-    const exerciseProgress = progress.exercises;
-    const perExercise = Math.floor(exerciseProgress.total / exercises.length);
-    const completedPerExercise = Math.floor(exerciseProgress.completed / exercises.length);
-
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {exercises.map((ex, index) => {
-          // Distribute progress across exercises
-          const thisCompleted = Math.min(perExercise, completedPerExercise + (index < exerciseProgress.completed % exercises.length ? 1 : 0));
-          const thisPercentage = Math.round((thisCompleted / perExercise) * 100) || 0;
+        {exercises.map((ex) => {
+          const pKey = (ex as any).progressKey as keyof typeof progress | undefined;
+          const categoryProgress = pKey ? progress[pKey] : progress.exercises;
+          const thisCompleted = categoryProgress.completed;
+          const thisTotal = Math.max(categoryProgress.total, 1);
+          const thisPercentage = categoryProgress.percentage;
           
           return (
             <button
