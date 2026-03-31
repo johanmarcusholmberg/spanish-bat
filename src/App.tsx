@@ -71,6 +71,7 @@ const AppRoutes = () => (
       <Route path="/exercises/adjectives" element={<ProtectedRoute><AdjectiveExercisePage /></ProtectedRoute>} />
       <Route path="/exercises/quiz" element={<ProtectedRoute><QuizExercisePage /></ProtectedRoute>} />
       <Route path="/learn/grammar" element={<ProtectedRoute><GrammarPage /></ProtectedRoute>} />
+      <Route path="/practice/flashcards" element={<ProtectedRoute><FlashcardsPage /></ProtectedRoute>} />
       <Route path="/learn/flashcards" element={<ProtectedRoute><FlashcardsPage /></ProtectedRoute>} />
       <Route path="/learn/reading" element={<ProtectedRoute><ReadingPage /></ProtectedRoute>} />
       <Route path="/learn/sentences" element={<ProtectedRoute><SentenceBuilderPage /></ProtectedRoute>} />

@@ -73,7 +73,7 @@ const translations: Translations = {
   grammarDesc: { sv: "Lär dig spansk grammatik steg för steg med regler, exempel och tips", en: "Learn Spanish grammar step by step with rules, examples and tips" },
   grammarLessonsDesc: { sv: "Interaktiva lektioner med regler, exempel och övningar", en: "Interactive lessons with rules, examples and exercises" },
   flashcards: { sv: "Flashcards", en: "Flashcards" },
-  flashcardsDesc: { sv: "Lär dig ord med flashcards och smart repetition", en: "Learn words with flashcards and spaced repetition" },
+  flashcardsDesc: { sv: "Öva ord med flashcards: klassiskt, skriv och tala", en: "Practice words with flashcards: classic, write and speak" },
   reading: { sv: "Läsförståelse", en: "Reading" },
   readingDesc: { sv: "Läs nivåanpassade texter och svara på frågor", en: "Read level-adapted texts and answer questions" },
   sentenceBuilder: { sv: "Meningsbyggare", en: "Sentence Builder" },

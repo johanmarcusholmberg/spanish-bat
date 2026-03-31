@@ -17,20 +17,20 @@ const ExercisesPage = () => {
 
   const learnItems = [
     { key: "grammarLessons", progressKey: "grammar" as const, icon: GraduationCap, path: "/learn/grammar", color: "gradient-peach" },
-    { key: "flashcards", progressKey: "flashcards" as const, icon: Layers, path: "/learn/flashcards", color: "gradient-mint" },
     { key: "reading", progressKey: "reading" as const, icon: FileText, path: "/learn/reading", color: "gradient-peach" },
     { key: "sentenceBuilder", progressKey: "sentences" as const, icon: Puzzle, path: "/learn/sentences", color: "gradient-mint" },
     { key: "conversation", progressKey: "sentences" as const, icon: MessageCircle, path: "/learn/conversation", color: "gradient-peach" },
     { key: "myDictionary", progressKey: "flashcards" as const, icon: BookMarked, path: "/learn/vocabulary", color: "gradient-mint" },
     { key: "pronunciation", progressKey: "exercises" as const, icon: Mic, path: "/learn/pronunciation", color: "gradient-peach" },
-    { key: "freestyle", progressKey: "exercises" as const, icon: Zap, path: "/exercises/freestyle", color: "gradient-mint" },
   ];
 
   const exercises = [
+    { key: "flashcards", progressKey: "flashcards" as const, icon: Layers, path: "/practice/flashcards", color: "gradient-mint" },
     { key: "verbs", icon: BookOpen, path: "/exercises/verbs", color: "gradient-peach" },
     { key: "nouns", icon: Type, path: "/exercises/nouns", color: "gradient-mint" },
     { key: "adjectives", icon: Palette, path: "/exercises/adjectives", color: "gradient-peach" },
     { key: "quiz", icon: HelpCircle, path: "/exercises/quiz", color: "gradient-mint" },
+    { key: "freestyle", progressKey: "exercises" as const, icon: Zap, path: "/exercises/freestyle", color: "gradient-peach" },
   ];
 
   const renderLearnGrid = () => (
@@ -64,16 +64,15 @@ const ExercisesPage = () => {
   );
 
   const renderExercisesGrid = () => {
-    const exerciseProgress = progress.exercises;
-    const perExercise = Math.floor(exerciseProgress.total / exercises.length);
-    const completedPerExercise = Math.floor(exerciseProgress.completed / exercises.length);
-
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {exercises.map((ex, index) => {
-          // Distribute progress across exercises
-          const thisCompleted = Math.min(perExercise, completedPerExercise + (index < exerciseProgress.completed % exercises.length ? 1 : 0));
-          const thisPercentage = Math.round((thisCompleted / perExercise) * 100) || 0;
+        {exercises.map((ex) => {
+          const pKey = (ex as any).progressKey as string | undefined;
+          const catKey = (pKey || "exercises") as "grammar" | "flashcards" | "reading" | "sentences" | "exercises";
+          const categoryProgress = progress[catKey] as { completed: number; total: number; percentage: number };
+          const thisCompleted = categoryProgress.completed;
+          const thisTotal = Math.max(categoryProgress.total, 1);
+          const thisPercentage = categoryProgress.percentage;
           
           return (
             <button
@@ -86,7 +85,7 @@ const ExercisesPage = () => {
                   <ex.icon className="h-6 w-6 text-primary-foreground" />
                 </div>
                 <span className="text-sm font-medium text-muted-foreground">
-                  {thisCompleted}/{perExercise}
+                  {thisCompleted}/{thisTotal}
                 </span>
               </div>
               <h3 className="font-heading font-bold text-foreground text-lg">{t(ex.key)}</h3>
