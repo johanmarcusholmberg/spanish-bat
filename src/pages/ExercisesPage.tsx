@@ -84,7 +84,7 @@ const ExercisesPage = () => {
                   <ex.icon className="h-6 w-6 text-primary-foreground" />
                 </div>
                 <span className="text-sm font-medium text-muted-foreground">
-                  {thisCompleted}/{perExercise}
+                  {thisCompleted}/{thisTotal}
                 </span>
               </div>
               <h3 className="font-heading font-bold text-foreground text-lg">{t(ex.key)}</h3>
