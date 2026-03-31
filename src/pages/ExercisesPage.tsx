@@ -25,10 +25,12 @@ const ExercisesPage = () => {
   ];
 
   const exercises = [
+    { key: "flashcards", progressKey: "flashcards" as const, icon: Layers, path: "/practice/flashcards", color: "gradient-mint" },
     { key: "verbs", icon: BookOpen, path: "/exercises/verbs", color: "gradient-peach" },
     { key: "nouns", icon: Type, path: "/exercises/nouns", color: "gradient-mint" },
     { key: "adjectives", icon: Palette, path: "/exercises/adjectives", color: "gradient-peach" },
     { key: "quiz", icon: HelpCircle, path: "/exercises/quiz", color: "gradient-mint" },
+    { key: "freestyle", progressKey: "exercises" as const, icon: Zap, path: "/exercises/freestyle", color: "gradient-peach" },
   ];
 
   const renderLearnGrid = () => (
