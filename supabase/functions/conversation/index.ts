@@ -107,6 +107,17 @@ serve(async (req) => {
       messageCount: safeMessages.length,
     });
 
+    const isStart = safeMessages.length === 0;
+
+    const variationHints = [
+      "Start with a warm greeting and set the scene.",
+      "Begin mid-action, as if the interaction has just started naturally.",
+      "Open with a friendly question related to the scenario.",
+      "Start by offering help or welcoming the student into the scene.",
+      "Begin with a casual comment about the surroundings or situation.",
+    ];
+    const variationHint = variationHints[Math.floor(Math.random() * variationHints.length)];
+
     const systemPrompt = `You are a friendly Spanish conversation partner helping a student practice everyday Spanish conversations.
 
 The student's level is ${level} (CEFR).
@@ -119,7 +130,8 @@ RULES:
 - If the student makes errors, gently model the correct form in your reply naturally (don't explicitly correct)
 - Stay in character and keep the conversation flowing naturally
 - Write ONLY in Spanish in your conversation turns
-- If this is the START of a conversation (no prior messages), begin with a natural opening line for the scenario
+- If this is the START of a conversation (no prior messages), begin with a natural opening line for the scenario. ${isStart ? `Style hint: ${variationHint}` : ""}
+- IMPORTANT: Vary your opening lines. Do NOT always start the same way. Be creative with greetings, tone, and scene-setting while staying natural.
 - When the user sends "[HINT]", provide a helpful suggestion in ${nativeLang} for what they could say next, then continue waiting
 - When the user sends "[TRANSLATE]", translate your last message to ${nativeLang}
 - When the user sends "[END]", give a brief farewell in Spanish, then on a new line write "---" followed by brief feedback in ${nativeLang} about their performance (strengths, areas to improve, new vocabulary learned).`;
