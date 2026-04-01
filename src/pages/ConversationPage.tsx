@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import SentenceWordPicker from "@/components/vocabulary/SentenceWordPicker";
 import HelperPanel from "@/components/conversation/HelperPanel";
 import MessageBubble from "@/components/conversation/MessageBubble";
+import SpeechReviewPanel from "@/components/conversation/SpeechReviewPanel";
 import {
   ArrowLeft,
   CheckCircle2,
