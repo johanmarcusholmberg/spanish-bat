@@ -100,9 +100,10 @@ const ConversationPage = () => {
     }
   }, [messages, autoRead, ttsSupported, isLoading, speak]);
 
+  // Only sync transcript to input when actively listening (live preview)
   useEffect(() => {
-    if (transcript) setInput(transcript);
-  }, [transcript]);
+    if (isListening && transcript) setInput(transcript);
+  }, [transcript, isListening]);
 
   const startConversation = useCallback(async (scenario: Scenario) => {
     setSelectedScenario(scenario);
