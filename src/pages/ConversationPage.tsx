@@ -241,17 +241,73 @@ const ConversationPage = () => {
     lastAssistantMsgRef.current = "";
   };
 
+  // Request coaching feedback on speech input before sending
+  const requestSpeechCoaching = useCallback(async (text: string) => {
+    if (!selectedScenario || !text.trim()) return;
+    setSpeechCoachingLoading(true);
+    setSpeechCoaching(null);
+    const reviewMessages: Message[] = [
+      ...messages,
+      { role: "user", content: `[REVIEW] ${text}` },
+    ];
+    let result = "";
+    try {
+      await streamChat(reviewMessages, selectedScenario, (chunk) => {
+        result += chunk;
+        setSpeechCoaching(result);
+      });
+    } catch {
+      setSpeechCoaching(null);
+    } finally {
+      setSpeechCoachingLoading(false);
+    }
+  }, [selectedScenario, messages, streamChat]);
+
   const handleMicToggle = () => {
     if (isListening) {
       stopListening();
-      if (transcript.trim()) {
-        setTimeout(() => void sendMessage(transcript.trim()), 100);
-      }
+      // Don't auto-send — show review panel instead
       return;
     }
+    // Start fresh recording
+    resetTranscript();
+    setInput("");
+    setSpeechReviewText(null);
+    setSpeechCoaching(null);
+    startListening();
+  };
+
+  // When STT stops and we have a transcript, show review panel
+  useEffect(() => {
+    if (!isListening && transcript.trim() && speechReviewText === null) {
+      const text = transcript.trim();
+      setSpeechReviewText(text);
+      setInput(text);
+      // Auto-request coaching
+      void requestSpeechCoaching(text);
+    }
+  }, [isListening, transcript]);
+
+  const handleSpeechSend = (text: string) => {
+    setSpeechReviewText(null);
+    setSpeechCoaching(null);
+    resetTranscript();
+    void sendMessage(text);
+  };
+
+  const handleSpeechRetry = () => {
+    setSpeechReviewText(null);
+    setSpeechCoaching(null);
     resetTranscript();
     setInput("");
     startListening();
+  };
+
+  const handleSpeechDismiss = () => {
+    setSpeechReviewText(null);
+    setSpeechCoaching(null);
+    resetTranscript();
+    setInput("");
   };
 
   return (
