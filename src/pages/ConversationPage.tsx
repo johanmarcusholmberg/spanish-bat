@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import SentenceWordPicker from "@/components/vocabulary/SentenceWordPicker";
 import HelperPanel from "@/components/conversation/HelperPanel";
 import MessageBubble from "@/components/conversation/MessageBubble";
+import SpeechReviewPanel from "@/components/conversation/SpeechReviewPanel";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -78,6 +79,11 @@ const ConversationPage = () => {
   const [helperContent, setHelperContent] = useState("");
   const [helperLoading, setHelperLoading] = useState(false);
 
+  // Speech review state
+  const [speechReviewText, setSpeechReviewText] = useState<string | null>(null);
+  const [speechCoaching, setSpeechCoaching] = useState<string | null>(null);
+  const [speechCoachingLoading, setSpeechCoachingLoading] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const lastAssistantMsgRef = useRef("");
 
@@ -94,9 +100,10 @@ const ConversationPage = () => {
     }
   }, [messages, autoRead, ttsSupported, isLoading, speak]);
 
+  // Only sync transcript to input when actively listening (live preview)
   useEffect(() => {
-    if (transcript) setInput(transcript);
-  }, [transcript]);
+    if (isListening && transcript) setInput(transcript);
+  }, [transcript, isListening]);
 
   const startConversation = useCallback(async (scenario: Scenario) => {
     setSelectedScenario(scenario);
@@ -235,17 +242,73 @@ const ConversationPage = () => {
     lastAssistantMsgRef.current = "";
   };
 
+  // Request coaching feedback on speech input before sending
+  const requestSpeechCoaching = useCallback(async (text: string) => {
+    if (!selectedScenario || !text.trim()) return;
+    setSpeechCoachingLoading(true);
+    setSpeechCoaching(null);
+    const reviewMessages: Message[] = [
+      ...messages,
+      { role: "user", content: `[REVIEW] ${text}` },
+    ];
+    let result = "";
+    try {
+      await streamChat(reviewMessages, selectedScenario, (chunk) => {
+        result += chunk;
+        setSpeechCoaching(result);
+      });
+    } catch {
+      setSpeechCoaching(null);
+    } finally {
+      setSpeechCoachingLoading(false);
+    }
+  }, [selectedScenario, messages, streamChat]);
+
   const handleMicToggle = () => {
     if (isListening) {
       stopListening();
-      if (transcript.trim()) {
-        setTimeout(() => void sendMessage(transcript.trim()), 100);
-      }
+      // Don't auto-send — show review panel instead
       return;
     }
+    // Start fresh recording
+    resetTranscript();
+    setInput("");
+    setSpeechReviewText(null);
+    setSpeechCoaching(null);
+    startListening();
+  };
+
+  // When STT stops and we have a transcript, show review panel
+  useEffect(() => {
+    if (!isListening && transcript.trim() && speechReviewText === null) {
+      const text = transcript.trim();
+      setSpeechReviewText(text);
+      setInput(text);
+      // Auto-request coaching
+      void requestSpeechCoaching(text);
+    }
+  }, [isListening, transcript]);
+
+  const handleSpeechSend = (text: string) => {
+    setSpeechReviewText(null);
+    setSpeechCoaching(null);
+    resetTranscript();
+    void sendMessage(text);
+  };
+
+  const handleSpeechRetry = () => {
+    setSpeechReviewText(null);
+    setSpeechCoaching(null);
     resetTranscript();
     setInput("");
     startListening();
+  };
+
+  const handleSpeechDismiss = () => {
+    setSpeechReviewText(null);
+    setSpeechCoaching(null);
+    resetTranscript();
+    setInput("");
   };
 
   return (
@@ -425,11 +488,40 @@ const ConversationPage = () => {
             </div>
           </div>
 
-          {/* Interim transcript */}
-          {isListening && interimTranscript && (
-            <div className="mb-3 rounded-xl border border-dashed p-3 text-sm text-muted-foreground">
-              {interimTranscript}
+          {/* Listening indicator */}
+          {isListening && (
+            <div className="mb-3 rounded-xl border-2 border-destructive/30 bg-destructive/5 p-3 animate-pulse">
+              <div className="flex items-center gap-2 text-sm">
+                <Mic className="h-4 w-4 text-destructive" />
+                <span className="font-medium">
+                  {language === "sv" ? "Lyssnar..." : "Listening..."}
+                </span>
+                {interimTranscript && (
+                  <span className="text-muted-foreground ml-1 truncate">{interimTranscript}</span>
+                )}
+              </div>
+              <Button
+                size="sm"
+                variant="destructive"
+                className="mt-2"
+                onClick={() => stopListening()}
+              >
+                <MicOff className="mr-1.5 h-3.5 w-3.5" />
+                {language === "sv" ? "Stoppa inspelning" : "Stop recording"}
+              </Button>
             </div>
+          )}
+
+          {/* Speech review panel */}
+          {speechReviewText !== null && !isListening && (
+            <SpeechReviewPanel
+              transcript={speechReviewText}
+              coaching={speechCoaching}
+              isCoachingLoading={speechCoachingLoading}
+              onSend={handleSpeechSend}
+              onRetry={handleSpeechRetry}
+              onDismiss={handleSpeechDismiss}
+            />
           )}
 
           {/* Input */}
@@ -443,7 +535,7 @@ const ConversationPage = () => {
                 variant={isListening ? "destructive" : "outline"}
                 size="icon"
                 onClick={handleMicToggle}
-                disabled={isLoading}
+                disabled={isLoading || speechReviewText !== null}
               >
                 {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
               </Button>
@@ -452,10 +544,10 @@ const ConversationPage = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={language === "sv" ? "Skriv eller tala spanska..." : "Type or speak Spanish..."}
-              disabled={isLoading || isListening}
+              disabled={isLoading || isListening || speechReviewText !== null}
               className="flex-1"
             />
-            <Button type="submit" disabled={isLoading || !input.trim()}>
+            <Button type="submit" disabled={isLoading || !input.trim() || speechReviewText !== null}>
               <Send className="mr-2 h-4 w-4" />
               {language === "sv" ? "Skicka" : "Send"}
             </Button>
