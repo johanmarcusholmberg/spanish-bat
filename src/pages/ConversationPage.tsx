@@ -6,13 +6,15 @@ import { useToast } from "@/hooks/use-toast";
 import { useSpanishSTT } from "@/hooks/useSpanishSTT";
 import { useSpanishTTS } from "@/hooks/useSpanishTTS";
 import { useConversationStream } from "@/hooks/useConversationStream";
+import { useTranslate } from "@/hooks/useTranslate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import SentenceWordPicker from "@/components/vocabulary/SentenceWordPicker";
+import HelperPanel from "@/components/conversation/HelperPanel";
+import MessageBubble from "@/components/conversation/MessageBubble";
 import {
   ArrowLeft,
-  BookmarkPlus,
   CheckCircle2,
   Lightbulb,
   Loader2,
@@ -39,78 +41,14 @@ interface Scenario {
 }
 
 const scenarios: Scenario[] = [
-  {
-    id: "cafe",
-    icon: "☕",
-    titleSv: "På caféet",
-    titleEn: "At the café",
-    descSv: "Beställ kaffe och småprata",
-    descEn: "Order coffee and make small talk",
-    scenario: "ordering at a café",
-  },
-  {
-    id: "market",
-    icon: "🛍️",
-    titleSv: "På marknaden",
-    titleEn: "At the market",
-    descSv: "Handla frukt och grönsaker",
-    descEn: "Buy fruits and vegetables",
-    scenario: "shopping at an outdoor market",
-  },
-  {
-    id: "directions",
-    icon: "🗺️",
-    titleSv: "Fråga om vägen",
-    titleEn: "Asking for directions",
-    descSv: "Hitta till museet",
-    descEn: "Find your way to the museum",
-    scenario: "asking a local for directions to the museum",
-  },
-  {
-    id: "hotel",
-    icon: "🏨",
-    titleSv: "På hotellet",
-    titleEn: "At the hotel",
-    descSv: "Checka in och fråga om rummet",
-    descEn: "Check in and ask about the room",
-    scenario: "checking into a hotel",
-  },
-  {
-    id: "restaurant",
-    icon: "🍽️",
-    titleSv: "På restaurangen",
-    titleEn: "At the restaurant",
-    descSv: "Beställ mat och dryck",
-    descEn: "Order food and drinks",
-    scenario: "dining at a restaurant",
-  },
-  {
-    id: "doctor",
-    icon: "🩺",
-    titleSv: "Hos läkaren",
-    titleEn: "At the doctor",
-    descSv: "Beskriv symptom",
-    descEn: "Describe symptoms",
-    scenario: "visiting the doctor and describing symptoms",
-  },
-  {
-    id: "friend",
-    icon: "👋",
-    titleSv: "Träffa en vän",
-    titleEn: "Meeting a friend",
-    descSv: "Planera helgen",
-    descEn: "Plan the weekend",
-    scenario: "meeting a friend and planning weekend activities",
-  },
-  {
-    id: "job",
-    icon: "💼",
-    titleSv: "Jobbintervju",
-    titleEn: "Job interview",
-    descSv: "Presentera dig själv",
-    descEn: "Present yourself",
-    scenario: "a casual job interview at a local shop",
-  },
+  { id: "cafe", icon: "☕", titleSv: "På caféet", titleEn: "At the café", descSv: "Beställ kaffe och småprata", descEn: "Order coffee and make small talk", scenario: "ordering at a café" },
+  { id: "market", icon: "🛍️", titleSv: "På marknaden", titleEn: "At the market", descSv: "Handla frukt och grönsaker", descEn: "Buy fruits and vegetables", scenario: "shopping at an outdoor market" },
+  { id: "directions", icon: "🗺️", titleSv: "Fråga om vägen", titleEn: "Asking for directions", descSv: "Hitta till museet", descEn: "Find your way to the museum", scenario: "asking a local for directions to the museum" },
+  { id: "hotel", icon: "🏨", titleSv: "På hotellet", titleEn: "At the hotel", descSv: "Checka in och fråga om rummet", descEn: "Check in and ask about the room", scenario: "checking into a hotel" },
+  { id: "restaurant", icon: "🍽️", titleSv: "På restaurangen", titleEn: "At the restaurant", descSv: "Beställ mat och dryck", descEn: "Order food and drinks", scenario: "dining at a restaurant" },
+  { id: "doctor", icon: "🩺", titleSv: "Hos läkaren", titleEn: "At the doctor", descSv: "Beskriv symptom", descEn: "Describe symptoms", scenario: "visiting the doctor and describing symptoms" },
+  { id: "friend", icon: "👋", titleSv: "Träffa en vän", titleEn: "Meeting a friend", descSv: "Planera helgen", descEn: "Plan the weekend", scenario: "meeting a friend and planning weekend activities" },
+  { id: "job", icon: "💼", titleSv: "Jobbintervju", titleEn: "Job interview", descSv: "Presentera dig själv", descEn: "Present yourself", scenario: "a casual job interview at a local shop" },
 ];
 
 const ConversationPage = () => {
@@ -119,13 +57,10 @@ const ConversationPage = () => {
   const { toast } = useToast();
   const { streamChat } = useConversationStream();
   const { speak, stop: stopTTS, isSupported: ttsSupported } = useSpanishTTS();
+  const { translate, isTranslating } = useTranslate();
   const {
-    isListening,
-    transcript,
-    interimTranscript,
-    startListening,
-    stopListening,
-    resetTranscript,
+    isListening, transcript, interimTranscript,
+    startListening, stopListening, resetTranscript,
     isSupported: sttSupported,
   } = useSpanishSTT();
 
@@ -138,7 +73,11 @@ const ConversationPage = () => {
   const [freestyleInput, setFreestyleInput] = useState("");
   const [showFreestyleForm, setShowFreestyleForm] = useState(false);
 
-  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+  // Helper panel state
+  const [helperType, setHelperType] = useState<"hint" | "translate" | null>(null);
+  const [helperContent, setHelperContent] = useState("");
+  const [helperLoading, setHelperLoading] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const lastAssistantMsgRef = useRef("");
 
@@ -149,11 +88,7 @@ const ConversationPage = () => {
   useEffect(() => {
     if (!autoRead || !ttsSupported || isLoading) return;
     const lastMsg = messages[messages.length - 1];
-    if (
-      lastMsg?.role === "assistant" &&
-      lastMsg.content &&
-      lastMsg.content !== lastAssistantMsgRef.current
-    ) {
+    if (lastMsg?.role === "assistant" && lastMsg.content && lastMsg.content !== lastAssistantMsgRef.current) {
       lastAssistantMsgRef.current = lastMsg.content;
       speak(lastMsg.content);
     }
@@ -163,75 +98,124 @@ const ConversationPage = () => {
     if (transcript) setInput(transcript);
   }, [transcript]);
 
-  const startConversation = useCallback(
-    async (scenario: Scenario) => {
-      setSelectedScenario(scenario);
-      setMessages([]);
-      setInput("");
-      setIsLoading(true);
-      lastAssistantMsgRef.current = "";
+  const startConversation = useCallback(async (scenario: Scenario) => {
+    setSelectedScenario(scenario);
+    setMessages([]);
+    setInput("");
+    setIsLoading(true);
+    setHelperType(null);
+    setHelperContent("");
+    lastAssistantMsgRef.current = "";
 
-      let assistantSoFar = "";
-      try {
-        await streamChat([], scenario, (chunk) => {
-          assistantSoFar += chunk;
-          setMessages([{ role: "assistant", content: assistantSoFar }]);
-        });
-      } catch (error) {
-        const message = error instanceof Error ? error.message : "Unknown error";
-        toast({ title: language === "sv" ? "Fel" : "Error", description: message, variant: "destructive" });
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [language, streamChat, toast]
-  );
+    let assistantSoFar = "";
+    try {
+      await streamChat([], scenario, (chunk) => {
+        assistantSoFar += chunk;
+        setMessages([{ role: "assistant", content: assistantSoFar }]);
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      toast({ title: language === "sv" ? "Fel" : "Error", description: message, variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [language, streamChat, toast]);
 
   const handleFreestyleStart = () => {
     if (!freestyleInput.trim()) return;
     const customScenario: Scenario = {
-      id: "freestyle",
-      icon: "✏️",
-      titleSv: freestyleInput.trim(),
-      titleEn: freestyleInput.trim(),
-      descSv: "",
-      descEn: "",
+      id: "freestyle", icon: "✏️",
+      titleSv: freestyleInput.trim(), titleEn: freestyleInput.trim(),
+      descSv: "", descEn: "",
       scenario: freestyleInput.trim(),
     };
     setShowFreestyleForm(false);
     void startConversation(customScenario);
   };
 
-  const sendMessage = useCallback(
-    async (text: string) => {
-      if (!selectedScenario || !text.trim() || isLoading) return;
-      const userMsg: Message = { role: "user", content: text.trim() };
-      const nextMessages = [...messages, userMsg];
+  const sendMessage = useCallback(async (text: string) => {
+    if (!selectedScenario || !text.trim() || isLoading) return;
+    const userMsg: Message = { role: "user", content: text.trim() };
+    const nextMessages = [...messages, userMsg];
+    setMessages(nextMessages);
+    setInput("");
+    resetTranscript();
+    setIsLoading(true);
+
+    let assistantSoFar = "";
+    try {
+      await streamChat(nextMessages, selectedScenario, (chunk) => {
+        assistantSoFar += chunk;
+        setMessages([...nextMessages, { role: "assistant", content: assistantSoFar }]);
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      toast({ title: language === "sv" ? "Fel" : "Error", description: message, variant: "destructive" });
       setMessages(nextMessages);
-      setInput("");
-      resetTranscript();
-      setIsLoading(true);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isLoading, language, messages, resetTranscript, selectedScenario, streamChat, toast]);
 
-      let assistantSoFar = "";
-      try {
-        await streamChat(nextMessages, selectedScenario, (chunk) => {
-          assistantSoFar += chunk;
-          setMessages([...nextMessages, { role: "assistant", content: assistantSoFar }]);
-        });
-      } catch (error) {
-        const message = error instanceof Error ? error.message : "Unknown error";
-        toast({ title: language === "sv" ? "Fel" : "Error", description: message, variant: "destructive" });
-        setMessages(nextMessages);
-      } finally {
-        setIsLoading(false);
+  // Hint: stream into helper panel, don't add to conversation
+  const requestHint = useCallback(async () => {
+    if (!selectedScenario || isLoading || helperLoading || messages.length === 0) return;
+    setHelperType("hint");
+    setHelperContent("");
+    setHelperLoading(true);
+
+    // Send [HINT] with current messages but capture response separately
+    const hintMessages: Message[] = [...messages, { role: "user", content: "[HINT]" }];
+    let result = "";
+    try {
+      await streamChat(hintMessages, selectedScenario, (chunk) => {
+        result += chunk;
+        setHelperContent(result);
+      });
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      setHelperContent(msg);
+    } finally {
+      setHelperLoading(false);
+    }
+  }, [selectedScenario, isLoading, helperLoading, messages, streamChat]);
+
+  // Translate a specific message using the translate-word edge function
+  const handleTranslateMessage = useCallback(async (content: string) => {
+    if (isTranslating || helperLoading) return;
+    setHelperType("translate");
+    setHelperContent("");
+    setHelperLoading(true);
+
+    const targetLang = language === "sv" ? "sv" : "en";
+    try {
+      const result = await translate(content, targetLang);
+      if (result) {
+        setHelperContent(result.translation);
+      } else {
+        // Fallback: use conversation edge function for longer text
+        const translateMessages: Message[] = [
+          ...messages,
+          { role: "user", content: "[TRANSLATE]" },
+        ];
+        // Find the message in conversation and ask for translation
+        let streamed = "";
+        await streamChat(
+          [...messages.filter(m => m.content !== content), { role: "assistant", content }, { role: "user", content: "[TRANSLATE]" }],
+          selectedScenario!,
+          (chunk) => {
+            streamed += chunk;
+            setHelperContent(streamed);
+          }
+        );
       }
-    },
-    [isLoading, language, messages, resetTranscript, selectedScenario, streamChat, toast]
-  );
-
-  const sendSpecial = (cmd: string) => {
-    if (!isLoading) void sendMessage(cmd);
-  };
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      setHelperContent(msg);
+    } finally {
+      setHelperLoading(false);
+    }
+  }, [isTranslating, helperLoading, language, translate, messages, streamChat, selectedScenario]);
 
   const endConversation = () => {
     if (isLoading) return;
@@ -246,6 +230,8 @@ const ConversationPage = () => {
     setInput("");
     setIsLoading(false);
     setShowFreestyleForm(false);
+    setHelperType(null);
+    setHelperContent("");
     lastAssistantMsgRef.current = "";
   };
 
@@ -297,7 +283,6 @@ const ConversationPage = () => {
               </button>
             ))}
 
-            {/* Freestyle / Custom scenario card */}
             {!showFreestyleForm ? (
               <button
                 onClick={() => setShowFreestyleForm(true)}
@@ -331,28 +316,15 @@ const ConversationPage = () => {
                 <Input
                   value={freestyleInput}
                   onChange={(e) => setFreestyleInput(e.target.value)}
-                  placeholder={
-                    language === "sv"
-                      ? "T.ex. köpa biljett på tågstationen..."
-                      : "E.g. buying a train ticket at the station..."
-                  }
+                  placeholder={language === "sv" ? "T.ex. köpa biljett på tågstationen..." : "E.g. buying a train ticket at the station..."}
                   className="mb-3"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleFreestyleStart();
-                  }}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleFreestyleStart(); }}
                 />
                 <div className="flex gap-2">
                   <Button onClick={handleFreestyleStart} disabled={!freestyleInput.trim()} size="sm">
                     {language === "sv" ? "Starta" : "Start"}
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setShowFreestyleForm(false);
-                      setFreestyleInput("");
-                    }}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => { setShowFreestyleForm(false); setFreestyleInput(""); }}>
                     {language === "sv" ? "Avbryt" : "Cancel"}
                   </Button>
                 </div>
@@ -370,17 +342,13 @@ const ConversationPage = () => {
                 {language === "sv" ? selectedScenario.titleSv : selectedScenario.titleEn}
               </h1>
             </div>
-
             <div className="flex flex-wrap items-center gap-2">
               {ttsSupported && (
                 <div className="flex items-center gap-2 rounded-xl border px-3 py-2">
                   <Switch checked={autoRead} onCheckedChange={setAutoRead} />
-                  <span className="text-sm">
-                    {language === "sv" ? "Auto-läs" : "Auto-read"}
-                  </span>
+                  <span className="text-sm">{language === "sv" ? "Auto-läs" : "Auto-read"}</span>
                 </div>
               )}
-
               <Button variant="outline" onClick={goBack}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 {language === "sv" ? "Tillbaka" : "Go back"}
@@ -389,43 +357,22 @@ const ConversationPage = () => {
           </div>
 
           {/* Messages */}
-          <div
-            ref={messagesContainerRef}
-            className="mb-4 max-h-[55vh] overflow-y-auto rounded-2xl border bg-card p-4"
-          >
+          <div className="mb-4 max-h-[55vh] overflow-y-auto rounded-2xl border bg-card p-4">
             <div className="space-y-3">
               {messages.map((msg, i) => (
-                <div
+                <MessageBubble
                   key={i}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  <div
-                    className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${
-                      msg.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "border bg-background"
-                    }`}
-                  >
-                    <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                      {msg.content}
-                    </div>
-                    {msg.role === "assistant" && msg.content && !isLoading && (
-                      <div className="mt-2 flex justify-end">
-                        <button
-                          onClick={() => setPickerMessage(msg.content)}
-                          className="text-xs text-muted-foreground hover:text-primary transition flex items-center gap-1"
-                        >
-                          <BookmarkPlus className="h-3.5 w-3.5" />
-                          {language === "sv" ? "Spara ord" : "Save words"}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                  role={msg.role}
+                  content={msg.content}
+                  isLast={i === messages.length - 1}
+                  isLoading={isLoading}
+                  onTranslate={handleTranslateMessage}
+                  onSaveWords={setPickerMessage}
+                  onSpeak={ttsSupported ? speak : undefined}
+                  ttsSupported={ttsSupported}
+                />
               ))}
-
               <div ref={messagesEndRef} />
-
               {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -435,14 +382,20 @@ const ConversationPage = () => {
             </div>
           </div>
 
+          {/* Helper panel for hint/translate */}
+          <HelperPanel
+            type={helperType}
+            content={helperContent}
+            isLoading={helperLoading}
+            onClose={() => { setHelperType(null); setHelperContent(""); }}
+          />
+
           {pickerMessage && (
             <SentenceWordPicker
               sentence={pickerMessage}
               context="conversation"
               open={!!pickerMessage}
-              onOpenChange={(open) => {
-                if (!open) setPickerMessage(null);
-              }}
+              onOpenChange={(open) => { if (!open) setPickerMessage(null); }}
             />
           )}
 
@@ -452,21 +405,11 @@ const ConversationPage = () => {
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => sendSpecial("[HINT]")}
-              disabled={isLoading || messages.length === 0}
+              onClick={requestHint}
+              disabled={isLoading || helperLoading || messages.length === 0}
             >
               <Lightbulb className="mr-2 h-4 w-4" />
               {language === "sv" ? "Ledtråd" : "Hint"}
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => sendSpecial("[TRANSLATE]")}
-              disabled={isLoading || messages.length === 0}
-            >
-              {language === "sv" ? "Översätt" : "Translate"}
             </Button>
 
             <div className="ml-auto">
@@ -491,10 +434,7 @@ const ConversationPage = () => {
 
           {/* Input */}
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void sendMessage(input);
-            }}
+            onSubmit={(e) => { e.preventDefault(); void sendMessage(input); }}
             className="flex items-center gap-2"
           >
             {sttSupported && (
@@ -508,17 +448,13 @@ const ConversationPage = () => {
                 {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
               </Button>
             )}
-
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={
-                language === "sv" ? "Skriv eller tala spanska..." : "Type or speak Spanish..."
-              }
+              placeholder={language === "sv" ? "Skriv eller tala spanska..." : "Type or speak Spanish..."}
               disabled={isLoading || isListening}
               className="flex-1"
             />
-
             <Button type="submit" disabled={isLoading || !input.trim()}>
               <Send className="mr-2 h-4 w-4" />
               {language === "sv" ? "Skicka" : "Send"}
