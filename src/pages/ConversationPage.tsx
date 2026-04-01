@@ -79,6 +79,11 @@ const ConversationPage = () => {
   const [helperContent, setHelperContent] = useState("");
   const [helperLoading, setHelperLoading] = useState(false);
 
+  // Speech review state
+  const [speechReviewText, setSpeechReviewText] = useState<string | null>(null);
+  const [speechCoaching, setSpeechCoaching] = useState<string | null>(null);
+  const [speechCoachingLoading, setSpeechCoachingLoading] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const lastAssistantMsgRef = useRef("");
 
