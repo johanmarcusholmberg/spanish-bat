@@ -488,11 +488,40 @@ const ConversationPage = () => {
             </div>
           </div>
 
-          {/* Interim transcript */}
-          {isListening && interimTranscript && (
-            <div className="mb-3 rounded-xl border border-dashed p-3 text-sm text-muted-foreground">
-              {interimTranscript}
+          {/* Listening indicator */}
+          {isListening && (
+            <div className="mb-3 rounded-xl border-2 border-destructive/30 bg-destructive/5 p-3 animate-pulse">
+              <div className="flex items-center gap-2 text-sm">
+                <Mic className="h-4 w-4 text-destructive" />
+                <span className="font-medium">
+                  {language === "sv" ? "Lyssnar..." : "Listening..."}
+                </span>
+                {interimTranscript && (
+                  <span className="text-muted-foreground ml-1 truncate">{interimTranscript}</span>
+                )}
+              </div>
+              <Button
+                size="sm"
+                variant="destructive"
+                className="mt-2"
+                onClick={() => stopListening()}
+              >
+                <MicOff className="mr-1.5 h-3.5 w-3.5" />
+                {language === "sv" ? "Stoppa inspelning" : "Stop recording"}
+              </Button>
             </div>
+          )}
+
+          {/* Speech review panel */}
+          {speechReviewText !== null && !isListening && (
+            <SpeechReviewPanel
+              transcript={speechReviewText}
+              coaching={speechCoaching}
+              isCoachingLoading={speechCoachingLoading}
+              onSend={handleSpeechSend}
+              onRetry={handleSpeechRetry}
+              onDismiss={handleSpeechDismiss}
+            />
           )}
 
           {/* Input */}
@@ -506,7 +535,7 @@ const ConversationPage = () => {
                 variant={isListening ? "destructive" : "outline"}
                 size="icon"
                 onClick={handleMicToggle}
-                disabled={isLoading}
+                disabled={isLoading || speechReviewText !== null}
               >
                 {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
               </Button>
@@ -515,10 +544,10 @@ const ConversationPage = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={language === "sv" ? "Skriv eller tala spanska..." : "Type or speak Spanish..."}
-              disabled={isLoading || isListening}
+              disabled={isLoading || isListening || speechReviewText !== null}
               className="flex-1"
             />
-            <Button type="submit" disabled={isLoading || !input.trim()}>
+            <Button type="submit" disabled={isLoading || !input.trim() || speechReviewText !== null}>
               <Send className="mr-2 h-4 w-4" />
               {language === "sv" ? "Skicka" : "Send"}
             </Button>
