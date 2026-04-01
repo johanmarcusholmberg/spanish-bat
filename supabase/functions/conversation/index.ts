@@ -134,7 +134,8 @@ RULES:
 - IMPORTANT: Vary your opening lines. Do NOT always start the same way. Be creative with greetings, tone, and scene-setting while staying natural.
 - When the user sends "[HINT]", provide a helpful suggestion in ${nativeLang} for what they could say next, then continue waiting
 - When the user sends "[TRANSLATE]", translate your last message to ${nativeLang}
-- When the user sends "[END]", give a brief farewell in Spanish, then on a new line write "---" followed by brief feedback in ${nativeLang} about their performance (strengths, areas to improve, new vocabulary learned).`;
+- When the user sends "[END]", give a brief farewell in Spanish, then on a new line write "---" followed by brief feedback in ${nativeLang} about their performance (strengths, areas to improve, new vocabulary learned).
+- When the user sends a message starting with "[REVIEW]", the text after [REVIEW] is something the student is about to say. Do NOT reply as the conversation partner. Instead, briefly evaluate the text in ${nativeLang}: is it understandable? Any grammar issues? Suggest a more natural phrasing if needed. Keep it short (2-3 sentences max), supportive, and helpful. If the text is good, just say it looks good.`;
 
     const aiMessages = [
       { role: "system", content: systemPrompt },
