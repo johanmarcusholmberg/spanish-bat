@@ -35,6 +35,7 @@ import {
 import { useVocabulary, VocabularyWord } from "@/hooks/useVocabulary";
 import { useSpanishTTS } from "@/hooks/useSpanishTTS";
 import VocabularyPractice from "@/components/vocabulary/VocabularyPractice";
+import { capitalizeFirst } from "@/lib/displayUtils";
 
 type FilterType = "all" | "word" | "phrase" | "sentence" | "recent" | "needs_practice";
 type FilterLearned = "all" | "learned" | "unlearned";
@@ -301,10 +302,10 @@ const VocabularyPage = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className={`font-medium text-foreground ${word.learned ? "line-through opacity-60" : ""}`}>
-                        {word.spanish}
+                        {capitalizeFirst(word.spanish)}
                       </span>
                       <span className="text-muted-foreground">—</span>
-                      <span className="text-muted-foreground truncate">{word.translation}</span>
+                      <span className="text-muted-foreground truncate">{capitalizeFirst(word.translation)}</span>
                     </div>
                     {word.usage_example && (
                       <p className="text-xs text-muted-foreground/80 mt-0.5 truncate">
