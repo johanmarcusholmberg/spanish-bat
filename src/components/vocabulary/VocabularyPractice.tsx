@@ -246,8 +246,8 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
         </Card>
         {flipped && (
           <div className="flex justify-center gap-2">
-            <Button variant="outline" onClick={() => { nextQuestion(); }}>{t("Visste inte", "Didn't know")}</Button>
-            <Button onClick={() => { setScore(s => s + 1); onToggleLearned(card.id); nextQuestion(); }}>
+            <Button variant="outline" onClick={() => { recordAnswer(false); recordReview(card.id, "again", card as unknown as SRSWord); nextQuestion(); }}>{t("Visste inte", "Didn't know")}</Button>
+            <Button onClick={() => { setScore(s => s + 1); recordAnswer(true); recordReview(card.id, "good", card as unknown as SRSWord); onToggleLearned(card.id); nextQuestion(); }}>
               <Check className="h-4 w-4 mr-1" /> {t("Visste!", "Knew it!")}
             </Button>
           </div>
@@ -295,7 +295,10 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
                 disabled={!!mcSelected}
                 onClick={() => {
                   setMcSelected(opt);
-                  if (opt === answer) setScore(s => s + 1);
+                  const correct = opt === answer;
+                  if (correct) setScore(s => s + 1);
+                  recordAnswer(correct);
+                  recordReview(card.id, correct ? "good" : "again", card as unknown as SRSWord);
                 }}
                 className={`rounded-lg p-3 text-left text-sm transition ${cls}`}
               >
@@ -324,6 +327,8 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
       setTypingCorrect(isCorrect);
       setTypingChecked(true);
       if (isCorrect) setScore(s => s + 1);
+      recordAnswer(isCorrect);
+      recordReview(card.id, isCorrect ? "good" : "again", card as unknown as SRSWord);
     };
 
     return (
