@@ -6,6 +6,8 @@ import AppLayout from "@/components/AppLayout";
 import { ProgressOverview, ContinueCard, NextStepsCard, LevelAdvancementCard } from "@/components/ProgressDashboard";
 import { StreakCard } from "@/components/StreakCard";
 import MurciMascot from "@/components/MurciMascot";
+import DailyReviewCard from "@/components/DailyReview";
+import LearningStats from "@/components/LearningStats";
 import OnboardingModal from "@/components/OnboardingModal";
 import PlacementTest from "@/components/PlacementTest";
 
@@ -95,13 +97,17 @@ const DashboardPage = () => {
         {/* 1. Continue where you left off */}
         <ContinueCard />
 
-        {/* 2. Weekly streak */}
+        {/* 2. Daily Review */}
+        <DailyReviewCard />
+
+        {/* 3. Weekly streak */}
         <StreakCard />
 
-        {/* 3. Progress + Next steps + Level advancement */}
+        {/* 4. Progress + Next steps + Level advancement */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2 space-y-5">
             <ProgressOverview />
+            <LearningStats />
           </div>
           <div className="space-y-5">
             <NextStepsCard />
