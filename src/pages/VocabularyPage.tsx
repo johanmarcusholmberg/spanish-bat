@@ -327,6 +327,17 @@ const VocabularyPage = () => {
                         {word.level}
                       </Badge>
                     )}
+                    <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${
+                      (word as any).review_state === "mastered" ? "border-primary text-primary" :
+                      (word as any).review_state === "familiar" ? "border-emerald-500 text-emerald-600" :
+                      (word as any).review_state === "learning" ? "border-amber-500 text-amber-600" :
+                      "border-blue-400 text-blue-500"
+                    }`}>
+                      {(word as any).review_state === "mastered" ? t("Bemästrat", "Mastered") :
+                       (word as any).review_state === "familiar" ? t("Bekant", "Familiar") :
+                       (word as any).review_state === "learning" ? t("Lär sig", "Learning") :
+                       t("Nytt", "New")}
+                    </Badge>
                   </div>
 
                   {/* Actions - always visible on mobile */}
