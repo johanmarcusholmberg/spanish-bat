@@ -46,6 +46,8 @@ const pickDirection = (): TranslationDirection =>
 const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggleLearned }) => {
   const { language } = useLanguage();
   const { speak, isSupported: ttsSupported } = useSpanishTTS();
+  const { settings, recordAnswer, accuracy, performance } = useAdaptiveDifficulty();
+  const { recordReview } = useVocabularySRS();
   const t = (sv: string, en: string) => (language === "sv" ? sv : en);
 
   const [mode, setMode] = useState<PracticeMode>("select");
