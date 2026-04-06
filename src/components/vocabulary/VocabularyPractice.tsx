@@ -2,6 +2,8 @@ import React, { useState, useMemo, useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { VocabularyWord } from "@/hooks/useVocabulary";
 import { useSpanishTTS } from "@/hooks/useSpanishTTS";
+import { useAdaptiveDifficulty } from "@/hooks/useAdaptiveDifficulty";
+import { useVocabularySRS, SRSWord } from "@/hooks/useVocabularySRS";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +17,7 @@ import {
   X,
   RotateCcw,
   Shuffle,
+  TrendingUp,
 } from "lucide-react";
 
 type PracticeMode = "select" | "flashcard" | "multiple_choice" | "typing" | "sentence_completion";
