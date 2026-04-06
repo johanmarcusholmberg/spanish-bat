@@ -2,6 +2,8 @@ import React, { useState, useMemo, useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { VocabularyWord } from "@/hooks/useVocabulary";
 import { useSpanishTTS } from "@/hooks/useSpanishTTS";
+import { useAdaptiveDifficulty } from "@/hooks/useAdaptiveDifficulty";
+import { useVocabularySRS, SRSWord } from "@/hooks/useVocabularySRS";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +17,7 @@ import {
   X,
   RotateCcw,
   Shuffle,
+  TrendingUp,
 } from "lucide-react";
 
 type PracticeMode = "select" | "flashcard" | "multiple_choice" | "typing" | "sentence_completion";
@@ -37,12 +40,14 @@ const MODES = [
 const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => Math.random() - 0.5);
 
 /** Pick a random direction, biased 50/50 */
-const pickDirection = (): TranslationDirection =>
-  Math.random() < 0.5 ? "es_to_native" : "native_to_es";
+const pickDirection = (productionBias: number = 0.5): TranslationDirection =>
+  Math.random() < productionBias ? "native_to_es" : "es_to_native";
 
 const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggleLearned }) => {
   const { language } = useLanguage();
   const { speak, isSupported: ttsSupported } = useSpanishTTS();
+  const { settings, recordAnswer, accuracy, performance } = useAdaptiveDifficulty();
+  const { recordReview } = useVocabularySRS();
   const t = (sv: string, en: string) => (language === "sv" ? sv : en);
 
   const [mode, setMode] = useState<PracticeMode>("select");
@@ -82,7 +87,7 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
 
   const startMode = useCallback((m: PracticeMode) => {
     const shuffled = shuffle(words).slice(0, 10);
-    const dirs = shuffled.map(() => pickDirection());
+    const dirs = shuffled.map(() => pickDirection(settings.productionBias));
     setQueue(shuffled);
     setDirections(dirs);
     setCurrent(0);
@@ -158,6 +163,13 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
             <p className="text-4xl font-bold text-primary">{pct}%</p>
             <p className="text-muted-foreground">{score}/{total} {t("rätt", "correct")}</p>
             <Progress value={pct} className="h-3" />
+            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+              <TrendingUp className="h-3.5 w-3.5" />
+              {t("Svårighetsgrad:", "Difficulty:")} {settings.difficulty}/5
+              {performance.longestStreak > 2 && (
+                <span>· {t("Bästa streak:", "Best streak:")} {performance.longestStreak}</span>
+              )}
+            </div>
           </CardContent>
         </Card>
         <div className="flex gap-2 justify-center">
@@ -241,8 +253,8 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
         </Card>
         {flipped && (
           <div className="flex justify-center gap-2">
-            <Button variant="outline" onClick={() => { nextQuestion(); }}>{t("Visste inte", "Didn't know")}</Button>
-            <Button onClick={() => { setScore(s => s + 1); onToggleLearned(card.id); nextQuestion(); }}>
+            <Button variant="outline" onClick={() => { recordAnswer(false); recordReview(card.id, "again", card as unknown as SRSWord); nextQuestion(); }}>{t("Visste inte", "Didn't know")}</Button>
+            <Button onClick={() => { setScore(s => s + 1); recordAnswer(true); recordReview(card.id, "good", card as unknown as SRSWord); onToggleLearned(card.id); nextQuestion(); }}>
               <Check className="h-4 w-4 mr-1" /> {t("Visste!", "Knew it!")}
             </Button>
           </div>
@@ -290,7 +302,10 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
                 disabled={!!mcSelected}
                 onClick={() => {
                   setMcSelected(opt);
-                  if (opt === answer) setScore(s => s + 1);
+                  const correct = opt === answer;
+                  if (correct) setScore(s => s + 1);
+                  recordAnswer(correct);
+                  recordReview(card.id, correct ? "good" : "again", card as unknown as SRSWord);
                 }}
                 className={`rounded-lg p-3 text-left text-sm transition ${cls}`}
               >
@@ -319,6 +334,8 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
       setTypingCorrect(isCorrect);
       setTypingChecked(true);
       if (isCorrect) setScore(s => s + 1);
+      recordAnswer(isCorrect);
+      recordReview(card.id, isCorrect ? "good" : "again", card as unknown as SRSWord);
     };
 
     return (
@@ -387,6 +404,8 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
       setScCorrect(isCorrect);
       setScChecked(true);
       if (isCorrect) setScore(s => s + 1);
+      recordAnswer(isCorrect);
+      recordReview(card.id, isCorrect ? "good" : "again", card as unknown as SRSWord);
     };
 
     return (
