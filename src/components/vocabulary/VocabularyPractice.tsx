@@ -163,6 +163,13 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
             <p className="text-4xl font-bold text-primary">{pct}%</p>
             <p className="text-muted-foreground">{score}/{total} {t("rätt", "correct")}</p>
             <Progress value={pct} className="h-3" />
+            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+              <TrendingUp className="h-3.5 w-3.5" />
+              {t("Svårighetsgrad:", "Difficulty:")} {settings.difficulty}/5
+              {performance.longestStreak > 2 && (
+                <span>· {t("Bästa streak:", "Best streak:")} {performance.longestStreak}</span>
+              )}
+            </div>
           </CardContent>
         </Card>
         <div className="flex gap-2 justify-center">
