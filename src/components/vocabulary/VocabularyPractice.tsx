@@ -40,8 +40,8 @@ const MODES = [
 const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => Math.random() - 0.5);
 
 /** Pick a random direction, biased 50/50 */
-const pickDirection = (): TranslationDirection =>
-  Math.random() < 0.5 ? "es_to_native" : "native_to_es";
+const pickDirection = (productionBias: number = 0.5): TranslationDirection =>
+  Math.random() < productionBias ? "native_to_es" : "es_to_native";
 
 const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggleLearned }) => {
   const { language } = useLanguage();
@@ -87,7 +87,7 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
 
   const startMode = useCallback((m: PracticeMode) => {
     const shuffled = shuffle(words).slice(0, 10);
-    const dirs = shuffled.map(() => pickDirection());
+    const dirs = shuffled.map(() => pickDirection(settings.productionBias));
     setQueue(shuffled);
     setDirections(dirs);
     setCurrent(0);
