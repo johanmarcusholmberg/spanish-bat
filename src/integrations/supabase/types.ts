@@ -267,11 +267,18 @@ export type Database = {
         Row: {
           category: string | null
           context: string | null
+          correct_count: number
           created_at: string
+          ease_factor: number
           id: string
+          incorrect_count: number
+          interval_days: number
           item_type: string
           learned: boolean
           level: string | null
+          next_review: string
+          review_count: number
+          review_state: string
           spanish: string
           topic_tags: string[] | null
           translation: string
@@ -282,11 +289,18 @@ export type Database = {
         Insert: {
           category?: string | null
           context?: string | null
+          correct_count?: number
           created_at?: string
+          ease_factor?: number
           id?: string
+          incorrect_count?: number
+          interval_days?: number
           item_type?: string
           learned?: boolean
           level?: string | null
+          next_review?: string
+          review_count?: number
+          review_state?: string
           spanish: string
           topic_tags?: string[] | null
           translation: string
@@ -297,11 +311,18 @@ export type Database = {
         Update: {
           category?: string | null
           context?: string | null
+          correct_count?: number
           created_at?: string
+          ease_factor?: number
           id?: string
+          incorrect_count?: number
+          interval_days?: number
           item_type?: string
           learned?: boolean
           level?: string | null
+          next_review?: string
+          review_count?: number
+          review_state?: string
           spanish?: string
           topic_tags?: string[] | null
           translation?: string
