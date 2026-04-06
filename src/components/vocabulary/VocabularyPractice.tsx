@@ -397,6 +397,8 @@ const VocabularyPractice: React.FC<Props> = ({ words, allWords, onExit, onToggle
       setScCorrect(isCorrect);
       setScChecked(true);
       if (isCorrect) setScore(s => s + 1);
+      recordAnswer(isCorrect);
+      recordReview(card.id, isCorrect ? "good" : "again", card as unknown as SRSWord);
     };
 
     return (
