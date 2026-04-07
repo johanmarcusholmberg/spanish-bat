@@ -88,16 +88,17 @@ const VerbExercisePage = () => {
   const contentRef = useRef<HTMLDivElement>(null);
 
   const currentVerb = availableVerbs[currentIndex];
-  if (!currentVerb) return null;
-
-  const pattern = getVerbPattern(currentVerb.infinitive);
+  const pattern = currentVerb ? getVerbPattern(currentVerb.infinitive) : "-ar";
 
   // Find other verbs with same pattern for pattern grouping
   const patternSiblings = useMemo(() => {
+    if (!currentVerb) return [];
     return availableVerbs
       .filter((v) => getVerbPattern(v.infinitive) === pattern && v.infinitive !== currentVerb.infinitive)
       .slice(0, 3);
-  }, [availableVerbs, pattern, currentVerb.infinitive]);
+  }, [availableVerbs, pattern, currentVerb?.infinitive]);
+
+  if (!currentVerb) return null;
 
   const handleTenseSelect = (tense: string) => {
     // Check if user has studied this tense
