@@ -4,11 +4,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import { nouns, getItemsForLevel } from "@/data/spanishData";
 import { checkAnswer } from "@/lib/answerUtils";
-import { ArrowLeft, Check, X, RotateCcw } from "lucide-react";
+import { ArrowLeft, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProgress } from "@/contexts/ProgressContext";
 import { useStreak } from "@/contexts/StreakContext";
 import SelectionPopup from "@/components/SelectionPopup";
+import SaveWordButton from "@/components/vocabulary/SaveWordButton";
+import { capitalizeFirst } from "@/lib/displayUtils";
 
 const NounExercisePage = () => {
   const { language, t } = useLanguage();
@@ -68,9 +70,17 @@ const NounExercisePage = () => {
         <h1 className="text-2xl font-heading font-bold text-foreground mb-6">{t("nouns")}</h1>
 
         <div className="bg-card rounded-lg p-6 shadow-soft">
+          {/* Word + save button */}
           <div className="text-center mb-6">
             <p className="text-sm text-muted-foreground mb-1">{t("translate")}</p>
-            <h2 className="text-2xl font-heading font-bold text-foreground">{word}</h2>
+            <div className="flex items-center justify-center gap-2">
+              <h2 className="text-2xl font-heading font-bold text-foreground">{capitalizeFirst(word)}</h2>
+              <SaveWordButton
+                spanish={current.spanish}
+                context={current.example.es}
+                variant="icon"
+              />
+            </div>
           </div>
 
           {/* Gender selection */}
@@ -118,16 +128,24 @@ const NounExercisePage = () => {
                   : "border-border bg-background"
               }`}
               placeholder={language === "sv" ? "Skriv på spanska..." : "Write in Spanish..."}
+              onKeyDown={(e) => { if (e.key === "Enter" && !showResults) handleCheck(); }}
             />
             {showResults && !translationCorrect && (
-              <p className="text-sm mt-1 text-mint-dark">{t("correctAnswer")}: {current.spanish}</p>
+              <p className="text-sm mt-1 text-mint-dark">{t("correctAnswer")}: {current.gender} {current.spanish}</p>
             )}
           </div>
 
-          {/* Example */}
+          {/* Example + noun info after check */}
           {showResults && (
-            <div className="bg-background rounded-md px-3 py-2 mb-4 text-sm italic text-muted-foreground">
-              "{current.example.es}" — {language === "sv" ? current.example.sv : current.example.en}
+            <div className="space-y-2 mb-4">
+              <div className="bg-background rounded-md px-3 py-2 text-sm italic text-muted-foreground">
+                "{current.example.es}" — {language === "sv" ? current.example.sv : current.example.en}
+              </div>
+              <div className="bg-background rounded-md px-3 py-2 text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">{current.gender} {current.spanish}</span>
+                {" → "}
+                <span className="font-medium">{language === "sv" ? "Plural" : "Plural"}: {current.plural}</span>
+              </div>
             </div>
           )}
 
@@ -143,6 +161,11 @@ const NounExercisePage = () => {
             )}
           </div>
         </div>
+
+        {/* Progress indicator */}
+        <p className="text-xs text-muted-foreground text-center mt-3">
+          {currentIndex + 1} / {availableNouns.length}
+        </p>
       </div>
       <SelectionPopup containerRef={contentRef} />
     </AppLayout>
