@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, Level } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import { nouns, getItemsForLevel } from "@/data/spanishData";
 import { checkAnswer } from "@/lib/answerUtils";
@@ -10,6 +10,8 @@ import { useProgress } from "@/contexts/ProgressContext";
 import { useStreak } from "@/contexts/StreakContext";
 import SelectionPopup from "@/components/SelectionPopup";
 import SaveWordButton from "@/components/vocabulary/SaveWordButton";
+import CorrectionCard from "@/components/exercises/CorrectionCard";
+import LevelPracticeSelector from "@/components/LevelPracticeSelector";
 import { capitalizeFirst } from "@/lib/displayUtils";
 import { useSpanishTTS } from "@/hooks/useSpanishTTS";
 import { useSpanishSTT } from "@/hooks/useSpanishSTT";
@@ -28,6 +30,8 @@ const NounExercisePage = () => {
 
   useEffect(() => { trackLastActivity("exercises", "/exercises/nouns", t("nouns")); }, []);
 
+  const userLevel = (user?.level || "A1") as Level;
+  const [practiceLevel, setPracticeLevel] = useState<Level>(userLevel);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [genderAnswer, setGenderAnswer] = useState<"el" | "la" | "">("");
   const [translationAnswer, setTranslationAnswer] = useState("");
@@ -37,21 +41,24 @@ const NounExercisePage = () => {
   const [sttAnalysis, setSttAnalysis] = useState<ReturnType<typeof analyzePronunciation> | null>(null);
   const [sttProcessing, setSttProcessing] = useState(false);
 
-  const availableNouns = useMemo(
-    () => getItemsForLevel(nouns, user?.level || "A1"),
-    [user?.level]
-  );
+  // Filter nouns by the selected practice level (exact level, not cumulative)
+  const availableNouns = useMemo(() => {
+    const levelFiltered = nouns.filter((n) => n.level === practiceLevel);
+    // Fallback to cumulative if the exact level has too few nouns
+    return levelFiltered.length >= 5 ? levelFiltered : getItemsForLevel(nouns, practiceLevel);
+  }, [practiceLevel]);
 
+  // Reset on level change
   useEffect(() => {
     setCurrentIndex(0);
     setGenderAnswer("");
     setTranslationAnswer("");
     setShowResults(false);
     setSttAnalysis(null);
-  }, [user?.level]);
+    resetTranscript();
+  }, [practiceLevel]);
 
   const contentRef = useRef<HTMLDivElement>(null);
-
   const current = availableNouns[currentIndex];
   if (!current) return null;
 
@@ -68,8 +75,7 @@ const NounExercisePage = () => {
       setTimeout(() => {
         const finalTranscript = transcript + (interimTranscript || "");
         if (finalTranscript.trim()) {
-          const analysis = analyzePronunciation(current.spanish, finalTranscript);
-          setSttAnalysis(analysis);
+          setSttAnalysis(analyzePronunciation(current.spanish, finalTranscript));
         }
         setSttProcessing(false);
         setShowResults(true);
@@ -99,6 +105,12 @@ const NounExercisePage = () => {
   };
 
   const lang = language === "sv" ? "sv" : "en";
+  const tLocal = (sv: string, en: string) => (language === "sv" ? sv : en);
+
+  const correctionDetails = [
+    { label: tLocal("Genus:", "Gender:"), value: current.gender === "el" ? tLocal("maskulinum", "masculine") : tLocal("femininum", "feminine") },
+    { label: tLocal("Plural:", "Plural:"), value: current.plural },
+  ];
 
   return (
     <AppLayout>
@@ -107,7 +119,10 @@ const NounExercisePage = () => {
           <ArrowLeft className="h-4 w-4" /> {t("exercises")}
         </button>
 
-        <h1 className="text-2xl font-heading font-bold text-foreground mb-6">{t("nouns")}</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-heading font-bold text-foreground">{t("nouns")}</h1>
+          <LevelPracticeSelector practiceLevel={practiceLevel} onLevelChange={setPracticeLevel} />
+        </div>
 
         <div className="bg-card rounded-lg p-6 shadow-soft">
           {/* Word + save + listen */}
@@ -120,12 +135,13 @@ const NounExercisePage = () => {
                 <button
                   onClick={() => ttsSpeak(`${current.gender} ${current.spanish}`)}
                   className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition"
-                  title={language === "sv" ? "Lyssna" : "Listen"}
+                  title={tLocal("Lyssna", "Listen")}
                 >
                   <Volume2 className="h-4 w-4" />
                 </button>
               )}
             </div>
+            <span className="inline-block mt-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{practiceLevel}</span>
           </div>
 
           {/* Input mode toggle */}
@@ -142,9 +158,7 @@ const NounExercisePage = () => {
                       : "bg-muted text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {mode === "write"
-                    ? (language === "sv" ? "✍️ Skriv" : "✍️ Write")
-                    : (language === "sv" ? "🎤 Tala" : "🎤 Speak")}
+                  {mode === "write" ? tLocal("✍️ Skriv", "✍️ Write") : tLocal("🎤 Tala", "🎤 Speak")}
                 </button>
               ))}
             </div>
@@ -153,7 +167,7 @@ const NounExercisePage = () => {
           {/* Gender selection */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-foreground mb-2">
-              {language === "sv" ? "Välj genus:" : "Choose gender:"}
+              {tLocal("Välj genus:", "Choose gender:")}
             </label>
             <div className="flex gap-3">
               {(["el", "la"] as const).map((g) => (
@@ -179,7 +193,7 @@ const NounExercisePage = () => {
             </div>
           </div>
 
-          {/* Translation input — fixed min-height to prevent layout shift */}
+          {/* Translation input — fixed height */}
           <div className="mb-4 min-h-[76px]">
             <label className="block text-sm font-medium text-foreground mb-1">{t("yourAnswer")}</label>
             {inputMode === "write" ? (
@@ -190,12 +204,10 @@ const NounExercisePage = () => {
                 disabled={showResults}
                 className={`w-full px-4 py-2.5 rounded-md border text-foreground transition focus:outline-none focus:ring-2 focus:ring-ring ${
                   showResults
-                    ? translationCorrect
-                      ? "border-mint-dark bg-mint/20"
-                      : "border-destructive bg-destructive/10"
+                    ? translationCorrect ? "border-mint-dark bg-mint/20" : "border-destructive bg-destructive/10"
                     : "border-border bg-background"
                 }`}
-                placeholder={language === "sv" ? "Skriv på spanska..." : "Write in Spanish..."}
+                placeholder={tLocal("Skriv på spanska...", "Write in Spanish...")}
                 onKeyDown={(e) => { if (e.key === "Enter" && !showResults) handleCheck(); }}
               />
             ) : (
@@ -214,62 +226,39 @@ const NounExercisePage = () => {
                 <div className="flex-1 px-4 py-2.5 rounded-md border border-border bg-background text-sm text-foreground min-h-[42px] flex items-center">
                   {isListening && (
                     <span className="text-muted-foreground italic">
-                      {interimTranscript || transcript || (language === "sv" ? "Lyssnar..." : "Listening...")}
+                      {interimTranscript || transcript || tLocal("Lyssnar...", "Listening...")}
                     </span>
                   )}
                   {!isListening && transcript && <span>{transcript}</span>}
                   {!isListening && !transcript && !showResults && (
-                    <span className="text-muted-foreground">{language === "sv" ? "Tryck på mikrofonen och säg ordet" : "Tap the mic and say the word"}</span>
+                    <span className="text-muted-foreground">{tLocal("Tryck på mikrofonen och säg ordet", "Tap the mic and say the word")}</span>
                   )}
                 </div>
               </div>
             )}
           </div>
 
-          {/* Static feedback area — always present, fixed height */}
+          {/* Feedback area — fixed height */}
           <div className="min-h-[160px] mb-4">
             {showResults ? (
-              <div className="space-y-3 animate-fade-in">
-                {/* Harmonized correction block */}
-                <div className={`rounded-md px-4 py-3 border ${
-                  genderCorrect && translationCorrect
-                    ? "border-mint-dark bg-mint/10"
-                    : "border-destructive bg-destructive/5"
-                }`}>
-                  <p className={`text-sm font-semibold mb-1 ${
-                    genderCorrect && translationCorrect ? "text-mint-dark" : "text-destructive"
-                  }`}>
-                    {genderCorrect && translationCorrect
-                      ? (language === "sv" ? "Rätt ✓" : "Correct ✓")
-                      : (language === "sv" ? "Inte helt rätt ✗" : "Not quite right ✗")}
-                  </p>
-                  <div className="text-sm text-foreground space-y-0.5">
-                    <p><span className="text-muted-foreground">{language === "sv" ? "Rätt svar:" : "Correct answer:"}</span> <span className="font-medium">{current.gender} {current.spanish}</span></p>
-                    <p><span className="text-muted-foreground">{language === "sv" ? "Översättning:" : "Translation:"}</span> <span className="font-medium">{capitalizeFirst(word)}</span></p>
-                    <p><span className="text-muted-foreground">{language === "sv" ? "Genus:" : "Gender:"}</span> <span className="font-medium">{current.gender === "el" ? (language === "sv" ? "maskulinum" : "masculine") : (language === "sv" ? "femininum" : "feminine")}</span></p>
-                    <p><span className="text-muted-foreground">{language === "sv" ? "Plural:" : "Plural:"}</span> <span className="font-medium">{current.plural}</span></p>
-                  </div>
-                </div>
-
-                {/* Speech analysis feedback */}
+              <CorrectionCard
+                isCorrect={genderCorrect && translationCorrect}
+                correctAnswer={`${current.gender} ${current.spanish}`}
+                translation={word}
+                details={correctionDetails}
+                exampleSentence={{ es: current.example.es, translated: language === "sv" ? current.example.sv : current.example.en }}
+              >
                 {inputMode === "speak" && sttAnalysis && (
                   <div className="rounded-md px-4 py-3 bg-muted/50 border border-border">
                     <p className="text-sm font-medium text-foreground mb-1">
-                      {language === "sv" ? "Uttal" : "Pronunciation"}: {sttAnalysis.score}%
+                      {tLocal("Uttal", "Pronunciation")}: {sttAnalysis.score}%
                     </p>
                     <p className="text-xs text-muted-foreground">{getEncouragement(sttAnalysis.summary, lang)}</p>
                   </div>
                 )}
-
-                {/* Example sentence */}
-                <div className="bg-background rounded-md px-3 py-2 text-sm italic text-muted-foreground">
-                  "{current.example.es}" — {language === "sv" ? current.example.sv : current.example.en}
-                </div>
-              </div>
+              </CorrectionCard>
             ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground/30 text-xs">
-                {/* Reserved space for feedback */}
-              </div>
+              <div className="flex items-center justify-center h-full text-muted-foreground/30 text-xs" />
             )}
           </div>
 
@@ -281,9 +270,7 @@ const NounExercisePage = () => {
                 disabled={sttProcessing}
                 className="flex-1 py-2.5 rounded-md gradient-peach text-primary-foreground font-semibold shadow-warm hover:opacity-90 transition"
               >
-                {sttProcessing
-                  ? (language === "sv" ? "Analyserar..." : "Analyzing...")
-                  : t("checkAnswer")}
+                {sttProcessing ? tLocal("Analyserar...", "Analyzing...") : t("checkAnswer")}
               </button>
             ) : (
               <button onClick={handleNext} className="flex-1 py-2.5 rounded-md gradient-mint text-secondary-foreground font-semibold hover:opacity-90 transition flex items-center justify-center gap-2">
@@ -293,7 +280,6 @@ const NounExercisePage = () => {
           </div>
         </div>
 
-        {/* Progress indicator */}
         <p className="text-xs text-muted-foreground text-center mt-3">
           {currentIndex + 1} / {availableNouns.length}
         </p>
