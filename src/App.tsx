@@ -27,6 +27,7 @@ import ConversationPage from "./pages/ConversationPage";
 import VocabularyPage from "./pages/VocabularyPage";
 import PronunciationPage from "./pages/PronunciationPage";
 import FreestylePage from "./pages/FreestylePage";
+import EchoPage from "./pages/EchoPage";
 import StatsPage from "./pages/StatsPage";
 import NotFound from "./pages/NotFound";
 import AdminPage from "./pages/AdminPage";
@@ -78,6 +79,7 @@ const AppRoutes = () => (
       <Route path="/learn/conversation" element={<ProtectedRoute><ConversationPage /></ProtectedRoute>} />
       <Route path="/learn/vocabulary" element={<ProtectedRoute><VocabularyPage /></ProtectedRoute>} />
       <Route path="/learn/pronunciation" element={<ProtectedRoute><PronunciationPage /></ProtectedRoute>} />
+      <Route path="/learn/echo" element={<ProtectedRoute><EchoPage /></ProtectedRoute>} />
       <Route path="/exercises/freestyle" element={<ProtectedRoute><FreestylePage /></ProtectedRoute>} />
       <Route path="/stats" element={<ProtectedRoute><StatsPage /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
