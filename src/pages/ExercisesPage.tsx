@@ -6,7 +6,7 @@ import { useProgress } from "@/contexts/ProgressContext";
 import AppLayout from "@/components/AppLayout";
 import { Progress } from "@/components/ui/progress";
 import LevelPracticeSelector from "@/components/LevelPracticeSelector";
-import { BookOpen, Type, Palette, HelpCircle, GraduationCap, Layers, FileText, Puzzle, MessageCircle, BookMarked, Mic, Zap } from "lucide-react";
+import { BookOpen, Type, Palette, HelpCircle, GraduationCap, Layers, FileText, Puzzle, MessageCircle, BookMarked, Mic, Zap, Waves } from "lucide-react";
 
 const ExercisesPage = () => {
   const { t } = useLanguage();
@@ -21,6 +21,7 @@ const ExercisesPage = () => {
     { key: "sentenceBuilder", progressKey: "sentences" as const, icon: Puzzle, path: "/learn/sentences", color: "gradient-mint" },
     { key: "conversation", progressKey: "sentences" as const, icon: MessageCircle, path: "/learn/conversation", color: "gradient-peach" },
     { key: "pronunciation", progressKey: "exercises" as const, icon: Mic, path: "/learn/pronunciation", color: "gradient-peach" },
+    { key: "echoLearning", progressKey: "exercises" as const, icon: Waves, path: "/learn/echo", color: "gradient-mint" },
   ];
 
   const exercises = [
