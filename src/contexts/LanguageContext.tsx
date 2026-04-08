@@ -84,6 +84,8 @@ const translations: Translations = {
   myDictionaryDesc: { sv: "Dina sparade ord och fraser att öva på", en: "Your saved words and phrases to practice" },
   pronunciation: { sv: "Uttalsövning", en: "Pronunciation" },
   pronunciationDesc: { sv: "Öva ditt uttal med ord, fraser och meningar", en: "Practice your pronunciation with words, phrases and sentences" },
+  echoLearning: { sv: "Echo Learning", en: "Echo Learning" },
+  echoLearningDesc: { sv: "Lär dig ord genom att se, säga, fylla i och producera", en: "Learn words by seeing, saying, filling in and producing" },
   tapToFlip: { sv: "Tryck för att vända", en: "Tap to flip" },
   answer: { sv: "Svar", en: "Answer" },
   hard: { sv: "Svårt", en: "Hard" },
