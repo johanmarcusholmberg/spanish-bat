@@ -3,7 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth, Level } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import { nouns, getItemsForLevel } from "@/data/spanishData";
-import { checkAnswer } from "@/lib/answerUtils";
+import { checkNounAnswer } from "@/lib/answerUtils";
 import { ArrowLeft, RotateCcw, Volume2, Mic, MicOff, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProgress } from "@/contexts/ProgressContext";
@@ -44,7 +44,6 @@ const NounExercisePage = () => {
   // Filter nouns by the selected practice level (exact level, not cumulative)
   const availableNouns = useMemo(() => {
     const levelFiltered = nouns.filter((n) => n.level === practiceLevel);
-    // Fallback to cumulative if the exact level has too few nouns
     return levelFiltered.length >= 5 ? levelFiltered : getItemsForLevel(nouns, practiceLevel);
   }, [practiceLevel]);
 
@@ -63,10 +62,15 @@ const NounExercisePage = () => {
   if (!current) return null;
 
   const word = language === "sv" ? current.sv : current.en;
-  const genderCorrect = genderAnswer === current.gender;
-  const translationCorrect = inputMode === "write"
-    ? checkAnswer(translationAnswer, current.spanish)
-    : (sttAnalysis?.score ?? 0) >= 60;
+
+  // Forgiving noun validation
+  const nounCheck = inputMode === "write"
+    ? checkNounAnswer(translationAnswer, current.spanish, current.gender, current.plural)
+    : { nounCorrect: (sttAnalysis?.score ?? 0) >= 60, genderProvenByTyping: false };
+
+  // Gender is correct if user selected it OR proved it by typing article+noun
+  const genderCorrect = genderAnswer === current.gender || nounCheck.genderProvenByTyping;
+  const isCorrect = nounCheck.nounCorrect && genderCorrect;
 
   const handleCheck = () => {
     if (inputMode === "speak" && isListening) {
@@ -109,8 +113,10 @@ const NounExercisePage = () => {
 
   const correctionDetails = [
     { label: tLocal("Genus:", "Gender:"), value: current.gender === "el" ? tLocal("maskulinum", "masculine") : tLocal("femininum", "feminine") },
-    { label: tLocal("Plural:", "Plural:"), value: current.plural },
+    { label: tLocal("Plural:", "Plural:"), value: `${current.gender === "el" ? "los" : "las"} ${current.plural}` },
   ];
+
+  const ruleText = current.ruleExplanation?.[lang];
 
   return (
     <AppLayout>
@@ -130,7 +136,7 @@ const NounExercisePage = () => {
             <p className="text-sm text-muted-foreground mb-1">{t("translate")}</p>
             <div className="flex items-center justify-center gap-2">
               <h2 className="text-2xl font-heading font-bold text-foreground">{capitalizeFirst(word)}</h2>
-              <SaveWordButton spanish={current.spanish} context={current.example.es} variant="icon" />
+              <SaveWordButton key={current.spanish} spanish={current.spanish} context={current.example.es} variant="icon" />
               {ttsSupported && (
                 <button
                   onClick={() => ttsSpeak(`${current.gender} ${current.spanish}`)}
@@ -204,7 +210,7 @@ const NounExercisePage = () => {
                 disabled={showResults}
                 className={`w-full px-4 py-2.5 rounded-md border text-foreground transition focus:outline-none focus:ring-2 focus:ring-ring ${
                   showResults
-                    ? translationCorrect ? "border-mint-dark bg-mint/20" : "border-destructive bg-destructive/10"
+                    ? isCorrect ? "border-mint-dark bg-mint/20" : "border-destructive bg-destructive/10"
                     : "border-border bg-background"
                 }`}
                 placeholder={tLocal("Skriv på spanska...", "Write in Spanish...")}
@@ -242,12 +248,17 @@ const NounExercisePage = () => {
           <div className="min-h-[160px] mb-4">
             {showResults ? (
               <CorrectionCard
-                isCorrect={genderCorrect && translationCorrect}
+                isCorrect={isCorrect}
                 correctAnswer={`${current.gender} ${current.spanish}`}
                 translation={word}
                 details={correctionDetails}
                 exampleSentence={{ es: current.example.es, translated: language === "sv" ? current.example.sv : current.example.en }}
               >
+                {ruleText && (
+                  <div className="rounded-md px-3 py-2 bg-primary/5 border border-primary/20 text-sm text-foreground">
+                    💡 {ruleText}
+                  </div>
+                )}
                 {inputMode === "speak" && sttAnalysis && (
                   <div className="rounded-md px-4 py-3 bg-muted/50 border border-border">
                     <p className="text-sm font-medium text-foreground mb-1">
