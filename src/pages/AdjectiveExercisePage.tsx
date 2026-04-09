@@ -61,18 +61,11 @@ const AdjectiveExercisePage = () => {
 
   const contentRef = useRef<HTMLDivElement>(null);
   const current = available[currentIndex];
-  if (!current) return null;
 
-  const word = language === "sv" ? current.sv : current.en;
-  const lang = language === "sv" ? "sv" : "en";
-  const tLocal = (sv: string, en: string) => (language === "sv" ? sv : en);
-
-  const isInvariant = current.masculine === current.feminine;
-
-  // Build sentence fill-in: extract blank word from example
+  // Build sentence fill-in (must be before early return for hooks rules)
   const sentenceBlank = useMemo(() => {
+    if (!current) return { sentence: "", answer: "" };
     const es = current.example.es;
-    // Try to find the adjective in the example sentence
     const mascIdx = es.toLowerCase().indexOf(current.masculine.toLowerCase());
     const femIdx = es.toLowerCase().indexOf(current.feminine.toLowerCase());
     if (femIdx >= 0) {
@@ -89,6 +82,14 @@ const AdjectiveExercisePage = () => {
     }
     return { sentence: es.replace(/\.\s*$/, "") + " ___.", answer: current.masculine };
   }, [current]);
+
+  if (!current) return null;
+
+  const word = language === "sv" ? current.sv : current.en;
+  const lang = language === "sv" ? "sv" : "en";
+  const tLocal = (sv: string, en: string) => (language === "sv" ? sv : en);
+
+  const isInvariant = current.masculine === current.feminine;
 
   // Validation
   const mascCorrect = checkAnswer(masculineAnswer, current.masculine);
