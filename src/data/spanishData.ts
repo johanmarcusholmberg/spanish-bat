@@ -26,6 +26,7 @@ export interface NounData {
   plural: string;
   example: { es: string; sv: string; en: string };
   level: Level;
+  ruleExplanation?: { sv: string; en: string };
 }
 
 export interface AdjectiveData {
