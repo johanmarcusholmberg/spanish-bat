@@ -315,9 +315,9 @@ const QuizExercisePage = () => {
                   {inputMode === "speak" && sttAnalysis && (
                     <div className="bg-background rounded-md px-3 py-2 text-sm">
                       <p className="font-medium text-foreground mb-1">
-                        🎤 {tSv("Uttal", "Pronunciation")}: {sttAnalysis.accuracy}%
+                        🎤 {tSv("Uttal", "Pronunciation")}: {sttAnalysis.score}%
                       </p>
-                      <p className="text-muted-foreground italic">{getEncouragement(sttAnalysis.accuracy, language as "sv" | "en")}</p>
+                      <p className="text-muted-foreground italic">{getEncouragement(sttAnalysis.score, language as "sv" | "en")}</p>
                     </div>
                   )}
 
