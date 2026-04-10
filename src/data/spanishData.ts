@@ -42,6 +42,7 @@ export interface AdjectiveData {
 export interface QuizItem {
   question: { sv: string; en: string };
   answer: string;
+  accepted_answers?: string[];
   category: string;
   level: Level;
 }
