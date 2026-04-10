@@ -317,7 +317,7 @@ const QuizExercisePage = () => {
                       <p className="font-medium text-foreground mb-1">
                         🎤 {tSv("Uttal", "Pronunciation")}: {sttAnalysis.score}%
                       </p>
-                      <p className="text-muted-foreground italic">{getEncouragement(sttAnalysis.score, language as "sv" | "en")}</p>
+                      <p className="text-muted-foreground italic">{getEncouragement(sttAnalysis.summary, language as "sv" | "en")}</p>
                     </div>
                   )}
 
