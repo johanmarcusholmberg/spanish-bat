@@ -105,6 +105,13 @@ const translations: Translations = {
   learningFrom: { sv: "Jag lär mig från", en: "Learning from" },
   saveProfile: { sv: "Spara profil", en: "Save profile" },
   profileSaved: { sv: "Profil sparad!", en: "Profile saved!" },
+  profileInfo: { sv: "Profilinformation", en: "Profile information" },
+  learningSettings: { sv: "Inlärningsinställningar", en: "Learning settings" },
+  accountSection: { sv: "Konto", en: "Account" },
+  accountStatus: { sv: "Kontostatus", en: "Account status" },
+  freeUser: { sv: "Gratis", en: "Free" },
+  quickLinks: { sv: "Snabblänkar", en: "Quick links" },
+  openDictionary: { sv: "Öppna ordbok", en: "Open Dictionary" },
 
   levelLabel: { sv: "Nivå", en: "Level" },
   levelA1: { sv: "A1 - Nybörjare", en: "A1 - Beginner" },
