@@ -111,8 +111,6 @@ const translations: Translations = {
   accountStatus: { sv: "Kontostatus", en: "Account status" },
   freeUser: { sv: "Gratis", en: "Free" },
   quickLinks: { sv: "Snabblänkar", en: "Quick links" },
-  myDictionary: { sv: "Min ordbok", en: "My Dictionary" },
-  myDictionaryDesc: { sv: "Dina sparade ord och SRS-repetition", en: "Your saved words and SRS review" },
   openDictionary: { sv: "Öppna ordbok", en: "Open Dictionary" },
 
   levelLabel: { sv: "Nivå", en: "Level" },
