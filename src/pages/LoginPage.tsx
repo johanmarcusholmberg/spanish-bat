@@ -3,13 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import LanguageToggle from "@/components/LanguageToggle";
 import Footer from "@/components/Footer";
-import MurciMascot from "@/components/MurciMascot";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, Globe } from "lucide-react";
 
 const LoginPage = () => {
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const { login, signInWithGoogle, isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -51,16 +49,36 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="flex-1 flex flex-col items-center justify-center p-4">
-        <div className="absolute top-4 right-4 z-10">
-          <LanguageToggle />
-        </div>
-
         <div className="w-full max-w-md" style={{ animation: 'fade-in 0.5s ease-out both' }}>
           <div className="text-center mb-8">
-            <MurciMascot size="lg" mood="happy" />
-            <p className="text-muted-foreground text-sm mb-1 mt-4">{t("welcome")}</p>
+            <p className="text-muted-foreground text-sm mb-1">{t("welcome")}</p>
             <h1 className="text-3xl font-heading font-bold text-foreground">{t("appName")}</h1>
-            <p className="text-muted-foreground mt-1">{t("appTagline")}</p>
+            <p className="text-muted-foreground mt-1 mb-4">{t("appTagline")}</p>
+
+            {/* Inline language selector */}
+            <div className="inline-flex items-center gap-2 bg-card border border-border rounded-full px-3 py-1.5 shadow-sm">
+              <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+              <button
+                onClick={() => setLanguage("sv")}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  language === "sv"
+                    ? "bg-primary text-primary-foreground shadow-warm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                🇸🇪 Svenska
+              </button>
+              <button
+                onClick={() => setLanguage("en")}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  language === "en"
+                    ? "bg-primary text-primary-foreground shadow-warm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                🇬🇧 English
+              </button>
+            </div>
           </div>
 
           <div className="bg-card rounded-lg p-6 shadow-soft animate-fade-in" style={{ animationDelay: '0.2s', animationFillMode: 'both' }}>
