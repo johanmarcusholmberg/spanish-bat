@@ -21,9 +21,10 @@ Deno.serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
 
     // Verify the calling user is admin
-    const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!, {
+    const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: { user }, error: userError } = await userClient.auth.getUser();
@@ -74,12 +75,18 @@ Deno.serve(async (req) => {
     // Fetch auth users for email info
     const { data: { users: authUsers } } = await adminClient.auth.admin.listUsers();
 
+    // Fetch last activity
+    const { data: lastActivity } = await adminClient
+      .from("user_last_activity")
+      .select("*");
+
     // Merge data
     const usersMap = (profiles || []).map((profile) => {
       const authUser = authUsers?.find((u) => u.id === profile.user_id);
       const userProgress = (progress || []).filter((p) => p.user_id === profile.user_id);
       const userStreak = (streaks || []).find((s) => s.user_id === profile.user_id);
       const userRoles = (roles || []).filter((r) => r.user_id === profile.user_id).map((r) => r.role);
+      const userLastAct = (lastActivity || []).find((a) => a.user_id === profile.user_id);
 
       return {
         user_id: profile.user_id,
@@ -87,6 +94,7 @@ Deno.serve(async (req) => {
         email: authUser?.email || "unknown",
         level: profile.level,
         learning_from: profile.learning_from,
+        account_status: profile.account_status || "free",
         created_at: profile.created_at,
         roles: userRoles,
         streak: userStreak ? {
@@ -99,6 +107,11 @@ Deno.serve(async (req) => {
           completed: p.completed,
           total: p.total,
         })),
+        last_activity: userLastAct ? {
+          type: userLastAct.exercise_type,
+          label: userLastAct.exercise_label,
+          date: userLastAct.updated_at,
+        } : null,
       };
     });
 
