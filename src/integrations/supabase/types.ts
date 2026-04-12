@@ -38,29 +38,95 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_audit_log: {
+        Row: {
+          action_type: string
+          admin_user_id: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          metadata: Json | null
+        }
+        Insert: {
+          action_type: string
+          admin_user_id: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          metadata?: Json | null
+        }
+        Update: {
+          action_type?: string
+          admin_user_id?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          metadata?: Json | null
+        }
+        Relationships: []
+      }
+      app_settings: {
+        Row: {
+          description: string | null
+          id: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
+          admin_notes: string | null
           created_at: string
           email: string
           id: string
           message: string
+          status: string
           subject: string
+          updated_at: string
           user_id: string | null
         }
         Insert: {
+          admin_notes?: string | null
           created_at?: string
           email: string
           id?: string
           message: string
+          status?: string
           subject: string
+          updated_at?: string
           user_id?: string | null
         }
         Update: {
+          admin_notes?: string | null
           created_at?: string
           email?: string
           id?: string
           message?: string
+          status?: string
           subject?: string
+          updated_at?: string
           user_id?: string | null
         }
         Relationships: []
@@ -127,6 +193,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: string
           created_at: string
           display_name: string | null
           id: string
@@ -139,6 +206,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          account_status?: string
           created_at?: string
           display_name?: string | null
           id?: string
@@ -151,6 +219,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          account_status?: string
           created_at?: string
           display_name?: string | null
           id?: string
