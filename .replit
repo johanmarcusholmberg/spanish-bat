@@ -18,3 +18,8 @@ expertMode = true
 [postMerge]
 path = "scripts/post-merge.sh"
 timeoutMs = 20000
+
+[userenv]
+
+[userenv.shared]
+VITE_CLERK_PUBLISHABLE_KEY = "pk_test_c29saWQtc3VuZmlzaC01OC5jbGVyay5hY2NvdW50cy5kZXYk"

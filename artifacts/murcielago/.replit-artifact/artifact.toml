@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Murciélago - Spanish Learning App"
+version = "1.0.0"
+id = "artifacts/murcielago"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25133
+
+[services.development]
+run = "pnpm --filter @workspace/murcielago run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/murcielago", "run", "build" ]
+publicDir = "artifacts/murcielago/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25133"
+BASE_PATH = "/"

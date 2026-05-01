@@ -1,0 +1,64 @@
+// API client for communicating with the backend
+
+const BASE = "/api";
+
+async function fetchApi(path: string, options?: RequestInit) {
+  const resp = await fetch(`${BASE}${path}`, {
+    ...options,
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...(options?.headers || {}),
+    },
+  });
+  if (!resp.ok) {
+    const body = await resp.json().catch(() => ({}));
+    throw new Error(body?.error || `API error ${resp.status}`);
+  }
+  return resp.json();
+}
+
+export const api = {
+  profile: {
+    get: () => fetchApi("/profile"),
+    upsert: (data: Record<string, unknown>) => fetchApi("/profile", { method: "POST", body: JSON.stringify(data) }),
+  },
+  streaks: {
+    get: () => fetchApi("/streaks"),
+    upsert: (data: { currentStreak: number; longestStreak: number; lastActiveDate: string }) =>
+      fetchApi("/streaks", { method: "POST", body: JSON.stringify(data) }),
+    logActivity: (activityDate: string, count: number) =>
+      fetchApi("/activity-log", { method: "POST", body: JSON.stringify({ activityDate, count }) }),
+  },
+  progress: {
+    get: () => fetchApi("/progress"),
+    upsert: (category: string, completed: number, total: number) =>
+      fetchApi("/progress", { method: "POST", body: JSON.stringify({ category, completed, total }) }),
+    trackLastActivity: (exerciseType: string, exercisePath: string, exerciseLabel: string) =>
+      fetchApi("/last-activity", { method: "POST", body: JSON.stringify({ exerciseType, exercisePath, exerciseLabel }) }),
+    getGrammarProgress: () => fetchApi("/grammar-progress"),
+    upsertGrammarProgress: (lessonId: string, completed: boolean, bestScore: number, attempts: number) =>
+      fetchApi("/grammar-progress", { method: "POST", body: JSON.stringify({ lessonId, completed, bestScore, attempts }) }),
+  },
+  vocabulary: {
+    get: () => fetchApi("/vocabulary"),
+    add: (data: Record<string, unknown>) => fetchApi("/vocabulary", { method: "POST", body: JSON.stringify(data) }),
+    remove: (id: string) => fetchApi(`/vocabulary/${id}`, { method: "DELETE" }),
+    update: (id: string, updates: Record<string, unknown>) => fetchApi(`/vocabulary/${id}`, { method: "PATCH", body: JSON.stringify(updates) }),
+  },
+  flashcardSrs: {
+    get: () => fetchApi("/flashcard-srs"),
+    upsert: (data: Record<string, unknown>) => fetchApi("/flashcard-srs", { method: "POST", body: JSON.stringify(data) }),
+  },
+  contact: {
+    send: (data: { subject: string; message: string; email: string }) =>
+      fetchApi("/contact", { method: "POST", body: JSON.stringify(data) }),
+  },
+  admin: {
+    getUsers: () => fetchApi("/admin/users"),
+    getMessages: () => fetchApi("/admin/messages"),
+    updateMessage: (id: string, data: { status?: string; adminNotes?: string }) =>
+      fetchApi(`/admin/messages/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    getInsights: () => fetchApi("/admin/insights"),
+  },
+};

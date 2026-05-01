@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    /* 60% - Sand beige (background) */
+    --background: 42 33% 85%;
+    --foreground: 20 15% 20%;
+
+    /* Cards/surfaces use slightly lighter beige */
+    --card: 42 30% 92%;
+    --card-foreground: 20 15% 20%;
+
+    --popover: 42 30% 92%;
+    --popover-foreground: 20 15% 20%;
+
+    /* 10% - Peach/Coral (primary accent) */
+    --primary: 14 91% 78%;
+    --primary-foreground: 20 30% 15%;
+
+    /* 30% - Mint green (secondary) */
+    --secondary: 131 8% 70%;
+    --secondary-foreground: 20 15% 15%;
+
+    --muted: 42 20% 80%;
+    --muted-foreground: 20 10% 45%;
+
+    --accent: 14 91% 78%;
+    --accent-foreground: 20 30% 15%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 42 20% 75%;
+    --input: 42 20% 78%;
+    --ring: 14 91% 78%;
+
+    --radius: 0.75rem;
+
+    /* Custom tokens */
+    --peach: 14 91% 78%;
+    --sand: 42 33% 85%;
+    --mint: 131 8% 70%;
+    --mint-dark: 131 12% 55%;
+    --peach-dark: 14 80% 65%;
+    --peach-light: 14 95% 90%;
+
+    --sidebar-background: 131 8% 70%;
+    --sidebar-foreground: 20 15% 15%;
+    --sidebar-primary: 14 91% 78%;
+    --sidebar-primary-foreground: 20 30% 15%;
+    --sidebar-accent: 131 12% 62%;
+    --sidebar-accent-foreground: 20 15% 10%;
+    --sidebar-border: 131 8% 60%;
+    --sidebar-ring: 14 91% 78%;
+  }
+
+  .dark {
+    --background: 20 15% 12%;
+    --foreground: 42 20% 88%;
+
+    --card: 20 12% 16%;
+    --card-foreground: 42 20% 88%;
+
+    --popover: 20 12% 16%;
+    --popover-foreground: 42 20% 88%;
+
+    --primary: 14 80% 65%;
+    --primary-foreground: 20 30% 95%;
+
+    --secondary: 131 10% 35%;
+    --secondary-foreground: 131 8% 85%;
+
+    --muted: 20 10% 22%;
+    --muted-foreground: 42 10% 55%;
+
+    --accent: 14 80% 65%;
+    --accent-foreground: 20 30% 95%;
+
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 20 10% 25%;
+    --input: 20 10% 22%;
+    --ring: 14 80% 65%;
+
+    --peach: 14 80% 65%;
+    --sand: 20 15% 12%;
+    --mint: 131 10% 35%;
+    --mint-dark: 131 15% 45%;
+    --peach-dark: 14 70% 55%;
+    --peach-light: 14 60% 30%;
+
+    --sidebar-background: 20 12% 14%;
+    --sidebar-foreground: 42 20% 88%;
+    --sidebar-primary: 14 80% 65%;
+    --sidebar-primary-foreground: 20 30% 95%;
+    --sidebar-accent: 20 10% 20%;
+    --sidebar-accent-foreground: 42 20% 85%;
+    --sidebar-border: 20 10% 22%;
+    --sidebar-ring: 14 80% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+}
+
+@layer utilities {
+  .gradient-peach {
+    background: linear-gradient(135deg, hsl(14, 91%, 78%), hsl(14, 80%, 68%));
+  }
+  .gradient-mint {
+    background: linear-gradient(135deg, hsl(131, 8%, 70%), hsl(131, 12%, 60%));
+  }
+  .shadow-warm {
+    box-shadow: 0 4px 20px -4px hsl(14 91% 78% / 0.3);
+  }
+  .shadow-soft {
+    box-shadow: 0 4px 20px -4px hsl(42 33% 85% / 0.5);
+  }
+}
