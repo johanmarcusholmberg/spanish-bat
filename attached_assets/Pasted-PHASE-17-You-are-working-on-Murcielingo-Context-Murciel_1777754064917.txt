@@ -1,0 +1,88 @@
+PHASE 17
+You are working on Murcielingo.
+
+Context:
+Murcielingo should use AI to make practice feel fresh, personal, and endless. However, AI should not be the only content source. The app should rely first on curated and template-generated content, then use AI to expand practice when useful.
+
+Important platform requirement:
+This must work for both web and native mobile. AI calls should happen through a backend/server function, not directly from the client.
+
+Goal:
+Add AI-generated practice through a backend function.
+
+Recommended architecture:
+- Client requests more practice when local curated/template content is thin or when the user asks for fresh practice.
+- Backend generates practice items using strict JSON output.
+- Backend validates the generated items.
+- Approved generated items are returned to the app.
+- Optionally store approved generic items for reuse.
+
+Create a backend function:
+generate-practice-session
+
+Input:
+{
+  userLevel: "A1",
+  targetSkill: "restaurant",
+  weakSpots: ["question_word_order", "noun_gender"],
+  count: 10,
+  interfaceLanguage: "en",
+  previousMistakes: [],
+  practiceMode: "weak_spots"
+}
+
+Output:
+{
+  items: [
+    {
+      level: "A1",
+      skill: "conversation",
+      subskill: "restaurant_phrases",
+      prompt: "Ask if they have a table for two.",
+      expectedAnswer: "¿Tienen una mesa para dos?",
+      acceptedAnswers: [
+        "¿Hay una mesa para dos?",
+        "Una mesa para dos, por favor."
+      ],
+      explanation: "Tienen means 'do you have' when speaking to staff or a group.",
+      difficulty: 0.35,
+      source: "ai"
+    }
+  ]
+}
+
+AI generation rules:
+- Use CEFR-appropriate Spanish.
+- Do not generate obscure vocabulary for A1/A2.
+- Keep prompts short.
+- Include accepted alternative answers where appropriate.
+- Include a short explanation.
+- Tag skill and subskill.
+- Avoid duplicate prompts.
+- Avoid culturally strange or unnatural examples.
+- Prefer realistic travel, café, restaurant, shopping, greeting, and daily-life situations.
+
+Validation rules:
+Reject generated items if:
+- missing expected answer
+- too difficult for selected level
+- answer is not Spanish
+- prompt is unclear
+- duplicate of existing item
+- contains unsafe or inappropriate content
+- JSON format is invalid
+
+Integration:
+- The practiceSessionEngine should use AI only as a fallback or enrichment layer.
+- Do not require AI for the app to work.
+- If AI fails, fall back to curated/template practice.
+- Clearly mark internally whether an item source is curated, template, or ai.
+- Do not show technical AI labels to the user unless there is a debug/dev mode.
+
+Deliverables:
+- Backend function for AI generation
+- Strict prompt for JSON item generation
+- Validation utility
+- Integration with practiceSessionEngine
+- Graceful fallback when AI is unavailable
+- Platform-safe implementation for web and native mobile
