@@ -17,6 +17,12 @@ interface ExerciseCard {
 
 const EXERCISES: ExerciseCard[] = [
   {
+    icon: "zap",
+    title: "Adaptive Practice",
+    desc: "Quick mixed sessions, weak-spot drills, level practice and more.",
+    href: "/practice",
+  },
+  {
     icon: "book-open",
     title: "Grammar Lessons",
     desc: "Structured lessons from A1 to C2 with examples and practice.",

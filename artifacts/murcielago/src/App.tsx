@@ -16,6 +16,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import DashboardPage from "./pages/DashboardPage";
 import ProfilePage from "./pages/ProfilePage";
 import ExercisesPage from "./pages/ExercisesPage";
+import PracticeSessionPage from "./pages/PracticeSessionPage";
 import VerbExercisePage from "./pages/VerbExercisePage";
 import NounExercisePage from "./pages/NounExercisePage";
 import AdjectiveExercisePage from "./pages/AdjectiveExercisePage";
@@ -77,6 +78,8 @@ const AppRoutes = () => (
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="/exercises" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
+      <Route path="/practice" element={<ProtectedRoute><PracticeSessionPage /></ProtectedRoute>} />
+      <Route path="/practice/session" element={<ProtectedRoute><PracticeSessionPage /></ProtectedRoute>} />
       <Route path="/exercises/verbs" element={<ProtectedRoute><VerbExercisePage /></ProtectedRoute>} />
       <Route path="/exercises/nouns" element={<ProtectedRoute><NounExercisePage /></ProtectedRoute>} />
       <Route path="/exercises/adjectives" element={<ProtectedRoute><AdjectiveExercisePage /></ProtectedRoute>} />

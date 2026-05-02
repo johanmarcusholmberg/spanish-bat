@@ -291,6 +291,9 @@ importers:
       '@workspace/api-client-react':
         specifier: workspace:*
         version: link:../../lib/api-client-react
+      '@workspace/practice':
+        specifier: workspace:*
+        version: link:../../lib/practice
       '@workspace/readiness':
         specifier: workspace:*
         version: link:../../lib/readiness
@@ -712,6 +715,9 @@ importers:
       '@workspace/api-client-react':
         specifier: workspace:*
         version: link:../../lib/api-client-react
+      '@workspace/practice':
+        specifier: workspace:*
+        version: link:../../lib/practice
       '@workspace/readiness':
         specifier: workspace:*
         version: link:../../lib/readiness
@@ -857,6 +863,8 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 25.3.5
+
+  lib/practice: {}
 
   lib/readiness: {}
 

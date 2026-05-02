@@ -34,6 +34,7 @@ const ExercisesPage = () => {
   };
 
   const exercises: ExerciseItem[] = [
+    { key: "adaptivePractice", icon: Zap, path: "/practice", color: "gradient-peach" },
     { key: "flashcards", progressKey: "flashcards", icon: Layers, path: "/practice/flashcards", color: "gradient-mint" },
     { key: "myDictionary", progressKey: "flashcards", icon: BookMarked, path: "/learn/vocabulary", color: "gradient-peach" },
     { key: "verbs", icon: BookOpen, path: "/exercises/verbs", color: "gradient-peach" },

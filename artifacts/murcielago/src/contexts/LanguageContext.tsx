@@ -297,6 +297,8 @@ const translations: Translations = {
   // Freestyle
   freestyle: { sv: "Freestyle", en: "Freestyle" },
   freestyleDesc: { sv: "Välj ämne och öva fritt på din nivå", en: "Choose a topic and practice freely at your level" },
+  adaptivePractice: { sv: "Adaptiv övning", en: "Adaptive Practice" },
+  adaptivePracticeDesc: { sv: "Snabb mix, svaga punkter, nivåövning och mer", en: "Quick mix, weak spots, level practice and more" },
 };
 
 interface LanguageContextType {
