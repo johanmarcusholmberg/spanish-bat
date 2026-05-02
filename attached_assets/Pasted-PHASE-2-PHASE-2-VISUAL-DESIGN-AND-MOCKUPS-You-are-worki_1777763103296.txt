@@ -1,0 +1,223 @@
+PHASE 2
+PHASE 2: VISUAL DESIGN AND MOCKUPS
+
+You are working in the existing Murcielingo / Spanish Bat repository:
+https://github.com/johanmarcusholmberg/spanish-bat
+
+Phase 1 is complete. The homepage skeleton exists at src/pages/HomePage.tsx
+and all routing works. In this phase you will apply the full visual design,
+build the app preview mockup cards, and make the page responsive.
+
+Do not touch routing. Do not modify any authenticated routes.
+Do not add new dependencies.
+
+--------------------------------------------------
+STEP 1: RE-READ BEFORE STYLING
+--------------------------------------------------
+
+Before writing any styles:
+
+1. Read src/index.css and list every CSS custom property.
+   Use only variable names that actually exist in this file.
+   Do not invent new variable names.
+2. Read src/pages/HomePage.tsx to see the current skeleton structure
+   before modifying it.
+3. Confirm the logo asset path found in Phase 1, if one exists.
+
+--------------------------------------------------
+STEP 2: GLOBAL VISUAL DIRECTION
+--------------------------------------------------
+
+The visual style must be:
+- Warm, calm, playful, friendly, soft
+- Language-learning focused, not SaaS/dashboard
+
+Use:
+- Sand/beige backgrounds from existing CSS variables
+- Peach/coral for primary CTA buttons
+- Muted mint for highlights and accents
+- Soft rounded cards (existing shadcn/ui Card component)
+- Large friendly typography (Nunito or Quicksand if already loaded)
+- Subtle shadows and gentle hover states
+
+Avoid:
+- Cold blue SaaS design
+- Corporate dashboard aesthetics
+- Dense grids
+- Aggressive animations
+- Any numbers, fake charts, or fake statistics
+- Fake testimonials or invented user quotes
+
+--------------------------------------------------
+STEP 3: SECTION-BY-SECTION STYLING
+--------------------------------------------------
+
+Apply styling to each section in order. Use Tailwind utility classes
+and existing CSS custom properties only.
+
+1. Header
+   - Light warm background, subtle bottom border
+   - Logo: use asset at confirmed path, or styled text treatment
+     in existing brand colors if no asset exists
+   - Nav links: friendly hover states, no underline by default
+   - Buttons: rounded, peach/coral for Start learning,
+     outlined for Log in
+   - Mobile (below 768px): hide nav links, show only the two
+     buttons side by side
+
+2. Hero
+   - Large warm section, sand/beige background
+   - Two-column layout on desktop: copy left, preview right
+   - Single column stacked on mobile
+   - Headline large and prominent
+   - Primary CTA: peach/coral filled rounded button
+   - Secondary CTA: outlined rounded button
+
+   Hero preview mockup (replace the Phase 1 placeholder):
+   Build a soft rounded card using the shadcn/ui Card component
+   showing:
+   - A Spanish phrase, e.g. "¿Cómo te llamas?"
+   - A listen/repeat button (peach/coral, rounded)
+   - A small badge: "Echo practice"
+   - A simple progress indicator (mint accent)
+   - Warm sand background inside the card
+   This should look like an app learning scene, not a dashboard.
+
+3. Learning loop
+   - Warm background, centered content
+   - Five steps displayed horizontally on desktop,
+     stacked on mobile
+   - Each step: small icon (use a simple SVG or emoji),
+     bold label, short description
+   - Arrow or visual connector between steps
+   - Visually connects to the tagline "Echo the language"
+
+4. App preview (id="app-preview")
+   - Section headline styled warmly
+   - Replace each Phase 1 placeholder with a proper mockup card:
+
+   A. Echo Practice card
+      Shows: Spanish phrase, listen button, repeat button,
+      "Echo practice" badge, mint progress bar
+
+   B. Sentence Builder card
+      Shows: a partial Spanish sentence with word tiles to
+      arrange, "Build" badge, peach/coral confirm button
+
+   C. Conversation Practice card
+      Shows: a short two-line Spanish dialogue,
+      a reply prompt, "Conversation" badge
+
+   D. Daily Practice card
+      Shows: a simple friendly habit cue (e.g. a streak
+      indicator or "Practice today"), no heavy counters,
+      "Keep going" tone, mint accent
+
+   Each card:
+   - Uses shadcn/ui Card component
+   - Rounded, warm sand background
+   - Peach/coral buttons
+   - Mint accents
+   - Friendly Spanish example content
+   - Small badge (Listen / Repeat / Build / Remember)
+   - Feels like a learning scene, not a module dashboard
+
+   Grid: 2 columns on desktop, 1 column on mobile
+
+5. Practice variety
+   - Warm centered section
+   - Headline prominent
+   - Body copy readable, generous line height
+
+6. Practice modes
+   - 4-column grid on desktop, 2-column on tablet,
+     1-column on mobile
+   - Each card: shadcn/ui Card, rounded, warm
+   - Small icon (simple SVG or emoji), mode name, description
+   - No statistics, no counters, no progress numbers
+
+7. Mobile app
+   - Warm section with a soft background
+   - Headline and body copy centered
+   - App Store and Google Play buttons:
+     styled as real buttons but visually marked "coming soon"
+     disabled state, not linked to real URLs
+   - Optional: a simple phone frame mockup using a Card component
+
+8. Trust
+   - Simple clean section
+   - Four statements displayed as cards or a clean list
+   - No star ratings, no user photos, no invented quotes
+   - Warm and reassuring tone
+
+9. Final CTA
+   - Warm prominent section
+   - Large headline
+   - Two buttons: Start learning (filled), Log in (outlined)
+   - Generous padding, inviting feel
+
+10. Footer
+    - Warm background, simple layout
+    - Logo/name + tagline
+    - Login and register links
+    - Copyright text
+
+--------------------------------------------------
+STEP 4: RESPONSIVE CHECK
+--------------------------------------------------
+
+After styling, verify:
+
+Desktop (1280px+):
+- Hero is two columns
+- App preview is a 2-column card grid
+- Practice modes is a 4-column grid
+- Header shows logo + nav links + buttons
+
+Tablet (768px–1279px):
+- Sections stack comfortably
+- Preview cards remain readable
+- Practice modes drops to 2 columns
+
+Mobile (below 768px):
+- Header shows only logo + Log in + Start learning buttons
+- Hero stacks: copy above, preview card below
+- App preview cards are stacked, scrollable
+- Practice modes is 1 column
+- Mobile app store buttons are full width or easy to tap
+- No tiny text inside preview mockup cards
+
+--------------------------------------------------
+STEP 5: VERIFY BEFORE FINISHING
+--------------------------------------------------
+
+Before marking Phase 2 complete, confirm:
+
+[ ] The page looks warm, friendly, and language-learning focused
+[ ] No cold blue SaaS or dashboard aesthetic present
+[ ] Hero mockup card looks like a learning scene
+[ ] App preview cards feel like app scenes, not module listings
+[ ] All four app preview cards are built and styled
+[ ] Mobile layout is clean and tappable
+[ ] Header collapses correctly below 768px
+[ ] All routing from Phase 1 still works
+[ ] No fake testimonials, fake ratings, or invented user quotes
+[ ] No new dependencies introduced
+[ ] Only CSS variable names from src/index.css are used
+
+--------------------------------------------------
+PHASE 2 ACCEPTANCE CRITERIA
+--------------------------------------------------
+
+1. The homepage looks warm, playful, and language-learning focused.
+2. The hero mockup card shows a Spanish learning scene.
+3. All four app preview mockup cards are built and styled.
+4. The learning loop is visually clear on desktop and mobile.
+5. Practice mode cards are styled warmly with no statistics.
+6. Mobile app section has coming-soon buttons, not real links.
+7. Trust section has honest statements only.
+8. The page is fully responsive across desktop, tablet, and mobile.
+9. Header nav links are hidden below 768px.
+10. All Phase 1 routing still works correctly.
+11. No new dependencies have been introduced.
+12. Only existing CSS variables and Tailwind classes are used.
