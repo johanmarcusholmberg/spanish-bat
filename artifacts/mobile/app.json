@@ -2,6 +2,7 @@
   "expo": {
     "name": "Murciélingo",
     "slug": "murcielago-mobile",
+    "owner": "TODO-expo-account-username",
     "version": "1.0.0",
     "description": "Murciélingo — learn Spanish through bite-sized lessons, real reading passages, and spaced-repetition flashcards.",
     "orientation": "portrait",
