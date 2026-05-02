@@ -11,7 +11,7 @@ import OnboardingModal from "@/components/OnboardingModal";
 import PlacementTest from "@/components/PlacementTest";
 
 const DashboardPage = () => {
-  const { t, language, setProfileLang } = useLanguage() as any;
+  const { t, language, setProfileLang } = useLanguage();
   const { user, updateProfile } = useAuth();
 
   const [showOnboarding, setShowOnboarding] = useState(false);

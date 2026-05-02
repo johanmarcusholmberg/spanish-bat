@@ -14,7 +14,7 @@ import { User, Save, Check, BookOpen, ChevronRight, Mail, Shield } from "lucide-
 const levels: Level[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
 const ProfilePage = () => {
-  const { t, setLanguage, setProfileLang } = useLanguage() as any;
+  const { t, setProfileLang } = useLanguage();
   const { user, updateProfile } = useAuth();
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState(user?.displayName || "");

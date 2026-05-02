@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, Level } from "@/contexts/AuthContext";
 import { useProgress } from "@/contexts/ProgressContext";
 import { useStreak } from "@/contexts/StreakContext";
 import { useSpanishTTS } from "@/hooks/useSpanishTTS";
@@ -40,7 +40,7 @@ const EchoPage = () => {
     currentWord, currentStep, echoNumber, totalEchos,
     wordIndex, totalWords, wordsCompleted, completed,
     advanceStep, resetSession,
-  } = useEchoLoop((user?.level || "A1") as any, lang);
+  } = useEchoLoop((user?.level || "A1") as Level, lang);
 
   useEffect(() => { trackLastActivity("exercises", "/learn/echo", "Echo"); }, []);
 

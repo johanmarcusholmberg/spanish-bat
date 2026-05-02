@@ -114,8 +114,8 @@ const AdminPage = () => {
         setUsers(u);
         setMessages(m);
         setInsights(i);
-      } catch (err: any) {
-        setError(err.message || t("serverError"));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : t("serverError"));
       }
       setLoading(false);
     };

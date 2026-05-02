@@ -54,7 +54,7 @@ const VerbExercisePage = () => {
     api.progress.getGrammarProgress().then((result) => {
       if (result.grammarProgress) {
         const map: Record<string, boolean> = {};
-        result.grammarProgress.forEach((r: any) => { map[r.lessonId] = r.completed; });
+        result.grammarProgress.forEach((r: { lessonId: string; completed: boolean }) => { map[r.lessonId] = r.completed; });
         setGrammarProgress(map);
       }
     }).catch(() => {});

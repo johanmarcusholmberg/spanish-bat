@@ -310,7 +310,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <LanguageContext.Provider value={{ language: activeLang, setLanguage, t, setProfileLang } as any}>
+    <LanguageContext.Provider value={{ language: activeLang, setLanguage, t, setProfileLang }}>
       {children}
     </LanguageContext.Provider>
   );

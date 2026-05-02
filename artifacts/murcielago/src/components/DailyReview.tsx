@@ -51,7 +51,7 @@ const DailyReviewCard: React.FC = () => {
   const [sessionScore, setSessionScore] = useState(0);
   const [flipped, setFlipped] = useState(false);
 
-  const srsWords = words as unknown as SRSWord[];
+  const srsWords = words as SRSWord[];
   const stats = useMemo(() => getStats(srsWords), [srsWords, getStats]);
   const dueWords = useMemo(() => getDueWords(srsWords), [srsWords, getDueWords]);
   const weakWords = useMemo(() => getWeakWords(srsWords, 5), [srsWords, getWeakWords]);

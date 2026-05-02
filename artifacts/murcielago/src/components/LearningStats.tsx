@@ -12,7 +12,7 @@ const LearningStats: React.FC = () => {
   const { getStats, getWeakWords } = useVocabularySRS();
   const t = (sv: string, en: string) => (language === "sv" ? sv : en);
 
-  const srsWords = words as unknown as SRSWord[];
+  const srsWords = words as SRSWord[];
   const stats = useMemo(() => getStats(srsWords), [srsWords, getStats]);
   const weakWords = useMemo(() => getWeakWords(srsWords, 5), [srsWords, getWeakWords]);
 

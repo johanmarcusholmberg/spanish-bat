@@ -1,18 +1,10 @@
 import { useCallback } from "react";
-import { VocabularyWord } from "@/hooks/useVocabulary";
+import { VocabularyWord, ReviewState } from "@/hooks/useVocabulary";
 import { api } from "@/lib/api";
 
-export type ReviewState = "new" | "learning" | "familiar" | "mastered";
+export type { ReviewState };
 
-export interface SRSWord extends VocabularyWord {
-  review_state: ReviewState;
-  next_review: string;
-  ease_factor: number;
-  interval_days: number;
-  review_count: number;
-  correct_count: number;
-  incorrect_count: number;
-}
+export type SRSWord = VocabularyWord;
 
 type ReviewQuality = "again" | "hard" | "good" | "easy";
 

@@ -24,14 +24,23 @@ const ExercisesPage = () => {
     { key: "echoLearning", progressKey: "exercises" as const, icon: Waves, path: "/learn/echo", color: "gradient-mint" },
   ];
 
-  const exercises = [
-    { key: "flashcards", progressKey: "flashcards" as const, icon: Layers, path: "/practice/flashcards", color: "gradient-mint" },
-    { key: "myDictionary", progressKey: "flashcards" as const, icon: BookMarked, path: "/learn/vocabulary", color: "gradient-peach" },
+  type ProgressCategory = "grammar" | "flashcards" | "reading" | "sentences" | "exercises";
+  type ExerciseItem = {
+    key: string;
+    progressKey?: ProgressCategory;
+    icon: React.ElementType;
+    path: string;
+    color: string;
+  };
+
+  const exercises: ExerciseItem[] = [
+    { key: "flashcards", progressKey: "flashcards", icon: Layers, path: "/practice/flashcards", color: "gradient-mint" },
+    { key: "myDictionary", progressKey: "flashcards", icon: BookMarked, path: "/learn/vocabulary", color: "gradient-peach" },
     { key: "verbs", icon: BookOpen, path: "/exercises/verbs", color: "gradient-peach" },
     { key: "nouns", icon: Type, path: "/exercises/nouns", color: "gradient-mint" },
     { key: "adjectives", icon: Palette, path: "/exercises/adjectives", color: "gradient-peach" },
     { key: "quiz", icon: HelpCircle, path: "/exercises/quiz", color: "gradient-mint" },
-    { key: "freestyle", progressKey: "exercises" as const, icon: Zap, path: "/exercises/freestyle", color: "gradient-peach" },
+    { key: "freestyle", progressKey: "exercises", icon: Zap, path: "/exercises/freestyle", color: "gradient-peach" },
   ];
 
   const renderLearnGrid = () => (
@@ -68,8 +77,7 @@ const ExercisesPage = () => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {exercises.map((ex) => {
-          const pKey = (ex as any).progressKey as string | undefined;
-          const catKey = (pKey || "exercises") as "grammar" | "flashcards" | "reading" | "sentences" | "exercises";
+          const catKey = (ex.progressKey ?? "exercises") as ProgressCategory;
           const categoryProgress = progress[catKey] as { completed: number; total: number; percentage: number };
           const thisCompleted = categoryProgress.completed;
           const thisTotal = Math.max(categoryProgress.total, 1);

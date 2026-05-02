@@ -60,7 +60,7 @@ const SelectionContent: React.FC<SelectionContentProps> = ({
   useEffect(() => {
     if (existingWord) {
       setTranslation(existingWord.translation);
-      setItemType(existingWord.item_type as any);
+      setItemType(existingWord.item_type as "word" | "phrase" | "sentence");
       setLearned(existingWord.learned);
       return;
     }
