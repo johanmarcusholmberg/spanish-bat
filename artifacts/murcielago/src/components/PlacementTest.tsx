@@ -3,6 +3,8 @@ import MurciMascot from "@/components/MurciMascot";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Level } from "@/contexts/AuthContext";
 import { flashcardData } from "@/data/flashcardData";
@@ -163,6 +165,8 @@ const PlacementTest: React.FC<PlacementTestProps> = ({ open, lang, onComplete, o
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
+        <DialogTitle className="sr-only">{isSv ? "Placeringstest" : "Placement Test"}</DialogTitle>
+        <DialogDescription className="sr-only">{isSv ? "Kort test för att uppskatta din spanskanivå." : "Short test to estimate your Spanish level."}</DialogDescription>
         {/* Intro phase */}
         {phase === "intro" && (
           <div className="p-6 flex flex-col items-center text-center gap-5 min-h-[380px] justify-center">

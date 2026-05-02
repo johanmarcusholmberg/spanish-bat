@@ -24,11 +24,11 @@ const DashboardPage = () => {
     }
   }, [user?.onboardingCompleted]);
 
-  const handleOnboardingComplete = async (selectedLang: "sv" | "en") => {
+  const handleOnboardingComplete = async (selectedLang: "sv" | "en", selectedLevel: Level) => {
     setOnboardingLang(selectedLang);
     setShowOnboarding(false);
 
-    await updateProfile({ learningFrom: selectedLang, onboardingCompleted: true });
+    await updateProfile({ learningFrom: selectedLang, level: selectedLevel, onboardingCompleted: true });
     setProfileLang?.(selectedLang);
 
     if (!user?.placementTestCompleted) {

@@ -4,6 +4,8 @@ import MurciMascot from "@/components/MurciMascot";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   BookOpen,
@@ -14,30 +16,40 @@ import {
   ChevronLeft,
   Sparkles,
   Globe,
-  Layout,
   TrendingUp,
   Info,
 } from "lucide-react";
+import { Level } from "@/contexts/AuthContext";
 
 interface OnboardingModalProps {
   open: boolean;
-  onComplete: (selectedLang: "sv" | "en") => void;
+  onComplete: (selectedLang: "sv" | "en", selectedLevel: Level) => void;
 }
 
+const LEVELS: { value: Level; labelSv: string; labelEn: string; descSv: string; descEn: string }[] = [
+  { value: "A1", labelSv: "A1 — Nybörjare", labelEn: "A1 — Beginner", descSv: "Helt ny på spanska", descEn: "Brand new to Spanish" },
+  { value: "A2", labelSv: "A2 — Grundläggande", labelEn: "A2 — Elementary", descSv: "Kan enkla fraser", descEn: "Know basic phrases" },
+  { value: "B1", labelSv: "B1 — Mellannivå", labelEn: "B1 — Intermediate", descSv: "Klarar vardagssamtal", descEn: "Handle everyday conversations" },
+  { value: "B2", labelSv: "B2 — Övre mellannivå", labelEn: "B2 — Upper Intermediate", descSv: "Talar flytande om bekanta ämnen", descEn: "Fluent on familiar topics" },
+  { value: "C1", labelSv: "C1 — Avancerad", labelEn: "C1 — Advanced", descSv: "Uttrycker dig nyanserat", descEn: "Express yourself with nuance" },
+  { value: "C2", labelSv: "C2 — Flytande", labelEn: "C2 — Fluent", descSv: "Behärskar spanska fullt ut", descEn: "Full mastery of Spanish" },
+];
+
 const OnboardingModal: React.FC<OnboardingModalProps> = ({ open, onComplete }) => {
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
   const [step, setStep] = useState(0);
   const [selectedLang, setSelectedLang] = useState<"sv" | "en">(language as "sv" | "en");
-  const totalSteps = 5;
+  const [selectedLevel, setSelectedLevel] = useState<Level>("A1");
+  const totalSteps = 4;
 
   const isSv = selectedLang === "sv";
 
   const next = () => {
     if (step < totalSteps - 1) setStep(step + 1);
-    else onComplete(selectedLang);
+    else onComplete(selectedLang, selectedLevel);
   };
   const back = () => { if (step > 0) setStep(step - 1); };
-  const skip = () => onComplete(selectedLang);
+  const skip = () => onComplete(selectedLang, selectedLevel);
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
@@ -46,6 +58,9 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ open, onComplete }) =
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
+        <DialogTitle className="sr-only">{isSv ? "Välkommen — kom igång" : "Welcome — get started"}</DialogTitle>
+        <DialogDescription className="sr-only">{isSv ? "Välj språk och nivå för att börja lära dig spanska." : "Choose your language and level to start learning Spanish."}</DialogDescription>
+
         {/* Progress bar */}
         <div className="flex gap-1 px-4 pt-4">
           {Array.from({ length: totalSteps }).map((_, i) => (
@@ -58,7 +73,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ open, onComplete }) =
           ))}
         </div>
 
-        <div className="p-6 min-h-[400px] flex flex-col">
+        <div className="p-6 min-h-[420px] flex flex-col">
           {/* Step 0: Welcome */}
           {step === 0 && (
             <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
@@ -69,7 +84,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ open, onComplete }) =
                 </h2>
                 <p className="text-muted-foreground mt-2 text-sm leading-relaxed max-w-sm">
                   {isSv
-                    ? "Din personliga spanska-partner! Här lär du dig spanska genom övningar, flashcards, grammatik och konversation — i din egen takt."
+                    ? "Din personliga spanska-partner! Lär dig spanska genom övningar, flashcards, grammatik och konversation — i din egen takt."
                     : "Your personal Spanish learning partner! Learn Spanish through exercises, flashcards, grammar and conversation — at your own pace."}
                 </p>
               </div>
@@ -100,8 +115,8 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ open, onComplete }) =
                 </h2>
                 <p className="text-muted-foreground mt-1 text-sm">
                   {isSv
-                    ? "Vilket språk vill du att gränssnittet ska visas på?"
-                    : "Which language should the app interface use?"}
+                    ? "Du lär dig spanska från vilket språk?"
+                    : "You are learning Spanish from which language?"}
                 </p>
               </div>
               <div className="flex gap-3 w-full max-w-xs">
@@ -129,95 +144,91 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ open, onComplete }) =
             </div>
           )}
 
-          {/* Step 2: Navigation explanation */}
+          {/* Step 2: Level selection */}
           {step === 2 && (
             <div className="flex-1 flex flex-col gap-4">
               <div className="text-center">
-                <Layout className="h-10 w-10 text-primary mx-auto" />
+                <BarChart3 className="h-10 w-10 text-primary mx-auto" />
                 <h2 className="text-xl font-heading font-bold text-foreground mt-2">
-                  {isSv ? "Navigera i appen" : "Navigate the app"}
+                  {isSv ? "Vad är din spanskanivå?" : "What is your Spanish level?"}
                 </h2>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  {isSv ? "Du kan ändra detta i profilen när som helst." : "You can change this in your profile anytime."}
+                </p>
               </div>
-              <div className="space-y-3 mt-2">
-                {[
-                  { icon: Home, label: isSv ? "Startsida" : "Dashboard", desc: isSv ? "Översikt över dina framsteg och streaks" : "Overview of your progress and streaks" },
-                  { icon: BookOpen, label: isSv ? "Övningar" : "Exercises", desc: isSv ? "Verb, substantiv, grammatik, flashcards, läsning, uttal m.m." : "Verbs, nouns, grammar, flashcards, reading, pronunciation and more" },
-                  { icon: BarChart3, label: isSv ? "Statistik" : "Statistics", desc: isSv ? "Detaljerad statistik och aktivitetshistorik" : "Detailed stats and activity history" },
-                  { icon: User, label: isSv ? "Profil" : "Profile", desc: isSv ? "Ändra nivå, språk och personliga inställningar" : "Change level, language and personal settings" },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-muted/40">
-                    <item.icon className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">{item.label}</p>
-                      <p className="text-xs text-muted-foreground">{item.desc}</p>
+              <div className="space-y-2 overflow-y-auto flex-1">
+                {LEVELS.map((lvl) => (
+                  <button
+                    key={lvl.value}
+                    onClick={() => setSelectedLevel(lvl.value)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-left transition ${
+                      selectedLevel === lvl.value
+                        ? "border-primary bg-primary/10"
+                        : "border-border bg-background hover:border-muted-foreground"
+                    }`}
+                  >
+                    <span className={`text-sm font-bold w-8 shrink-0 ${selectedLevel === lvl.value ? "text-primary" : "text-muted-foreground"}`}>
+                      {lvl.value}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">
+                        {isSv ? lvl.labelSv : lvl.labelEn}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {isSv ? lvl.descSv : lvl.descEn}
+                      </p>
                     </div>
-                  </div>
+                    {selectedLevel === lvl.value && (
+                      <span className="ml-auto text-primary text-lg shrink-0">✓</span>
+                    )}
+                  </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Step 3: Dashboard & stats */}
+          {/* Step 3: Getting started tips */}
           {step === 3 && (
-            <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
-              <TrendingUp className="h-12 w-12 text-primary" />
-              <div>
-                <h2 className="text-xl font-heading font-bold text-foreground">
-                  {isSv ? "Följ dina framsteg" : "Track your progress"}
-                </h2>
-                <p className="text-muted-foreground mt-2 text-sm leading-relaxed max-w-sm">
-                  {isSv
-                    ? "Dashboarden visar din dagliga streak, övningsframsteg per kategori, och rekommendationer för vad du bör öva på härnäst."
-                    : "The dashboard shows your daily streak, exercise progress per category, and recommendations for what to practice next."}
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-3 w-full max-w-xs mt-2">
-                <div className="p-3 rounded-xl bg-muted/40 text-center">
-                  <p className="text-2xl font-bold text-primary">🔥</p>
-                  <p className="text-xs text-muted-foreground mt-1">{isSv ? "Daglig streak" : "Daily streak"}</p>
-                </div>
-                <div className="p-3 rounded-xl bg-muted/40 text-center">
-                  <p className="text-2xl font-bold text-primary">📊</p>
-                  <p className="text-xs text-muted-foreground mt-1">{isSv ? "Framsteg" : "Progress"}</p>
-                </div>
-                <div className="p-3 rounded-xl bg-muted/40 text-center">
-                  <p className="text-2xl font-bold text-primary">🎯</p>
-                  <p className="text-xs text-muted-foreground mt-1">{isSv ? "Mål" : "Goals"}</p>
-                </div>
-                <div className="p-3 rounded-xl bg-muted/40 text-center">
-                  <p className="text-2xl font-bold text-primary">📚</p>
-                  <p className="text-xs text-muted-foreground mt-1">{isSv ? "Ordbok" : "Dictionary"}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 4: Getting started */}
-          {step === 4 && (
             <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
               <MurciMascot size="md" mood="encouraging" />
               <div>
                 <h2 className="text-xl font-heading font-bold text-foreground">
-                  {isSv ? "Bra att veta" : "Good to know"}
+                  {isSv ? "Du är redo!" : "You are ready!"}
                 </h2>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  {isSv
+                    ? `Språk: ${selectedLang === "sv" ? "Svenska" : "English"} · Nivå: ${selectedLevel}`
+                    : `Language: ${selectedLang === "sv" ? "Svenska" : "English"} · Level: ${selectedLevel}`}
+                </p>
               </div>
               <div className="space-y-3 w-full max-w-sm text-left">
                 {[
-                  isSv
-                    ? "Du börjar på nivå A1 (nybörjare). Du kan ändra din nivå i profilen när som helst."
-                    : "You start at level A1 (beginner). You can change your level in the profile anytime.",
-                  isSv
-                    ? "Nästa steg: ett kort placeringstest som hjälper oss hitta rätt nivå för dig. Du kan hoppa över det om du vill."
-                    : "Next up: a short placement test to help find the right level for you. You can skip it if you want.",
-                  isSv
-                    ? "Allt sparas automatiskt — logga in på valfri enhet och fortsätt där du slutade."
-                    : "Everything saves automatically — log in on any device and continue where you left off.",
-                ].map((text, i) => (
+                  {
+                    icon: Home,
+                    text: isSv ? "Dashboarden visar din streak, framsteg och nästa steg." : "The dashboard shows your streak, progress, and next steps.",
+                  },
+                  {
+                    icon: BookOpen,
+                    text: isSv ? "Övningar täcker verb, grammatik, flashcards, läsning och mer." : "Exercises cover verbs, grammar, flashcards, reading, and more.",
+                  },
+                  {
+                    icon: User,
+                    text: isSv ? "Ändra nivå och språk i profilen när du vill." : "Change your level and language in the profile anytime.",
+                  },
+                ].map((item, i) => (
                   <div key={i} className="flex items-start gap-2 p-3 rounded-xl bg-muted/40">
-                    <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                    <p className="text-sm text-foreground leading-relaxed">{text}</p>
+                    <item.icon className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    <p className="text-sm text-foreground leading-relaxed">{item.text}</p>
                   </div>
                 ))}
+                <div className="flex items-start gap-2 p-3 rounded-xl bg-muted/40">
+                  <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                  <p className="text-sm text-foreground leading-relaxed">
+                    {isSv
+                      ? "Efter detta erbjuds ett kort placeringstest för att bekräfta din nivå. Du kan hoppa över det."
+                      : "After this, a short placement test will help confirm your level. You can skip it."}
+                  </p>
+                </div>
               </div>
             </div>
           )}
