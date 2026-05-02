@@ -1,0 +1,194 @@
+PHASE 1
+
+PHASE 1: STRUCTURE AND ROUTING ONLY
+
+You are working in the existing Murcielingo / Spanish Bat repository:
+https://github.com/johanmarcusholmberg/spanish-bat
+
+This is Phase 1 of a two-phase build. In this phase you will create the
+structural skeleton of the homepage only. Do not apply visual polish,
+do not build styled mockup cards, do not focus on colors or spacing.
+The goal is a working, routed, semantically correct page that can be
+verified before Phase 2 styling begins.
+
+--------------------------------------------------
+STEP 1: READ THE REPOSITORY BEFORE WRITING ANY CODE
+--------------------------------------------------
+
+Do the following in order before touching any files:
+
+1. Read the full file tree.
+2. Read src/index.css and list every CSS custom property you find.
+   Note the exact variable names. You will use only these in Phase 2.
+3. Find the router file (likely src/App.tsx or src/router.tsx).
+   Confirm the exact path strings for the login and register routes.
+   Write them down. Do not guess or invent route paths.
+4. Check src/assets/ and public/ for any logo file (.svg, .png, .webp).
+   Note the exact file path if one exists.
+5. Check whether a homepage or landing page component already exists.
+   If it does, you will update it. If not, you will create
+   src/pages/HomePage.tsx.
+
+Only after completing these five steps should you write any code.
+
+--------------------------------------------------
+STEP 2: CREATE THE HOMEPAGE SKELETON
+--------------------------------------------------
+
+Create or update the homepage file at src/pages/HomePage.tsx.
+
+The page should contain all of the following sections as plain semantic
+HTML with minimal or no styling. Use Tailwind utility classes only where
+needed to make the structure readable (e.g. flex, block, hidden).
+Do not spend time on colors, spacing, shadows, or visual design.
+
+Sections to include, in order:
+
+1. Header
+   - Murcielingo name/logo on the left (text only if no logo asset found)
+   - Nav links: Preview, How it works, Practice, Mobile app
+   - Buttons: Log in, Start learning
+   - Log in links to the confirmed login route
+   - Start learning links to the confirmed register route
+
+2. Hero
+   - Headline: Echo the language
+   - Subheadline: Spanish practice that comes back to you.
+   - Supporting copy: Learn Spanish through short, varied practice that
+     helps words, sounds, and sentence patterns come back naturally.
+   - Primary CTA button: Start learning → confirmed register route
+   - Secondary CTA button: Preview the app → href="#app-preview"
+     with smooth scrolling (add scroll-behavior: smooth to html or use
+     a scrollIntoView handler)
+   - Placeholder div for the hero app preview visual (label it clearly
+     with a comment: {/* Hero preview mockup — Phase 2 */})
+
+3. Learning loop
+   - Section headline: Spanish starts to stick when you meet it more
+     than once.
+   - Five steps in a row or list:
+     Hear it / Repeat it / Build it / Use it / Remember it
+   - Each step has its label and one-line description (see copy below)
+
+4. App preview (id="app-preview")
+   - Section headline: See what practice feels like
+   - Four placeholder cards, each labelled:
+     A. Echo Practice
+     B. Sentence Builder
+     C. Conversation Practice
+     D. Daily Practice
+   - These are empty placeholder divs for now with clear comments:
+     {/* App preview card — Phase 2 */}
+
+5. Practice variety
+   - Headline: Practice should not feel like a checklist.
+   - Body copy (see copy section below)
+
+6. Practice modes
+   - Eight cards in a grid, text only:
+     Echo Practice, Sentence Builder, Flashcards, Vocabulary,
+     Grammar, Reading, Conversation, Pronunciation
+   - Each card shows the mode name and its short description
+     (see copy below)
+
+7. Mobile app
+   - Headline: Practice anywhere
+   - Body copy (see copy below)
+   - Two disabled/inert buttons: App Store (coming soon),
+     Google Play (coming soon)
+   - Do not link to any real app store URLs
+
+8. Trust
+   - Four honest trust statements (no fake testimonials, no fake
+     ratings, no invented user quotes):
+     Built for short daily practice
+     Designed for beginners and returning learners
+     Practice reading, speaking, listening, and recall
+     A softer way to build Spanish confidence
+
+9. Final CTA
+   - Headline: Ready to let Spanish echo back?
+   - Body: Start with a few minutes of practice and build from there.
+   - Start learning button → confirmed register route
+   - Log in button → confirmed login route
+
+10. Footer
+    - Murcielingo name
+    - Tagline: Echo the language
+    - Links to login and register (confirmed routes)
+    - Copyright line
+    - Contact link only if a contact route was found in your repo read
+
+--------------------------------------------------
+STEP 3: REGISTER THE ROUTE
+--------------------------------------------------
+
+In the existing router file:
+- Add a public route for / that renders HomePage
+- Do not create a second router
+- Do not add a duplicate / route if one already exists — update it
+- Do not remove or modify any existing authenticated routes
+- If there is already auth-based redirect logic for logged-in users
+  at /, preserve it
+
+--------------------------------------------------
+STEP 4: VERIFY BEFORE FINISHING
+--------------------------------------------------
+
+Before marking Phase 1 complete, confirm:
+
+[ ] The app loads without errors
+[ ] / renders the new homepage for unauthenticated users
+[ ] Clicking Log in navigates to the correct login route
+[ ] Clicking Start learning navigates to the correct register route
+[ ] Clicking Preview the app scrolls to the #app-preview section
+[ ] Existing authenticated routes still work
+[ ] No duplicate route definitions
+[ ] No new dependencies introduced
+
+--------------------------------------------------
+COPY FOR PHASE 1
+--------------------------------------------------
+
+Learning loop step descriptions:
+Hear it — Meet useful Spanish in small pieces.
+Repeat it — Echo sounds, words, and phrases.
+Build it — Create sentences step by step.
+Use it — Practice in context through reading and conversation.
+Remember it — Recall language until it starts to come back naturally.
+
+Practice variety body:
+Murcielingo gives you different ways to meet the same language again:
+listen, repeat, choose, build, read, speak, and recall.
+So when one practice is done, another useful way to keep learning
+can begin.
+
+Practice mode descriptions:
+Echo Practice: Listen, repeat, and recall Spanish until it starts
+to stick.
+Sentence Builder: Build useful sentences step by step.
+Flashcards: Meet important words again at the right moment.
+Vocabulary: Practice words in context, not just as lists.
+Grammar: Understand patterns through simple examples.
+Reading: Read short Spanish texts with support.
+Conversation: Practice everyday Spanish in small dialogues.
+Pronunciation: Train sounds, rhythm, and confidence.
+
+Mobile body:
+Murcielingo is being prepared for mobile, so your Spanish practice
+can follow you through the day.
+
+--------------------------------------------------
+PHASE 1 ACCEPTANCE CRITERIA
+--------------------------------------------------
+
+1. / renders the homepage without errors.
+2. Log in links to the confirmed login route.
+3. Start learning links to the confirmed register route.
+4. Preview the app scrolls to id="app-preview".
+5. All ten sections are present in the correct order.
+6. The four app preview section placeholders are present and labelled.
+7. Mobile app buttons are present but disabled/inert.
+8. No fake testimonials, fake ratings, or invented user quotes exist.
+9. Existing authenticated routes are unaffected.
+10. No new dependencies have been introduced.
