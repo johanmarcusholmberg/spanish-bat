@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/drawer";
 
 interface SelectionPopupProps {
-  containerRef: React.RefObject<HTMLElement>;
+  containerRef: React.RefObject<HTMLElement | null>;
 }
 
 const SelectionPopup: React.FC<SelectionPopupProps> = ({ containerRef }) => {

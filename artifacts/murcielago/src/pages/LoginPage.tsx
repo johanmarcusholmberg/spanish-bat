@@ -8,7 +8,7 @@ import { Eye, EyeOff, Loader2, Globe } from "lucide-react";
 
 const LoginPage = () => {
   const { t, language, setLanguage } = useLanguage();
-  const { login, signInWithGoogle, isLoggedIn } = useAuth();
+  const { login, signInWithGoogle, signInWithApple, isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,10 +40,7 @@ const LoginPage = () => {
 
   const handleApple = async () => {
     setLoading(true);
-    const { lovable } = await import("@/integrations/lovable/index");
-    await lovable.auth.signInWithOAuth("apple", {
-      redirect_uri: window.location.origin,
-    });
+    await signInWithApple();
   };
 
   return (

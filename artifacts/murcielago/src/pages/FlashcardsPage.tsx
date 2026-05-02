@@ -137,7 +137,7 @@ const FlashcardsPage = () => {
   }, [stats.correct, allCards.length, updateProgress, logActivity]);
 
   const persistSRS = useCallback((quality: "hard" | "ok" | "easy") => {
-    if (!currentCard || !session?.user) return;
+    if (!currentCard || !user) return;
     const prev = cardStates[currentCard.id];
     const multiplier = quality === "hard" ? 0.5 : quality === "ok" ? 1 : 2;
     const baseInterval = prev ? prev.interval : 1;

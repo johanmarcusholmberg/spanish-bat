@@ -33,6 +33,7 @@ interface AuthContextType {
   updatePassword: (password: string) => Promise<string | null>;
   updateProfile: (profile: Partial<UserProfile>) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
+  signInWithApple: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -48,6 +49,7 @@ const AuthContext = createContext<AuthContextType>({
   updatePassword: async () => null,
   updateProfile: async () => {},
   signInWithGoogle: async () => {},
+  signInWithApple: async () => {},
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -137,7 +139,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string): Promise<string | null> => {
     if (!signIn) return "Sign-in not available";
     try {
-      const result = await signIn.create({ identifier: email, password });
+      const result = await (signIn as any).create({ identifier: email, password });
       if (result.status === "complete") return null;
       return "Login failed";
     } catch (err: any) {
@@ -148,7 +150,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const register = async (email: string, password: string): Promise<string | null> => {
     if (!signUp) return "Sign-up not available";
     try {
-      const result = await signUp.create({ emailAddress: email, password });
+      const result = await (signUp as any).create({ emailAddress: email, password });
       if (result.status === "complete" || result.status === "missing_requirements") return null;
       return "Registration failed";
     } catch (err: any) {
@@ -197,13 +199,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     if (!signIn) return;
     try {
-      await signIn.authenticateWithRedirect({
+      await (signIn as any).authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: window.location.origin + "/sso-callback",
         redirectUrlComplete: window.location.origin + "/dashboard",
       });
     } catch (err) {
       console.error("Google sign-in error", err);
+    }
+  };
+
+  const signInWithApple = async () => {
+    if (!signIn) return;
+    try {
+      await (signIn as any).authenticateWithRedirect({
+        strategy: "oauth_apple",
+        redirectUrl: window.location.origin + "/sso-callback",
+        redirectUrlComplete: window.location.origin + "/dashboard",
+      });
+    } catch (err) {
+      console.error("Apple sign-in error", err);
     }
   };
 
@@ -225,6 +240,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         updatePassword,
         updateProfile,
         signInWithGoogle,
+        signInWithApple,
       }}
     >
       {children}

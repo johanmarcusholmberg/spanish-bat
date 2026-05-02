@@ -9,7 +9,7 @@ import { Eye, EyeOff, ArrowLeft, Check, X, Loader2 } from "lucide-react";
 
 const RegisterPage = () => {
   const { t, language } = useLanguage();
-  const { register: signUp, signInWithGoogle } = useAuth();
+  const { register: signUp, signInWithGoogle, signInWithApple } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -184,10 +184,7 @@ const RegisterPage = () => {
                 {t("registerWithGoogle")}
               </button>
               <button
-                onClick={async () => {
-                  const { lovable } = await import("@/integrations/lovable/index");
-                  await lovable.auth.signInWithOAuth("apple", { redirect_uri: window.location.origin });
-                }}
+                onClick={signInWithApple}
                 className="w-full py-2.5 rounded-md bg-background border border-border text-foreground font-medium flex items-center justify-center gap-2 hover:bg-muted transition"
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">

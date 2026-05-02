@@ -74,8 +74,8 @@ export function getSoftReminders(
 
   // Check for missing accents (compare normalized versions)
   const accentChars = /[áéíóúñü]/gi;
-  const correctAccents = correct.match(accentChars) || [];
-  const userAccents = trimmed.match(accentChars) || [];
+  const correctAccents: string[] = correct.match(accentChars) || [];
+  const userAccents: string[] = trimmed.match(accentChars) || [];
   if (correctAccents.length > 0 && userAccents.length < correctAccents.length) {
     // Find which accented chars are missing
     const missingAccents = correctAccents.filter(

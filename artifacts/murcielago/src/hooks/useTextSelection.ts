@@ -7,7 +7,7 @@ interface SelectionPosition {
 }
 
 interface UseTextSelectionOptions {
-  containerRef: React.RefObject<HTMLElement>;
+  containerRef: React.RefObject<HTMLElement | null>;
   language?: "sv" | "en";
 }
 
