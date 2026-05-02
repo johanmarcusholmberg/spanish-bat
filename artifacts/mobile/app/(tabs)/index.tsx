@@ -23,6 +23,7 @@ import {
   type ReadinessResult,
   type SkillCategory,
 } from "@workspace/readiness";
+import TodaysPracticeCard from "@/components/TodaysPracticeCard";
 
 const PASSED_KEY = (userId: string, level: string) =>
   `murci.passedLevelCheck.${userId}.${level}`;
@@ -174,7 +175,7 @@ export default function DashboardScreen() {
         : `You've passed the highest level. Keep practicing to stay sharp.`;
     }
     if (readiness.state === "test_recommended") {
-      return `You look ready for the ${nextLevel ?? currentLevel} check. Take the test now, or keep practicing ${currentLevel}.`;
+      return `You look ready for the ${nextLevel ?? currentLevel} check. Take it now, or keep practicing ${currentLevel}.`;
     }
     return `Keep practicing ${currentLevel}. You're building confidence.`;
   })();
@@ -245,6 +246,9 @@ export default function DashboardScreen() {
           </Card>
         </View>
       </Card>
+
+      {/* Today's recommended practice */}
+      <TodaysPracticeCard readinessState={readiness.state} />
 
       {/* Continue learning */}
       <Card

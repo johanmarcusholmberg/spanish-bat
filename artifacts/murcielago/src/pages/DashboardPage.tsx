@@ -9,6 +9,7 @@ import MurciMascot from "@/components/MurciMascot";
 import DailyReviewCard from "@/components/DailyReview";
 import LearningStats from "@/components/LearningStats";
 import OnboardingModal from "@/components/OnboardingModal";
+import TodaysPracticeCard from "@/components/TodaysPracticeCard";
 
 const DashboardPage = () => {
   const { t, language, setProfileLang } = useLanguage();
@@ -58,6 +59,7 @@ const DashboardPage = () => {
           </div>
         </div>
 
+        <TodaysPracticeCard />
         <ContinueCard />
         <DailyReviewCard />
         <StreakCard />

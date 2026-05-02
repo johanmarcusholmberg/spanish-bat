@@ -299,6 +299,60 @@ const translations: Translations = {
   freestyleDesc: { sv: "Välj ämne och öva fritt på din nivå", en: "Choose a topic and practice freely at your level" },
   adaptivePractice: { sv: "Adaptiv övning", en: "Adaptive Practice" },
   adaptivePracticeDesc: { sv: "Snabb mix, svaga punkter, nivåövning och mer", en: "Quick mix, weak spots, level practice and more" },
+
+  // Phase 19: practice mode titles & descriptions
+  practiceMode_quick_title: { sv: "Snabb övning", en: "Quick practice" },
+  practiceMode_quick_desc: {
+    sv: "En kort blandad session — perfekt när du bara har en minut.",
+    en: "A short mixed session — perfect when you only have a minute.",
+  },
+  practiceMode_weak_spots_title: { sv: "Fokusområden", en: "Weak spots" },
+  practiceMode_weak_spots_desc: {
+    sv: "Mjuka övningar på det du fortfarande bygger upp.",
+    en: "Gentle drills on the things you're still building.",
+  },
+  practiceMode_level_title: { sv: "Nivåövning", en: "Level practice" },
+  practiceMode_level_desc: {
+    sv: "Stanna på din nuvarande nivå och bygg självförtroende.",
+    en: "Stay in your current level and build confidence.",
+  },
+  practiceMode_review_previous_title: { sv: "Repetition", en: "Review" },
+  practiceMode_review_previous_desc: {
+    sv: "Repetera tidigare nivåer för att hålla grunderna varma.",
+    en: "Revisit earlier levels to keep your foundations warm.",
+  },
+  practiceMode_test_prep_title: { sv: "Inför nivåkollen", en: "Test prep" },
+  practiceMode_test_prep_desc: {
+    sv: "En balanserad mix som liknar nivåkollen.",
+    en: "A balanced set that feels like the level check.",
+  },
+  practiceMode_challenge_title: { sv: "Utmana mig", en: "Challenge me" },
+  practiceMode_challenge_desc: {
+    sv: "En tuffare mix med en titt på nästa nivå.",
+    en: "A tougher mix with a peek at the next level.",
+  },
+  practiceQuestions: { sv: "frågor", en: "questions" },
+  practiceRecommended: { sv: "Rekommenderat", en: "Recommended" },
+  practiceTodaysLabel: { sv: "Dagens övning", en: "Today's practice" },
+  practiceContinue: { sv: "Fortsätt öva", en: "Continue practice" },
+  practiceLetsGo: { sv: "Sätt igång", en: "Let's go" },
+  practiceChangeMode: { sv: "Byt läge", en: "Change mode" },
+  practiceTodaysSession: { sv: "Dagens session", en: "Today's session" },
+  practiceFocusSkills: { sv: "Fokus", en: "Focus skills" },
+  practiceQuestionsLabel: { sv: "Frågor", en: "Questions" },
+  practiceTimeLabel: { sv: "Tid", en: "Time" },
+  practiceLevelLabel: { sv: "Nivå", en: "Level" },
+  practiceAccuracy: { sv: "Träffsäkerhet", en: "Accuracy" },
+  practiceCorrect: { sv: "Rätt", en: "Correct" },
+  practiceStrengthened: { sv: "Du stärkte", en: "You strengthened" },
+  practiceWhatNext: { sv: "Föreslås härnäst", en: "What to practice next" },
+  practiceAgain: { sv: "Öva igen", en: "Practice again" },
+  practiceFocusAreas: { sv: "Öva fokusområden", en: "Practice focus areas" },
+  practiceBackToDashboard: { sv: "Tillbaka till start", en: "Back to dashboard" },
+  practiceReadyForLevelCheck: {
+    sv: "Du ser redo ut för en nivåkoll",
+    en: "You look ready for a level check",
+  },
 };
 
 interface LanguageContextType {

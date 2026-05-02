@@ -529,47 +529,141 @@ export interface PracticeModeMeta {
   defaultSize: number;
 }
 
-export const PRACTICE_MODES: readonly PracticeModeMeta[] = [
+export interface PracticeModeMetaWithTime extends PracticeModeMeta {
+  estimatedMinutes: number;
+}
+
+function estimateMinutes(size: number): number {
+  return Math.max(1, Math.round((size * SECONDS_PER_ITEM) / 60));
+}
+
+export const PRACTICE_MODES: readonly PracticeModeMetaWithTime[] = [
   {
     mode: "quick",
     title: "Quick practice",
-    description: "A short mixed session, around 5 questions.",
+    description: "A short mixed session — perfect when you only have a minute.",
     defaultSize: DEFAULT_SIZE.quick,
+    estimatedMinutes: estimateMinutes(DEFAULT_SIZE.quick),
   },
   {
     mode: "weak_spots",
     title: "Weak spots",
-    description: "Focus on skills where your accuracy is lower.",
+    description: "Gentle drills on the things you're still building.",
     defaultSize: DEFAULT_SIZE.weak_spots,
+    estimatedMinutes: estimateMinutes(DEFAULT_SIZE.weak_spots),
   },
   {
     mode: "level",
     title: "Level practice",
-    description: "Focus on your current CEFR level.",
+    description: "Stay in your current level and build confidence.",
     defaultSize: DEFAULT_SIZE.level,
+    estimatedMinutes: estimateMinutes(DEFAULT_SIZE.level),
   },
   {
     mode: "review_previous",
-    title: "Review previous levels",
-    description: "Mix earlier levels to keep your foundations strong.",
+    title: "Review",
+    description: "Revisit earlier levels to keep your foundations warm.",
     defaultSize: DEFAULT_SIZE.review_previous,
+    estimatedMinutes: estimateMinutes(DEFAULT_SIZE.review_previous),
   },
   {
     mode: "test_prep",
     title: "Test prep",
-    description: "A balanced set that resembles the level check.",
+    description: "A balanced set that feels like the level check.",
     defaultSize: DEFAULT_SIZE.test_prep,
+    estimatedMinutes: estimateMinutes(DEFAULT_SIZE.test_prep),
   },
   {
     mode: "challenge",
     title: "Challenge me",
-    description: "Harder mix — current level plus a preview of what's next.",
+    description: "A tougher mix with a peek at the next level.",
     defaultSize: DEFAULT_SIZE.challenge,
+    estimatedMinutes: estimateMinutes(DEFAULT_SIZE.challenge),
   },
 ] as const;
 
 export const EMPTY_STATE_MESSAGE =
   "Practice content is being prepared. Try mixed review or check your connection.";
+
+// ───────────────────────────────────────────────────────────────────
+// Recommendation: which mode should we suggest right now?
+// ───────────────────────────────────────────────────────────────────
+
+export type ReadinessLikeState =
+  | "learning"
+  | "test_recommended"
+  | "passed_but_can_continue";
+
+export interface RecommendModeOptions {
+  stats?: UserPracticeStats;
+  weakSpots?: import("./weakSpots").WeakSpot[];
+  /** Optional readiness signal from `@workspace/readiness`. */
+  readinessState?: ReadinessLikeState;
+  /** True if the user has practiced at all today. */
+  practicedToday?: boolean;
+  now?: number;
+}
+
+export interface RecommendedMode {
+  mode: PracticeMode;
+  /** Short, warm reason ("why this") in EN/SV. */
+  reason: { en: string; sv: string };
+}
+
+export function recommendPracticeMode(
+  opts: RecommendModeOptions = {},
+): RecommendedMode {
+  const weak = opts.weakSpots ?? [];
+  if (opts.readinessState === "test_recommended") {
+    return {
+      mode: "test_prep",
+      reason: {
+        en: "You look ready for a level check — let's warm up with a balanced set.",
+        sv: "Du verkar redo för en nivåkoll — vi värmer upp med en balanserad mix.",
+      },
+    };
+  }
+  if (weak.length >= 2) {
+    return {
+      mode: "weak_spots",
+      reason: {
+        en: "A few areas could use a friendly review today.",
+        sv: "Några områden kan behöva en mjuk repetition idag.",
+      },
+    };
+  }
+  if (opts.readinessState === "passed_but_can_continue") {
+    return {
+      mode: "challenge",
+      reason: {
+        en: "You're cruising — try a slightly harder mix to stretch a little.",
+        sv: "Det rullar på — testa en lite svårare mix för att tänja på det.",
+      },
+    };
+  }
+  if (opts.practicedToday === false) {
+    return {
+      mode: "quick",
+      reason: {
+        en: "A short session is a great way to start the day.",
+        sv: "En kort session är ett bra sätt att börja dagen.",
+      },
+    };
+  }
+  return {
+    mode: "level",
+    reason: {
+      en: "Let's keep building at your current level.",
+      sv: "Vi fortsätter bygga på din nuvarande nivå.",
+    },
+  };
+}
+
+export function getPracticeModeMeta(
+  mode: PracticeMode,
+): PracticeModeMetaWithTime {
+  return PRACTICE_MODES.find((m) => m.mode === mode) ?? PRACTICE_MODES[0];
+}
 
 export * from "./templates";
 export * from "./weakSpots";

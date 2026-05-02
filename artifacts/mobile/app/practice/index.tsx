@@ -1,8 +1,12 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { PRACTICE_MODES, type PracticeMode } from "@workspace/practice";
+import {
+  PRACTICE_MODES,
+  recommendPracticeMode,
+  type PracticeMode,
+} from "@workspace/practice";
 
 import { Screen } from "@/components/Screen";
 import { Typography } from "@/components/Typography";
@@ -22,7 +26,12 @@ const MODE_ICONS: Record<PracticeMode, keyof typeof Feather.glyphMap> = {
 
 export default function PracticeModesScreen() {
   const colors = useColors();
-  const { weakSpots, todaysFocus } = usePracticeStats();
+  const { stats, weakSpots, todaysFocus } = usePracticeStats();
+  const recommended = useMemo(
+    () => recommendPracticeMode({ stats, weakSpots }),
+    [stats, weakSpots],
+  );
+
   return (
     <Screen>
       <View style={styles.header}>
@@ -36,56 +45,84 @@ export default function PracticeModesScreen() {
           Practice
         </Typography>
         <Typography variant="body" muted style={{ marginTop: 4 }}>
-          Pick a mode — we'll build a fresh session for you each time.
+          How do you want to practice today?
         </Typography>
       </View>
 
       <WeakSpotsCard weakSpots={weakSpots} todaysFocus={todaysFocus} />
 
       <View style={styles.grid}>
-        {PRACTICE_MODES.map((m) => (
-          <Card
-            key={m.mode}
-            onPress={() =>
-              router.push(`/practice/session?mode=${m.mode}` as never)
-            }
-            padding={16}
-          >
-            <View style={styles.cardRow}>
-              <View
-                style={[styles.iconBox, { backgroundColor: colors.primary + "20" }]}
-              >
+        {PRACTICE_MODES.map((m) => {
+          const isRec = m.mode === recommended.mode;
+          return (
+            <Card
+              key={m.mode}
+              onPress={() =>
+                router.push(`/practice/session?mode=${m.mode}` as never)
+              }
+              padding={16}
+              style={
+                isRec
+                  ? { borderColor: colors.primary, borderWidth: 1.5 }
+                  : undefined
+              }
+            >
+              <View style={styles.cardRow}>
+                <View
+                  style={[styles.iconBox, { backgroundColor: colors.primary + "20" }]}
+                >
+                  <Feather
+                    name={MODE_ICONS[m.mode]}
+                    size={22}
+                    color={colors.primary}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <View style={styles.titleRow}>
+                    <Typography variant="label">{m.title}</Typography>
+                    {isRec && (
+                      <View
+                        style={[
+                          styles.badge,
+                          { backgroundColor: colors.primary },
+                        ]}
+                      >
+                        <Typography
+                          variant="caption"
+                          style={{ color: "#fff", fontSize: 10, fontWeight: "700" }}
+                        >
+                          RECOMMENDED
+                        </Typography>
+                      </View>
+                    )}
+                  </View>
+                  <Typography
+                    variant="caption"
+                    muted
+                    style={{ marginTop: 2 }}
+                  >
+                    {m.description}
+                  </Typography>
+                  <View style={styles.metaRow}>
+                    <Feather
+                      name="clock"
+                      size={11}
+                      color={colors.mutedForeground}
+                    />
+                    <Typography variant="caption" muted style={{ fontSize: 11 }}>
+                      ~{m.estimatedMinutes} min · ~{m.defaultSize} questions
+                    </Typography>
+                  </View>
+                </View>
                 <Feather
-                  name={MODE_ICONS[m.mode]}
-                  size={22}
-                  color={colors.primary}
+                  name="chevron-right"
+                  size={20}
+                  color={colors.mutedForeground}
                 />
               </View>
-              <View style={{ flex: 1 }}>
-                <Typography variant="label">{m.title}</Typography>
-                <Typography
-                  variant="caption"
-                  muted
-                  style={{ marginTop: 2 }}
-                >
-                  {m.description}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  muted
-                  style={{ marginTop: 4, fontSize: 11 }}
-                >
-                  ~{m.defaultSize} questions
-                </Typography>
-              </View>
-              <Feather
-                name="chevron-right"
-                size={20}
-                color={colors.mutedForeground}
-              />
-            </View>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
       </View>
     </Screen>
   );
@@ -102,5 +139,22 @@ const styles = StyleSheet.create({
     borderRadius: 13,
     alignItems: "center",
     justifyContent: "center",
+  },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flexWrap: "wrap",
+  },
+  badge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  metaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 6,
   },
 });

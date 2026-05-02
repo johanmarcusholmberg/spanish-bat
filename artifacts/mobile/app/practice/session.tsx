@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, StyleSheet, Pressable } from "react-native";
+import { View, StyleSheet, Pressable, ScrollView } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import {
   buildPracticeSession,
   EMPTY_STATE_MESSAGE,
   PRACTICE_MODES,
+  friendlySkillName,
+  friendlySubskillName,
   type PracticeMode,
   type PracticeSession,
 } from "@workspace/practice";
@@ -55,7 +57,7 @@ export default function PracticeSessionScreen() {
     const ids = new Set(localItems.map((i) => i.id));
     return [...localItems, ...savedItems.filter((i) => !ids.has(i.id))];
   }, [localItems, savedItems]);
-  const { stats, recordAttempt } = usePracticeStats();
+  const { stats, recordAttempt, weakSpots } = usePracticeStats();
 
   useEffect(() => {
     let cancelled = false;
@@ -65,16 +67,18 @@ export default function PracticeSessionScreen() {
         if (cancelled) return;
         setSavedItems(savedItemsToPracticeItems(resp.items, "en"));
       } catch {
-        // Best-effort.
+        // best effort
       }
     })();
     return () => {
       cancelled = true;
     };
   }, []);
+
   const [session, setSession] = useState<PracticeSession<MobilePracticePayload> | null>(
     null,
   );
+  const [showIntro, setShowIntro] = useState(true);
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [revealed, setRevealed] = useState(false);
@@ -89,6 +93,7 @@ export default function PracticeSessionScreen() {
       stats,
     });
     setSession(built);
+    setShowIntro(true);
     setIndex(0);
     setPicked(null);
     setRevealed(false);
@@ -112,7 +117,6 @@ export default function PracticeSessionScreen() {
       if (newItems.length === 0) return;
       setSession((prev) => {
         if (!prev || prev.mode !== mode) return prev;
-        // Don't shift the finish line mid-session.
         if (revealed || done || index > 0) return prev;
         const existingIds = new Set(prev.items.map((i) => i.id));
         const fresh = newItems.filter((i) => !existingIds.has(i.id));
@@ -120,7 +124,7 @@ export default function PracticeSessionScreen() {
         return { ...prev, items: [...prev.items, ...fresh] };
       });
     } catch {
-      // Silent fallback — AI is enrichment, not required.
+      // silent
     }
   };
 
@@ -158,32 +162,220 @@ export default function PracticeSessionScreen() {
     );
   }
 
-  if (done) {
-    const accuracy = Math.round((correct / session.items.length) * 100);
+  // Intro screen
+  if (showIntro && session.items.length > 0) {
+    const meta = PRACTICE_MODES.find((m) => m.mode === session.mode);
+    const focusList = session.focusSkills.slice(0, 3).map((s) => friendlySkillName(s, "en"));
+    const subFocus = (weakSpots ?? []).slice(0, 2).map((w) => friendlySubskillName(w.subskill, "en"));
     return (
       <Screen>
-        <View style={styles.center}>
-          <Typography variant="h2" center>
-            Nice work!
+        <Pressable onPress={() => router.replace("/practice" as never)} style={styles.backRow}>
+          <Feather name="chevron-left" size={20} color={colors.mutedForeground} />
+          <Typography variant="caption" muted>
+            Change mode
           </Typography>
-          <Typography variant="body" muted center style={{ marginTop: 6 }}>
-            {correct} / {session.items.length} ({accuracy}%)
+        </Pressable>
+        <Card padding={20} style={{ marginTop: 12 }}>
+          <Typography variant="caption" muted style={{ textTransform: "uppercase", letterSpacing: 1 }}>
+            Today's session
           </Typography>
+          <Typography variant="h2" style={{ marginTop: 4 }}>
+            {meta?.title ?? "Practice"}
+          </Typography>
+          <Typography variant="body" style={{ marginTop: 10 }}>
+            {`Today we'll practice ${focusList.join(", ") || "a balanced mix"}${
+              subFocus.length ? ` with a focus on ${subFocus.join(" and ")}` : ""
+            } because it's useful for your ${userLevel} progress.`}
+          </Typography>
+
+          <View style={styles.statsRow}>
+            <View style={[styles.statBox, { backgroundColor: colors.muted }]}>
+              <Typography variant="caption" muted style={{ fontSize: 10 }}>
+                QUESTIONS
+              </Typography>
+              <Typography variant="h3" style={{ marginTop: 2 }}>
+                {session.items.length}
+              </Typography>
+            </View>
+            <View style={[styles.statBox, { backgroundColor: colors.muted }]}>
+              <Typography variant="caption" muted style={{ fontSize: 10 }}>
+                TIME
+              </Typography>
+              <Typography variant="h3" style={{ marginTop: 2 }}>
+                ~{meta?.estimatedMinutes ?? 3} min
+              </Typography>
+            </View>
+            <View style={[styles.statBox, { backgroundColor: colors.muted }]}>
+              <Typography variant="caption" muted style={{ fontSize: 10 }}>
+                LEVEL
+              </Typography>
+              <Typography variant="h3" style={{ marginTop: 2 }}>
+                {userLevel}
+              </Typography>
+            </View>
+          </View>
+
+          {focusList.length > 0 && (
+            <View style={{ marginTop: 14 }}>
+              <Typography variant="caption" muted style={{ marginBottom: 6, fontSize: 10, letterSpacing: 1 }}>
+                FOCUS SKILLS
+              </Typography>
+              <View style={styles.chipRow}>
+                {focusList.map((f) => (
+                  <View
+                    key={f}
+                    style={[
+                      styles.chip,
+                      { backgroundColor: colors.primary + "20", borderColor: colors.primary + "40" },
+                    ]}
+                  >
+                    <Typography variant="caption" style={{ color: colors.primary, fontWeight: "600" }}>
+                      {f}
+                    </Typography>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
           <Pressable
-            onPress={() => start(session.mode)}
-            style={[styles.btn, { backgroundColor: colors.primary }]}
+            onPress={() => setShowIntro(false)}
+            style={[styles.btn, { backgroundColor: colors.primary, marginTop: 18 }]}
           >
-            <Typography variant="label" color="#fff">
-              New session
+            <Feather name="play-circle" size={18} color="#fff" />
+            <Typography variant="label" color="#fff" style={{ marginLeft: 6 }}>
+              Let's go
             </Typography>
           </Pressable>
           <Pressable
             onPress={() => router.replace("/practice" as never)}
-            style={[styles.btn, { borderColor: colors.border, borderWidth: 1 }]}
+            style={[styles.btn, { borderColor: colors.border, borderWidth: 1, marginTop: 8 }]}
           >
             <Typography variant="label">Change mode</Typography>
           </Pressable>
-        </View>
+        </Card>
+      </Screen>
+    );
+  }
+
+  if (done) {
+    const accuracy = Math.round((correct / session.items.length) * 100);
+    const strengthened = session.focusSkills.slice(0, 3).map((s) => friendlySkillName(s, "en"));
+    const headline =
+      accuracy >= 90
+        ? "Brilliant work!"
+        : accuracy >= 70
+          ? "Nice work — you're getting stronger."
+          : accuracy >= 50
+            ? "Good moment to review this."
+            : "Let's make this more automatic.";
+    const subline =
+      accuracy >= 70
+        ? "Want to keep practicing or take a break?"
+        : "Short, frequent practice sticks best.";
+    return (
+      <Screen>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <Card padding={20}>
+            <View style={{ alignItems: "center" }}>
+              <View style={[styles.celebrate, { backgroundColor: colors.primary + "22" }]}>
+                <Feather name="award" size={28} color={colors.primary} />
+              </View>
+              <Typography variant="h2" center style={{ marginTop: 10 }}>
+                {headline}
+              </Typography>
+              <Typography variant="caption" muted center style={{ marginTop: 4 }}>
+                {subline}
+              </Typography>
+            </View>
+
+            <View style={[styles.statsRow, { marginTop: 18 }]}>
+              <View style={[styles.statBox, { backgroundColor: colors.muted }]}>
+                <Typography variant="caption" muted style={{ fontSize: 10 }}>
+                  ACCURACY
+                </Typography>
+                <Typography variant="h2" style={{ marginTop: 2, color: colors.primary }}>
+                  {accuracy}%
+                </Typography>
+              </View>
+              <View style={[styles.statBox, { backgroundColor: colors.muted }]}>
+                <Typography variant="caption" muted style={{ fontSize: 10 }}>
+                  CORRECT
+                </Typography>
+                <Typography variant="h2" style={{ marginTop: 2 }}>
+                  {correct}/{session.items.length}
+                </Typography>
+              </View>
+            </View>
+
+            {strengthened.length > 0 && (
+              <View style={{ marginTop: 16 }}>
+                <Typography variant="caption" muted style={{ marginBottom: 6, fontSize: 10, letterSpacing: 1 }}>
+                  YOU STRENGTHENED
+                </Typography>
+                <View style={styles.chipRow}>
+                  {strengthened.map((s) => (
+                    <View
+                      key={s}
+                      style={[styles.chip, { backgroundColor: "#10b98122", borderColor: "#10b98144" }]}
+                    >
+                      <Typography variant="caption" style={{ color: "#047857", fontWeight: "600" }}>
+                        {s}
+                      </Typography>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            <View style={{ marginTop: 16, padding: 12, backgroundColor: colors.muted, borderRadius: 10 }}>
+              <Typography variant="caption" muted style={{ fontSize: 10, letterSpacing: 1 }}>
+                WHAT TO PRACTICE NEXT
+              </Typography>
+              <Typography variant="body" style={{ marginTop: 4 }}>
+                {accuracy >= 70
+                  ? "A few areas could use more time. Try focus areas next."
+                  : "A short level practice will help it stick."}
+              </Typography>
+            </View>
+
+            <Pressable
+              onPress={() => start(session.mode)}
+              style={[styles.btn, { backgroundColor: colors.primary, marginTop: 18 }]}
+            >
+              <Feather name="refresh-cw" size={16} color="#fff" />
+              <Typography variant="label" color="#fff" style={{ marginLeft: 6 }}>
+                Practice again
+              </Typography>
+            </Pressable>
+            <Pressable
+              onPress={() => start("weak_spots")}
+              style={[styles.btn, { borderColor: colors.border, borderWidth: 1, marginTop: 8 }]}
+            >
+              <Feather name="target" size={16} color={colors.foreground} />
+              <Typography variant="label" style={{ marginLeft: 6 }}>
+                Practice focus areas
+              </Typography>
+            </Pressable>
+            <Pressable
+              onPress={() => router.replace("/(tabs)" as never)}
+              style={[styles.btn, { borderColor: colors.border, borderWidth: 1, marginTop: 8 }]}
+            >
+              <Feather name="home" size={16} color={colors.foreground} />
+              <Typography variant="label" style={{ marginLeft: 6 }}>
+                Back to dashboard
+              </Typography>
+            </Pressable>
+            <Pressable
+              onPress={() => router.push("/level-check" as never)}
+              style={[styles.btn, { marginTop: 8 }]}
+            >
+              <Typography variant="label" color={colors.primary}>
+                Take level check
+              </Typography>
+            </Pressable>
+          </Card>
+        </ScrollView>
       </Screen>
     );
   }
@@ -308,10 +500,7 @@ export default function PracticeSessionScreen() {
                 key={opt}
                 disabled={revealed}
                 onPress={() => setPicked(opt)}
-                style={[
-                  styles.opt,
-                  { backgroundColor: bg, borderColor: bd },
-                ]}
+                style={[styles.opt, { backgroundColor: bg, borderColor: bd }]}
               >
                 <Typography variant="body">{opt}</Typography>
               </Pressable>
@@ -319,11 +508,7 @@ export default function PracticeSessionScreen() {
           })}
         </View>
         {revealed && p.explanation ? (
-          <Typography
-            variant="caption"
-            muted
-            style={{ marginTop: 12 }}
-          >
+          <Typography variant="caption" muted style={{ marginTop: 12 }}>
             {p.explanation.en}
           </Typography>
         ) : null}
@@ -336,7 +521,7 @@ export default function PracticeSessionScreen() {
           ) : (
             <View style={{ marginTop: 12 }}>
               <Typography variant="caption" muted>
-                Something wrong?
+                Something off?
               </Typography>
               <View style={styles.reportRow}>
                 {[
@@ -407,10 +592,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   btn: {
+    flexDirection: "row",
     paddingVertical: 12,
     paddingHorizontal: 18,
     borderRadius: 10,
     alignItems: "center",
+    justifyContent: "center",
     marginTop: 12,
   },
   reportRow: {
@@ -424,5 +611,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 6,
     borderWidth: 1,
+  },
+  statsRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 14,
+  },
+  statBox: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  chipRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  chip: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  celebrate: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
