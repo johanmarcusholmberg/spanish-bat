@@ -36,6 +36,7 @@ interface AuthContextType {
   register: (email: string, password: string) => Promise<string | null>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<string | null>;
+  completeResetPassword: (code: string, password: string) => Promise<string | null>;
   updatePassword: (password: string) => Promise<string | null>;
   updateProfile: (profile: Partial<UserProfile>) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
@@ -52,6 +53,7 @@ const AuthContext = createContext<AuthContextType>({
   register: async () => null,
   logout: async () => {},
   resetPassword: async () => null,
+  completeResetPassword: async () => null,
   updatePassword: async () => null,
   updateProfile: async () => {},
   signInWithGoogle: async () => {},
@@ -60,7 +62,7 @@ const AuthContext = createContext<AuthContextType>({
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { user: clerkUser, isLoaded } = useUser();
-  const { signOut, openSignIn } = useClerk();
+  const { signOut } = useClerk();
   const { signIn } = useSignIn();
   const { signUp } = useSignUp();
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -192,14 +194,56 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setProfileLang?.(null);
   };
 
-  const resetPassword = async (_email: string): Promise<string | null> => {
-    openSignIn();
-    return null;
+  const resetPassword = async (email: string): Promise<string | null> => {
+    if (!signIn) return "Sign-in not available";
+    try {
+      const { error } = await signIn.create({
+        strategy: "reset_password_email_code",
+        identifier: email,
+      } as unknown as Parameters<typeof signIn.create>[0]);
+      if (error) {
+        return (error as ClerkError).longMessage ?? (error as ClerkError).message ?? "Reset failed";
+      }
+      return null;
+    } catch (err: unknown) {
+      if (err && typeof err === "object" && "errors" in err) {
+        const clerkErr = err as { errors: ClerkError[] };
+        return clerkErr.errors?.[0]?.longMessage ?? "Reset failed";
+      }
+      return err instanceof Error ? err.message : "Reset failed";
+    }
+  };
+
+  const completeResetPassword = async (code: string, password: string): Promise<string | null> => {
+    if (!signIn) return "Sign-in not available";
+    try {
+      const { error } = await (signIn as unknown as {
+        attemptFirstFactor: (params: { strategy: string; code: string; password: string }) => Promise<{ error?: unknown }>;
+      }).attemptFirstFactor({
+        strategy: "reset_password_email_code",
+        code,
+        password,
+      });
+      if (error) {
+        return (error as ClerkError).longMessage ?? (error as ClerkError).message ?? "Reset failed";
+      }
+      if (signIn.status === "complete") {
+        await signIn.finalize();
+      }
+      return null;
+    } catch (err: unknown) {
+      if (err && typeof err === "object" && "errors" in err) {
+        const clerkErr = err as { errors: ClerkError[] };
+        return clerkErr.errors?.[0]?.longMessage ?? "Reset failed";
+      }
+      return err instanceof Error ? err.message : "Reset failed";
+    }
   };
 
   const updatePassword = async (_password: string): Promise<string | null> => {
+    if (!clerkUser) return "Not authenticated";
     try {
-      await clerkUser?.updatePassword({ newPassword: _password });
+      await clerkUser.updatePassword({ newPassword: _password });
       return null;
     } catch (err: unknown) {
       if (err && typeof err === "object" && "errors" in err) {
@@ -257,6 +301,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         register,
         logout,
         resetPassword,
+        completeResetPassword,
         updatePassword,
         updateProfile,
         signInWithGoogle,

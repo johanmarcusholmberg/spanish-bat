@@ -101,11 +101,21 @@ router.get("/admin/insights", requireAuth, requireAdmin, async (req: Request, re
 
     const activeUsers = new Set(recentActivity.map((a) => a.userId)).size;
 
+    const progressRows = await db.select().from(userProgressTable);
+    const categoryProgress: Record<string, { completed: number; total: number }> = {};
+    for (const row of progressRows) {
+      const cat = row.category;
+      if (!categoryProgress[cat]) categoryProgress[cat] = { completed: 0, total: 0 };
+      categoryProgress[cat].completed += row.completed ?? 0;
+      categoryProgress[cat].total += row.total ?? 0;
+    }
+
     res.json({
       levelDistribution,
       statusDistribution,
       recentSignups,
       activeUsersLastWeek: activeUsers,
+      categoryProgress,
       vocabularyStats: {
         total: vocabulary.length,
         learned: vocabulary.filter((v) => v.learned).length,

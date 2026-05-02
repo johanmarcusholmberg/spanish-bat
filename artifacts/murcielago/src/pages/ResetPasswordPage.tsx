@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import MurciMascot from "@/components/MurciMascot";
-import { Eye, EyeOff, Check, X, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Check, X, Loader2, KeyRound } from "lucide-react";
 
 const ResetPasswordPage = () => {
   const { t, language } = useLanguage();
-  const { updatePassword } = useAuth();
+  const { completeResetPassword } = useAuth();
   const navigate = useNavigate();
+  const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -21,14 +22,14 @@ const ResetPasswordPage = () => {
   const hasNumber = /[0-9]/.test(password);
   const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
   const passwordsMatch = password === confirmPassword && password.length > 0;
-  const isValid = hasMinLength && hasUppercase && hasNumber && hasSpecial && passwordsMatch;
+  const isValid = code.trim().length > 0 && hasMinLength && hasUppercase && hasNumber && hasSpecial && passwordsMatch;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValid) return;
     setLoading(true);
     setError("");
-    const err = await updatePassword(password);
+    const err = await completeResetPassword(code.trim(), password);
     setLoading(false);
     if (err) {
       setError(err);
@@ -67,11 +68,31 @@ const ResetPasswordPage = () => {
         <div className="text-center mb-6">
           <MurciMascot size="md" mood="encouraging" />
           <h1 className="text-2xl font-heading font-bold text-foreground mt-3">{t("resetPasswordTitle")}</h1>
-          <p className="text-muted-foreground text-sm mt-1">{t("passwordHistory")}</p>
+          <p className="text-muted-foreground text-sm mt-1">
+            {language === "sv" ? "Ange koden från e-posten och ditt nya lösenord." : "Enter the code from your email and your new password."}
+          </p>
         </div>
 
         <div className="bg-card rounded-lg p-6 shadow-soft">
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                {language === "sv" ? "Verifieringskod" : "Verification code"}
+              </label>
+              <div className="relative">
+                <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-md bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition tracking-widest"
+                  placeholder={language === "sv" ? "Kod från e-post" : "Code from email"}
+                  autoComplete="one-time-code"
+                  required
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">{t("newPassword")}</label>
               <div className="relative">
