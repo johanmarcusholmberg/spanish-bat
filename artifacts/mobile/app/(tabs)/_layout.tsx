@@ -9,29 +9,75 @@ import React from "react";
 import { ActivityIndicator, Platform, StyleSheet, View, useColorScheme } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
+import { useAuth } from "@/contexts/AuthContext";
+
+/**
+ * Tab layout — Phase 22 "session-first" navigation:
+ *   Today / Practice / Library / Progress / Profile
+ *
+ * The vocabulary, grammar, and reading routes are kept (so deep links
+ * still work) but hidden from the bar — they live inside Library now.
+ */
+
+function useTabLabels() {
+  const { user } = useAuth();
+  const lang: "en" | "sv" = user?.learningFrom === "sv" ? "sv" : "en";
+  return lang === "sv"
+    ? {
+        today: "Idag",
+        practice: "Öva",
+        library: "Bibliotek",
+        progress: "Framsteg",
+        profile: "Profil",
+      }
+    : {
+        today: "Today",
+        practice: "Practice",
+        library: "Library",
+        progress: "Progress",
+        profile: "Profile",
+      };
+}
 
 function NativeTabLayout() {
+  const labels = useTabLabels();
   return (
     <NativeTabs>
       <NativeTabs.Trigger name="index">
-        <Icon sf={{ default: "house", selected: "house.fill" }} />
-        <Label>Dashboard</Label>
+        <Icon sf={{ default: "sparkles", selected: "sparkles" }} />
+        <Label>{labels.today}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="exercises">
-        <Icon sf={{ default: "pencil", selected: "pencil" }} />
-        <Label>Exercises</Label>
+        <Icon sf={{ default: "dumbbell", selected: "dumbbell.fill" }} />
+        <Label>{labels.practice}</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="vocabulary">
-        <Icon sf={{ default: "book", selected: "book.fill" }} />
-        <Label>Vocabulary</Label>
+      <NativeTabs.Trigger name="library">
+        <Icon sf={{ default: "books.vertical", selected: "books.vertical.fill" }} />
+        <Label>{labels.library}</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="grammar">
-        <Icon sf={{ default: "text.book.closed", selected: "text.book.closed.fill" }} />
-        <Label>Grammar</Label>
+      <NativeTabs.Trigger name="progress">
+        <Icon sf={{ default: "chart.line.uptrend.xyaxis", selected: "chart.line.uptrend.xyaxis" }} />
+        <Label>{labels.progress}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
         <Icon sf={{ default: "person", selected: "person.fill" }} />
-        <Label>Profile</Label>
+        <Label>{labels.profile}</Label>
+      </NativeTabs.Trigger>
+      {/*
+        Legacy routes — kept registered so Library cards and deep links
+        can still navigate to them, but hidden from the bar via
+        `hidden`. Without this, the iOS NativeTabs path would not
+        surface the route file and `router.push("/(tabs)/grammar")`
+        could behave inconsistently across platforms.
+      */}
+      <NativeTabs.Trigger name="vocabulary" hidden>
+        <Label>vocabulary</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="grammar" hidden>
+        <Label>grammar</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="reading" hidden>
+        <Label>reading</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -43,6 +89,18 @@ function ClassicTabLayout() {
   const isDark = colorScheme === "dark";
   const isIOS = Platform.OS === "ios";
   const isWeb = Platform.OS === "web";
+  const labels = useTabLabels();
+
+  const tabIcon = (
+    color: string,
+    iosName: string,
+    androidName: keyof typeof Feather.glyphMap,
+  ) =>
+    isIOS ? (
+      <SymbolView name={iosName as never} tintColor={color} size={24} />
+    ) : (
+      <Feather name={androidName} size={22} color={color} />
+    );
 
   return (
     <Tabs
@@ -75,69 +133,42 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Dashboard",
-          tabBarIcon: ({ color }) =>
-            isIOS ? (
-              <SymbolView name="house" tintColor={color} size={24} />
-            ) : (
-              <Feather name="home" size={22} color={color} />
-            ),
+          title: labels.today,
+          tabBarIcon: ({ color }) => tabIcon(color, "sparkles", "zap"),
         }}
       />
       <Tabs.Screen
         name="exercises"
         options={{
-          title: "Exercises",
-          tabBarIcon: ({ color }) =>
-            isIOS ? (
-              <SymbolView name="pencil" tintColor={color} size={24} />
-            ) : (
-              <Feather name="edit-3" size={22} color={color} />
-            ),
+          title: labels.practice,
+          tabBarIcon: ({ color }) => tabIcon(color, "dumbbell", "activity"),
         }}
       />
       <Tabs.Screen
-        name="vocabulary"
+        name="library"
         options={{
-          title: "Vocabulary",
-          tabBarIcon: ({ color }) =>
-            isIOS ? (
-              <SymbolView name="book" tintColor={color} size={24} />
-            ) : (
-              <Feather name="book" size={22} color={color} />
-            ),
+          title: labels.library,
+          tabBarIcon: ({ color }) => tabIcon(color, "books.vertical", "book"),
         }}
       />
       <Tabs.Screen
-        name="grammar"
+        name="progress"
         options={{
-          title: "Grammar",
-          tabBarIcon: ({ color }) =>
-            isIOS ? (
-              <SymbolView name="text.book.closed" tintColor={color} size={24} />
-            ) : (
-              <Feather name="book-open" size={22} color={color} />
-            ),
-        }}
-      />
-      <Tabs.Screen
-        name="reading"
-        options={{
-          href: null,
+          title: labels.progress,
+          tabBarIcon: ({ color }) => tabIcon(color, "chart.line.uptrend.xyaxis", "trending-up"),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
-          tabBarIcon: ({ color }) =>
-            isIOS ? (
-              <SymbolView name="person" tintColor={color} size={24} />
-            ) : (
-              <Feather name="user" size={22} color={color} />
-            ),
+          title: labels.profile,
+          tabBarIcon: ({ color }) => tabIcon(color, "person", "user"),
         }}
       />
+      {/* Hidden routes — still reachable via deep links / Library cards */}
+      <Tabs.Screen name="vocabulary" options={{ href: null }} />
+      <Tabs.Screen name="grammar" options={{ href: null }} />
+      <Tabs.Screen name="reading" options={{ href: null }} />
     </Tabs>
   );
 }

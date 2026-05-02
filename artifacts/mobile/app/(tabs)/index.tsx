@@ -8,7 +8,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Typography } from "@/components/Typography";
 import { Card } from "@/components/Card";
-import { ProgressBar } from "@/components/ProgressBar";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
 import { useColors } from "@/hooks/useColors";
@@ -18,33 +17,15 @@ import { dashboardCache, recentLessons, type RecentLesson } from "@/lib/storage"
 import {
   calculateReadiness,
   progressRowsToInputs,
-  getNextLevel,
   type Level,
   type ReadinessResult,
-  type SkillCategory,
 } from "@workspace/readiness";
 import TodaysPracticeCard from "@/components/TodaysPracticeCard";
+import EchoSteps from "@/components/EchoSteps";
+import LevelReadinessCard from "@/components/LevelReadinessCard";
 
 const PASSED_KEY = (userId: string, level: string) =>
   `murci.passedLevelCheck.${userId}.${level}`;
-
-const CATEGORY_LABEL: Record<SkillCategory, string> = {
-  vocabulary: "Vocabulary",
-  grammar: "Grammar",
-  sentences: "Sentences",
-  reading: "Reading",
-  listening: "Listening",
-  speaking: "Speaking",
-};
-
-const CATEGORY_PATH: Record<SkillCategory, string> = {
-  vocabulary: "/(tabs)/vocabulary",
-  grammar: "/(tabs)/grammar",
-  sentences: "/(tabs)/exercises",
-  reading: "/(tabs)/reading",
-  listening: "/(tabs)/exercises",
-  speaking: "/(tabs)/exercises",
-};
 
 interface DashboardData {
   streak: { currentStreak: number; longestStreak: number; lastActiveDate: string } | null;
@@ -53,10 +34,24 @@ interface DashboardData {
   vocabCount: number;
 }
 
-export default function DashboardScreen() {
+/**
+ * Today — Phase 22 "session-first" home screen.
+ *
+ * Order is intentional and matches the web client:
+ *   1. Greeting + Echo steps strip (recurring brand identity)
+ *   2. Today's recommended practice (single primary CTA)
+ *   3. Continue where you left off (if any)
+ *   4. Level Readiness (warm, never-pushy)
+ *   5. Streak summary
+ *
+ * The dense category readiness breakdown moved to the Progress tab so
+ * Today stays calm.
+ */
+export default function TodayScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { user, userId } = useAuth();
+  const lang: "en" | "sv" = user?.learningFrom === "sv" ? "sv" : "en";
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -132,7 +127,7 @@ export default function DashboardScreen() {
     load();
   };
 
-  const greeting = greetingForHour(new Date().getHours(), user?.learningFrom ?? "sv");
+  const greeting = greetingForHour(new Date().getHours(), lang);
   const containerStyle = {
     flex: 1,
     backgroundColor: colors.background,
@@ -142,7 +137,7 @@ export default function DashboardScreen() {
   if (loading && !data) {
     return (
       <View style={containerStyle}>
-        <LoadingState fullscreen label="Loading your dashboard…" />
+        <LoadingState fullscreen label={lang === "sv" ? "Laddar idag…" : "Loading today…"} />
       </View>
     );
   }
@@ -157,9 +152,7 @@ export default function DashboardScreen() {
 
   const streakCount = data?.streak?.currentStreak ?? 0;
   const longestStreak = data?.streak?.longestStreak ?? 0;
-
   const currentLevel = (user?.level as Level) ?? "A1";
-  const nextLevel = getNextLevel(currentLevel);
 
   const readiness: ReadinessResult = calculateReadiness(
     currentLevel,
@@ -167,33 +160,6 @@ export default function DashboardScreen() {
       hasPassedLevelTest: hasPassedLevelCheck,
     }),
   );
-
-  const stateMessage = (() => {
-    if (readiness.state === "passed_but_can_continue") {
-      return nextLevel
-        ? `You passed the ${currentLevel} check. Move to ${nextLevel}, or keep strengthening ${currentLevel}.`
-        : `You've passed the highest level. Keep practicing to stay sharp.`;
-    }
-    if (readiness.state === "test_recommended") {
-      return `You look ready for the ${nextLevel ?? currentLevel} check. Take it now, or keep practicing ${currentLevel}.`;
-    }
-    return `Keep practicing ${currentLevel}. You're building confidence.`;
-  })();
-
-  // Exposed for the level-check screen to call ONLY on a successful test
-  // result. Never fired on "Take level check" click — that would mark the
-  // user as passed before the test produced any outcome.
-  const _markPassedExternallyAvailable = async () => {
-    setHasPassedLevelCheck(true);
-    if (userId) {
-      try {
-        await AsyncStorage.setItem(PASSED_KEY(userId, currentLevel), "1");
-      } catch {
-        // ignore
-      }
-    }
-  };
-  void _markPassedExternallyAvailable;
 
   return (
     <ScrollView
@@ -204,13 +170,14 @@ export default function DashboardScreen() {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
       }
     >
+      {/* 1. Greeting + level badge */}
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <Typography variant="h2">
             {greeting}, {user?.displayName?.split(" ")[0] ?? "amigo"} 👋
           </Typography>
           <Typography variant="body" muted style={{ marginTop: 2 }}>
-            Ready for today's Spanish?
+            {lang === "sv" ? "Redo för dagens spanska?" : "Ready for today's Spanish?"}
           </Typography>
         </View>
         <View style={[styles.levelBadge, { backgroundColor: colors.primary + "30", borderColor: colors.primary }]}>
@@ -220,68 +187,43 @@ export default function DashboardScreen() {
         </View>
       </View>
 
-      {/* Streak card */}
-      <Card style={{ marginBottom: 12 }}>
-        <View style={styles.streakRow}>
-          <View style={[styles.streakIcon, { backgroundColor: colors.primary + "20" }]}>
-            <Feather name="zap" size={26} color={colors.primary} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Typography variant="h2">
-              {streakCount} {streakCount === 1 ? "day" : "days"}
-            </Typography>
-            <Typography variant="caption" muted>
-              Longest: {longestStreak} {longestStreak === 1 ? "day" : "days"}
-            </Typography>
-          </View>
-          <Card
-            variant="muted"
-            padding={10}
-            onPress={() => router.push("/stats")}
-            style={{ borderRadius: 12 }}
-          >
-            <Typography variant="caption" style={{ color: colors.foreground }}>
-              View stats
-            </Typography>
-          </Card>
-        </View>
-      </Card>
+      {/* 2. Echo identity strip */}
+      <View style={{ marginBottom: 16 }}>
+        <EchoSteps />
+      </View>
 
-      {/* Today's recommended practice */}
+      {/* 3. Today's recommended practice */}
       <TodaysPracticeCard readinessState={readiness.state} />
 
-      {/* Continue learning */}
-      <Card
-        variant="primary"
-        onPress={() => {
-          if (data?.lastActivity?.exerciseType === "grammar") {
-            router.push("/(tabs)/grammar");
-          } else if (data?.lastActivity?.exerciseType === "reading") {
-            router.push("/(tabs)/reading");
-          } else if (data?.lastActivity?.exerciseType === "vocabulary") {
-            router.push("/(tabs)/vocabulary");
-          } else {
-            router.push("/(tabs)/exercises");
-          }
-        }}
-        style={{ marginBottom: 16 }}
-      >
-        <Typography variant="caption" muted>
-          CONTINUE LEARNING
-        </Typography>
-        <Typography variant="h3" style={{ marginTop: 4 }}>
-          {data?.lastActivity?.exerciseLabel ?? "Pick where to start →"}
-        </Typography>
-        <Typography variant="caption" muted style={{ marginTop: 4 }}>
-          {data?.lastActivity ? "Tap to resume" : "Browse exercises"}
-        </Typography>
-      </Card>
+      {/* 4. Continue where you left off */}
+      {data?.lastActivity && (
+        <Card
+          variant="primary"
+          onPress={() => {
+            const t = data?.lastActivity?.exerciseType;
+            if (t === "grammar") router.push("/(tabs)/grammar");
+            else if (t === "reading") router.push("/(tabs)/reading");
+            else if (t === "vocabulary") router.push("/(tabs)/vocabulary");
+            else router.push("/(tabs)/exercises");
+          }}
+          style={{ marginBottom: 14 }}
+        >
+          <Typography variant="caption" muted>
+            {lang === "sv" ? "FORTSÄTT LÄRA" : "CONTINUE LEARNING"}
+          </Typography>
+          <Typography variant="h3" style={{ marginTop: 4 }}>
+            {data.lastActivity.exerciseLabel}
+          </Typography>
+          <Typography variant="caption" muted style={{ marginTop: 4 }}>
+            {lang === "sv" ? "Tryck för att fortsätta" : "Tap to resume"}
+          </Typography>
+        </Card>
+      )}
 
-      {/* Pick up where you left off */}
       {recents.length > 0 && (
         <>
           <Typography variant="h3" style={{ marginBottom: 10 }}>
-            Pick up where you left off
+            {lang === "sv" ? "Plocka upp där du slutade" : "Pick up where you left off"}
           </Typography>
           <View style={styles.recentsRow}>
             {recents.map((r) => (
@@ -294,7 +236,13 @@ export default function DashboardScreen() {
                 style={{ flexBasis: "47%", flexGrow: 1 }}
               >
                 <Typography variant="caption" muted>
-                  {r.type === "lesson" ? "GRAMMAR" : "READING"}
+                  {r.type === "lesson"
+                    ? lang === "sv"
+                      ? "GRAMMATIK"
+                      : "GRAMMAR"
+                    : lang === "sv"
+                      ? "LÄSNING"
+                      : "READING"}
                   {r.level ? ` · ${r.level}` : ""}
                 </Typography>
                 <Typography variant="label" style={{ marginTop: 6 }} numberOfLines={2}>
@@ -303,163 +251,46 @@ export default function DashboardScreen() {
               </Card>
             ))}
           </View>
-          <View style={{ height: 16 }} />
+          <View style={{ height: 14 }} />
         </>
       )}
 
-      {/* Readiness overview */}
-      <Typography variant="h3" style={{ marginBottom: 10 }}>
-        {currentLevel} readiness
-      </Typography>
+      {/* 5. Level readiness — warm, never pushy */}
+      <LevelReadinessCard readiness={readiness} />
+
+      {/* 6. Streak summary */}
       <Card style={{ marginBottom: 12 }}>
-        <View style={styles.readinessHeader}>
+        <View style={styles.streakRow}>
+          <View style={[styles.streakIcon, { backgroundColor: colors.primary + "20" }]}>
+            <Feather name="zap" size={22} color={colors.primary} />
+          </View>
           <View style={{ flex: 1 }}>
-            <Typography variant="h2" style={{ color: colors.primary }}>
-              {readiness.score}%
+            <Typography variant="h3">
+              {streakCount}{" "}
+              {streakCount === 1
+                ? lang === "sv" ? "dag" : "day"
+                : lang === "sv" ? "dagar" : "days"}
             </Typography>
-            <Typography variant="caption" muted style={{ marginTop: 2 }}>
-              {readiness.state === "learning" && "Building confidence"}
-              {readiness.state === "test_recommended" &&
-                `Nearly ready for the ${nextLevel ?? currentLevel} check`}
-              {readiness.state === "passed_but_can_continue" && "Ready to advance"}
-            </Typography>
-          </View>
-        </View>
-        <View style={{ height: 8 }} />
-        <ProgressBar value={readiness.score} max={100} color={colors.primary} />
-        <View style={{ height: 12 }} />
-        {readiness.breakdown.map((b) => (
-          <View key={b.category} style={{ marginBottom: 8 }}>
-            <View style={styles.progressLabelRow}>
-              <Typography variant="label">{CATEGORY_LABEL[b.category]}</Typography>
-              <Typography variant="caption" muted>
-                {b.percentage}%
-              </Typography>
-            </View>
-            <ProgressBar value={b.percentage} max={100} color={colors.secondary} />
-          </View>
-        ))}
-      </Card>
-
-      {/* Level state actions */}
-      <Card style={{ marginBottom: 16 }}>
-        <Typography variant="caption" muted>
-          {currentLevel.toUpperCase()}
-        </Typography>
-        <Typography variant="body" style={{ marginTop: 4, marginBottom: 12 }}>
-          {stateMessage}
-        </Typography>
-        {readiness.state === "learning" && (
-          <Card variant="muted" padding={12} onPress={() => router.push("/(tabs)/exercises")}>
-            <Typography variant="label">Keep practicing this level</Typography>
-          </Card>
-        )}
-        {readiness.state === "test_recommended" && (
-          <View style={{ gap: 8 }}>
             <Typography variant="caption" muted>
-              You look ready for the {nextLevel ?? currentLevel} check.
+              {lang === "sv" ? "Längst" : "Longest"}: {longestStreak}{" "}
+              {longestStreak === 1
+                ? lang === "sv" ? "dag" : "day"
+                : lang === "sv" ? "dagar" : "days"}
             </Typography>
-            <Card
-              variant="primary"
-              padding={12}
-              onPress={() => router.push("/level-check" as never)}
-            >
-              <Typography variant="label">Take level check</Typography>
-            </Card>
-            <Card variant="muted" padding={12} onPress={() => router.push("/(tabs)/exercises")}>
-              <Typography variant="label">Keep practicing {currentLevel}</Typography>
-            </Card>
-            {readiness.weakSpots[0] && (
-              <Card
-                variant="muted"
-                padding={12}
-                onPress={() =>
-                  router.push("/practice/session?mode=weak_spots" as never)
-                }
-              >
-                <Typography variant="label">
-                  Practice weak spots: {CATEGORY_LABEL[readiness.weakSpots[0]]}
-                </Typography>
-              </Card>
-            )}
           </View>
-        )}
-        {readiness.state === "passed_but_can_continue" && (
-          <View style={{ gap: 8 }}>
-            {nextLevel && (
-              <Card variant="primary" padding={12} onPress={() => router.push("/(tabs)/exercises")}>
-                <Typography variant="label">Move to next level: {nextLevel}</Typography>
-              </Card>
-            )}
-            <Card variant="muted" padding={12} onPress={() => router.push("/(tabs)/exercises")}>
-              <Typography variant="label">Continue current level</Typography>
-            </Card>
-            {nextLevel && (
-              <Card variant="muted" padding={12} onPress={() => router.push("/(tabs)/exercises")}>
-                <Typography variant="label">Mix current + next level</Typography>
-              </Card>
-            )}
-          </View>
-        )}
+          <Card
+            variant="muted"
+            padding={10}
+            onPress={() => router.push("/(tabs)/progress")}
+            style={{ borderRadius: 12 }}
+          >
+            <Typography variant="caption" style={{ color: colors.foreground }}>
+              {lang === "sv" ? "Se framsteg" : "View progress"}
+            </Typography>
+          </Card>
+        </View>
       </Card>
-
-      {/* Quick actions */}
-      <Typography variant="h3" style={{ marginBottom: 10 }}>
-        Jump in
-      </Typography>
-      <View style={styles.quickGrid}>
-        <QuickAction icon="layers" label="Flashcards" onPress={() => router.push("/flashcards")} />
-        <QuickAction icon="edit-3" label="Exercises" onPress={() => router.push("/(tabs)/exercises")} />
-        <QuickAction icon="book-open" label="Reading" onPress={() => router.push("/(tabs)/reading")} />
-        <QuickAction icon="book" label="Vocabulary" onPress={() => router.push("/(tabs)/vocabulary")} />
-      </View>
     </ScrollView>
-  );
-}
-
-function ProgressRow({
-  label,
-  value,
-  max,
-  color,
-}: {
-  label: string;
-  value: number;
-  max: number;
-  color: string;
-}) {
-  return (
-    <View>
-      <View style={styles.progressLabelRow}>
-        <Typography variant="label">{label}</Typography>
-        <Typography variant="caption" muted>
-          {value}/{max}
-        </Typography>
-      </View>
-      <ProgressBar value={value} max={max} color={color} />
-    </View>
-  );
-}
-
-function QuickAction({
-  icon,
-  label,
-  onPress,
-}: {
-  icon: keyof typeof Feather.glyphMap;
-  label: string;
-  onPress: () => void;
-}) {
-  const colors = useColors();
-  return (
-    <Card onPress={onPress} style={{ flexBasis: "47%", flexGrow: 1 }} padding={14}>
-      <View style={[styles.quickIcon, { backgroundColor: colors.primary + "20" }]}>
-        <Feather name={icon} size={20} color={colors.primary} />
-      </View>
-      <Typography variant="label" style={{ marginTop: 10 }}>
-        {label}
-      </Typography>
-    </Card>
   );
 }
 
@@ -479,7 +310,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 18,
+    marginBottom: 14,
   },
   levelBadge: {
     paddingHorizontal: 12,
@@ -493,26 +324,9 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   streakIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  progressLabelRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 6,
-  },
-  quickGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  quickIcon: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
+    width: 46,
+    height: 46,
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -520,9 +334,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
-  },
-  readinessHeader: {
-    flexDirection: "row",
-    alignItems: "center",
   },
 });

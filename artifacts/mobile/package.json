@@ -24,6 +24,7 @@
     "@workspace/api-client-react": "workspace:*",
     "@workspace/readiness": "workspace:*",
     "@workspace/practice": "workspace:*",
+    "@workspace/learning-coach": "workspace:*",
     "@workspace/level-check": "workspace:*",
     "@workspace/subscription": "workspace:*",
     "babel-plugin-react-compiler": "^19.0.0-beta-e993439-20250117",
