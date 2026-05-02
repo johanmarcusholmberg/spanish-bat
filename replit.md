@@ -73,4 +73,12 @@ Tables (all exported from `index.ts`):
 - **OpenAI via Replit proxy**: `AI_INTEGRATIONS_OPENAI_BASE_URL` + `AI_INTEGRATIONS_OPENAI_API_KEY` env vars
 - Package: `@workspace/integrations-openai-ai-server` added to api-server
 
+## Mobile Release Status (Phase 6)
+
+- Mobile typecheck: green (`pnpm --filter @workspace/mobile run typecheck`).
+- Routing: `app/index.tsx` redirects to `/login` or `/(tabs)` based on Clerk auth state. All screens registered in `app/_layout.tsx`.
+- No Supabase references; auth via Clerk, data via `@workspace/api-server`.
+- Pre-launch checklist + open blockers tracked in `artifacts/mobile/RELEASE_CHECKLIST.md`.
+- **Web preview note**: the mobile artifact's web preview shows Expo's "Welcome to Expo" placeholder because `(tabs)/_layout.tsx` imports native-only modules (`expo-router/unstable-native-tabs`, `expo-glass-effect`, `expo-symbols`). This is dev-only — Expo Go, iOS, and Android render the real app. Test on device or simulator.
+
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
