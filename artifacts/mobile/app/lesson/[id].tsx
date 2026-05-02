@@ -9,6 +9,7 @@ import { Card } from "@/components/Card";
 import { AppButton } from "@/components/AppButton";
 import { ProgressBar } from "@/components/ProgressBar";
 import { ErrorState } from "@/components/ErrorState";
+import { RequireAuth } from "@/components/RequireAuth";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
@@ -17,6 +18,14 @@ import { GRAMMAR_LESSONS } from "@/lib/mockContent";
 type Step = "learn" | "practice" | "result";
 
 export default function LessonDetailScreen() {
+  return (
+    <RequireAuth>
+      <LessonDetailScreenInner />
+    </RequireAuth>
+  );
+}
+
+function LessonDetailScreenInner() {
   const colors = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();

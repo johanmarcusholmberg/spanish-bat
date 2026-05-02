@@ -1,5 +1,6 @@
 import React from "react";
 import { View, ViewStyle, StyleSheet } from "react-native";
+import Svg, { Circle } from "react-native-svg";
 import { useColors } from "@/hooks/useColors";
 import { Typography } from "@/components/Typography";
 
@@ -83,45 +84,47 @@ export function CircularProgress({
   const colors = useColors();
   const safeMax = max <= 0 ? 1 : max;
   const pct = Math.min(100, Math.max(0, (value / safeMax) * 100));
-  const inner = size - thickness * 2;
+  const radius = (size - thickness) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const dashOffset = circumference * (1 - pct / 100);
+  const ringColor = color ?? colors.primary;
+  const ringTrack = trackColor ?? colors.muted;
 
   return (
     <View
       style={{
         width: size,
         height: size,
-        borderRadius: size / 2,
-        backgroundColor: trackColor ?? colors.muted,
         alignItems: "center",
         justifyContent: "center",
       }}
     >
-      <View
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          borderRadius: size / 2,
-          borderWidth: thickness,
-          borderColor: color ?? colors.primary,
-          opacity: pct >= 100 ? 1 : 0.85,
-        }}
-      />
-      <View
-        style={{
-          width: inner,
-          height: inner,
-          borderRadius: inner / 2,
-          backgroundColor: colors.card,
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        {children ?? (
-          <Typography variant="h3">{Math.round(pct)}%</Typography>
-        )}
+      <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
+        {/* track */}
+        <Circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={ringTrack}
+          strokeWidth={thickness}
+          fill="none"
+        />
+        {/* progress arc — rotated -90deg so 0% starts at top */}
+        <Circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={ringColor}
+          strokeWidth={thickness}
+          strokeLinecap="round"
+          fill="none"
+          strokeDasharray={`${circumference} ${circumference}`}
+          strokeDashoffset={dashOffset}
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        />
+      </Svg>
+      <View style={{ alignItems: "center", justifyContent: "center" }}>
+        {children ?? <Typography variant="h3">{Math.round(pct)}%</Typography>}
       </View>
     </View>
   );

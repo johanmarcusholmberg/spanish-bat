@@ -10,6 +10,7 @@ import { Card } from "@/components/Card";
 import { AppButton } from "@/components/AppButton";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
+import { RequireAuth } from "@/components/RequireAuth";
 import { useColors } from "@/hooks/useColors";
 import { api } from "@/lib/api";
 
@@ -26,6 +27,14 @@ interface VocabWord {
 }
 
 export default function WordDetailScreen() {
+  return (
+    <RequireAuth>
+      <WordDetailScreenInner />
+    </RequireAuth>
+  );
+}
+
+function WordDetailScreenInner() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();

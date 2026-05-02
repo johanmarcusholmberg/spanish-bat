@@ -9,6 +9,7 @@ import { Card } from "@/components/Card";
 import { AppButton } from "@/components/AppButton";
 import { ProgressBar } from "@/components/ProgressBar";
 import { ErrorState } from "@/components/ErrorState";
+import { RequireAuth } from "@/components/RequireAuth";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
 import { READING_PASSAGES } from "@/lib/mockContent";
@@ -16,6 +17,14 @@ import { READING_PASSAGES } from "@/lib/mockContent";
 type Step = "read" | "quiz" | "result";
 
 export default function PassageDetailScreen() {
+  return (
+    <RequireAuth>
+      <PassageDetailScreenInner />
+    </RequireAuth>
+  );
+}
+
+function PassageDetailScreenInner() {
   const colors = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();

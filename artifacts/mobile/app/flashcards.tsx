@@ -11,6 +11,7 @@ import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
 import { EmptyState } from "@/components/EmptyState";
 import { ProgressBar } from "@/components/ProgressBar";
+import { RequireAuth } from "@/components/RequireAuth";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
@@ -26,6 +27,14 @@ interface CardItem {
 }
 
 export default function FlashcardsScreen() {
+  return (
+    <RequireAuth>
+      <FlashcardsScreenInner />
+    </RequireAuth>
+  );
+}
+
+function FlashcardsScreenInner() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();

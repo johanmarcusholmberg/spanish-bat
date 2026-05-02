@@ -9,6 +9,7 @@ import { Card } from "@/components/Card";
 import { ProgressBar, CircularProgress } from "@/components/ProgressBar";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
+import { RequireAuth } from "@/components/RequireAuth";
 import { useColors } from "@/hooks/useColors";
 import { api } from "@/lib/api";
 
@@ -21,6 +22,14 @@ interface StatsData {
 }
 
 export default function StatsScreen() {
+  return (
+    <RequireAuth>
+      <StatsScreenInner />
+    </RequireAuth>
+  );
+}
+
+function StatsScreenInner() {
   const colors = useColors();
   const [data, setData] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
