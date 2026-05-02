@@ -1,0 +1,90 @@
+PHASE 13
+You are working on Murcielingo.
+
+Context:
+Murcielingo should never run out of practice. Practice should be generated as sessions, not treated as a finite list of exercises. A user should always be able to start a useful new practice session.
+
+Important platform requirement:
+The implementation must work for both web and native mobile. Keep the session engine in shared logic that can be used by both platforms.
+
+Goal:
+Create an adaptive practice session engine.
+
+The engine should assemble a practice session from available content based on:
+- current user level
+- previous levels for review
+- weak skills
+- recent mistakes
+- due review items
+- current level content
+- variety across skill types
+- selected practice mode
+
+Practice modes to support:
+1. Quick practice
+A short mixed session, around 5 questions.
+
+2. Weak spots
+Prioritize skills/items where the user has low accuracy or repeated mistakes.
+
+3. Level practice
+Focus on the user’s current selected CEFR level.
+
+4. Review previous levels
+Mix previous levels to strengthen foundations.
+
+5. Test prep
+A slightly more structured session that resembles the level check, but does not count as the real test.
+
+6. Challenge me
+A more difficult mixed session using current level + some next-level preview items if available.
+
+Rules:
+- Never show a normal “no questions available” dead end.
+- If a category has too few questions, mix in related categories.
+- If the current level has too little content, include previous-level review.
+- If the user has exhausted a local item pool, reshuffle with spacing rules instead of blocking.
+- Avoid repeating the exact same item too frequently.
+- Prefer items the user has previously missed.
+- Prefer variety in each session.
+
+Implement:
+1. A shared practice session engine
+Suggested file:
+src/lib/practice/practiceSessionEngine.ts
+
+2. A standard PracticeSession type
+Include:
+- sessionId
+- mode
+- level
+- items
+- createdAt
+- focusSkills
+- estimatedDuration
+- reasonForSelection
+
+3. Session item selection scoring
+Each candidate item should get a score based on:
+- weak skill match
+- due for review
+- level match
+- recent mistake
+- repetition penalty
+- variety bonus
+
+4. Update practice start flow
+When the user taps a practice mode, generate a session from the engine instead of directly reading a fixed category list.
+
+5. Add friendly empty-state fallback
+Only if absolutely no practice item exists anywhere, show:
+“Practice content is being prepared. Try mixed review or check your connection.”
+
+But in normal use, the app should always produce a session.
+
+6. Deliverables
+- Shared practice session engine
+- Practice mode selector
+- Updated practice start flow
+- No dead-end “out of questions” state
+- Works on both web and native mobile
