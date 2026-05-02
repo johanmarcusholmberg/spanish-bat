@@ -1,0 +1,314 @@
+You are working on the Murcielingo project.
+
+Goal:
+Improve the learning sections and user flow by moving the app from a module-first experience to a session-first language-learning experience. The app should feel like a guided language coach, not a collection of disconnected practice pages.
+
+Important context:
+- This project must continue to support both web and future/native mobile app use.
+- Do not implement web-only UX patterns.
+- Preserve existing learning pages and data where possible.
+- Do not remove existing modules unless they are safely replaced or reorganized.
+- The app tagline/learning identity is: “Echo the language.”
+- Echo should become a repeated learning pattern across the experience, not just one isolated page.
+- Do not create a hard “out of practices” state. The app should always be able to generate or recommend more practice unless the user is genuinely ready for a level check.
+- Even when ready for a level check, the user must be able to decline and continue practicing.
+
+Main UX change:
+Refactor the learning experience around a primary “Today” / “Today’s Practice” flow.
+
+The main user journey should become:
+
+Today → Guided Practice Session → Feedback → Weak Items → Review → Level Readiness → Optional Level Check
+
+Instead of making the user first choose from many modules, the app should guide the user with one primary CTA:
+
+“Start today’s practice”
+
+The existing Learn/Practice module pages should become secondary/manual exploration areas.
+
+Recommended navigation structure:
+1. Today
+   - Main daily learning screen.
+   - Primary CTA: Start today’s practice.
+   - Secondary CTA: Continue where you left off.
+   - Show today’s focus.
+   - Show weak items due for review.
+   - Show streak/progress lightly, not as the main focus.
+
+2. Practice
+   - Manual practice modes.
+   - Include Echo, Flashcards, Conversation, Pronunciation, Freestyle, Quiz, Sentence Builder, etc.
+   - This should be for users who want to choose a specific mode.
+
+3. Library
+   - Grammar, vocabulary, reading, saved words, verb/noun/adjective references.
+   - This should feel like a resource area, not the main daily path.
+
+4. Progress
+   - Level progress.
+   - Skill strengths.
+   - Weak areas.
+   - Test readiness.
+   - Streak and activity history.
+
+Implementation requirements:
+
+1. Create or refactor a “Today” screen
+- If an existing Dashboard page is the best place, refactor it rather than creating duplicate functionality.
+- The Today screen should be the primary post-login destination.
+- It should feel warm, simple, and learning-focused.
+- Avoid a stats-heavy layout.
+- Suggested sections:
+  - Welcome/header
+  - Main CTA: “Start today’s practice”
+  - Continue card if the user has unfinished activity
+  - Today’s focus
+  - Weak items / due review
+  - Small progress/streak summary
+  - Level readiness card
+
+2. Add a guided practice session concept
+Create a reusable guided-session flow that can combine existing exercise types.
+
+A daily guided session should include a small mix such as:
+- warm-up recall
+- vocabulary review
+- Echo/listen-and-repeat
+- sentence building
+- simple grammar correction
+- short reading or dialogue
+- weak item review
+- session summary
+
+This does not need to be perfect in the first implementation. Start with a clean architecture and use existing components/exercise types where possible.
+
+The session should be configurable and extensible, for example:
+- session type: daily_review, weak_items, speaking_confidence, grammar_rescue, travel_spanish, test_readiness
+- estimated length: 5, 10, 15 minutes
+- included activity types
+- level
+- target skill
+- source items
+
+3. Add “Practice Mixes”
+Add purpose-based practice options instead of only module-based options.
+
+Examples:
+- 5-minute warm-up
+- Daily review
+- Speaking confidence
+- Weak words
+- Grammar rescue
+- Conversation practice
+- Listen and echo
+- Test readiness
+
+These practice mixes should reuse the existing exercise infrastructure where possible.
+
+4. Replace visible practice counters with learning states where appropriate
+Do not remove existing progress data immediately, but reduce the emphasis on rigid counters like “12/20 completed.”
+
+Introduce a learning-state model that can be used for words, phrases, grammar concepts, pronunciation items, and sentence patterns.
+
+Suggested states:
+- new
+- learning
+- practicing
+- strong
+- mastered
+- needs_review
+
+Use these states in the UI where possible:
+- “Needs review”
+- “Getting stronger”
+- “Mastered”
+- “New today”
+
+Counters can still exist internally, but the user-facing experience should feel less mechanical.
+
+5. Add mistake memory
+Create a foundation for tracking recurring mistake patterns.
+
+Track mistakes such as:
+- wrong article/gender
+- wrong verb conjugation
+- spelling mistake
+- confused word
+- weak listening recognition
+- pronunciation issue
+- sentence-order mistake
+
+Use this data to influence Today’s Practice and Practice Mixes.
+
+For now, implement the data model, helper functions, and basic UI surfacing. It is acceptable if not every existing exercise type reports detailed mistakes yet.
+
+6. Make Echo the core learning method
+Echo should not only be a separate module.
+
+Introduce a reusable “Echo pattern” concept:
+
+See it → Hear it → Echo it → Build it → Use it
+
+Apply this pattern where reasonable:
+- vocabulary learning
+- sentence practice
+- pronunciation practice
+- conversation practice
+- daily review
+
+For example, a vocabulary item should be able to move through:
+- see the word
+- hear it
+- repeat it
+- identify meaning
+- type it
+- use it in a sentence
+
+7. Improve level readiness
+Level advancement should not feel like a basic progress bar only.
+
+Create or improve a Level Readiness Card that explains:
+- what the user is strong in
+- what still needs practice
+- whether the user is ready for a level check
+- option to take the level check
+- option to keep practicing
+
+Important:
+The user must never be forced into a test. They can always continue practicing.
+
+8. Prepare for AI-generated practice, but keep it controlled
+Add architecture hooks for AI-generated practice variations, but do not make AI the only source of learning content.
+
+AI should be used for:
+- sentence variations
+- short dialogues
+- adapting reading texts to level
+- generating Echo phrases from known weak words
+- simple explanations of mistakes
+- new examples for grammar concepts
+
+AI should not be the only source of:
+- level progression
+- curriculum structure
+- grammar truth
+- saved vocabulary metadata
+
+Add clear interfaces/services for future AI generation, for example:
+- generatePracticeVariation()
+- generateDialogueForLevel()
+- generateEchoPhrases()
+- explainMistake()
+- generateWeakWordSession()
+
+If API keys/functions are not available yet, create safe placeholders/mock implementations with clear TODOs.
+
+9. Mobile/native readiness
+All new screens and components must be suitable for both web and native mobile conversion.
+
+Requirements:
+- Avoid hover-only interactions.
+- Avoid layouts that depend on very wide screens.
+- Use touch-friendly buttons and spacing.
+- Keep navigation simple.
+- Avoid browser-specific APIs unless safely abstracted.
+- Keep core learning/session logic separate from web-only UI components.
+- Use reusable state/services/hooks so the same logic can later be used in native mobile.
+
+10. UI tone and product feel
+Murcielingo should feel:
+- warm
+- encouraging
+- simple
+- language-learning focused
+- not technical
+- not like an analytics dashboard
+
+Use copy that supports the tagline “Echo the language.”
+
+Examples:
+- “Start today’s practice”
+- “Echo these phrases”
+- “Your Spanish is getting stronger”
+- “Ready for a level check?”
+- “Keep practicing this level”
+- “Today we’ll focus on words you almost know”
+- “Listen, echo, and use it”
+
+11. Do not break existing functionality
+Before changing files:
+- Inspect the current routing, dashboard, exercise pages, progress context, daily review, level selector, and any existing practice components.
+- Reuse existing components where possible.
+- Keep old pages accessible if needed during transition.
+- Avoid large rewrites unless necessary.
+- Preserve auth, progress persistence, and existing user data.
+
+12. Suggested implementation phases
+
+Phase 1: UX/navigation foundation
+- Refactor post-login learning flow around Today.
+- Add Today screen or refactor Dashboard into Today.
+- Reorganize existing module links into Practice and Library.
+- Keep existing pages working.
+
+Phase 2: Guided session engine
+- Add session model/types.
+- Add basic session builder that creates a mixed daily session from existing data.
+- Add session runner UI.
+- Add session summary.
+
+Phase 3: Learning states and weak items
+- Add learning-state helpers.
+- Start mapping existing progress/completion data into learning states.
+- Add weak items section on Today.
+- Add basic “needs review” logic.
+
+Phase 4: Mistake memory
+- Add mistake data model.
+- Add helper/service for recording mistake patterns.
+- Connect at least one or two exercise types to record mistakes.
+- Show mistake-informed recommendations on Today.
+
+Phase 5: Echo pattern expansion
+- Extract or create reusable Echo learning-step components.
+- Apply Echo pattern to vocabulary/sentence/daily review flows.
+- Ensure “Echo the language” is visible in the product experience.
+
+Phase 6: AI-ready practice generation
+- Add interfaces and placeholder services for controlled AI-generated variations.
+- Add safe fallback content.
+- Add comments/TODOs for future API integration.
+
+Phase 7: Polish and mobile-readiness
+- Review responsive layouts.
+- Make tap targets mobile-friendly.
+- Simplify copy.
+- Test core flows:
+  - new user
+  - returning user
+  - user with weak items
+  - user ready for level check
+  - user declining level check and continuing practice
+
+Acceptance criteria:
+- The primary post-login experience is Today / Today’s Practice.
+- User can start a guided mixed practice session.
+- Manual modules still exist but are secondary.
+- Learn/Practice no longer feels like a stiff counter-based menu.
+- User-facing progress uses learning states where appropriate.
+- Weak items and mistakes can influence recommendations.
+- Echo is more central to the learning flow.
+- Level readiness offers both “Take level check” and “Keep practicing.”
+- The app does not create a hard “no more practice” dead end.
+- The new structure is suitable for both web and future native mobile use.
+- Existing routes and core functionality are not broken.
+
+Important Replit workflow constraints:
+- This work is being done directly in Replit.
+- Do not create branches.
+- Do not open pull requests.
+- Do not configure GitHub automation.
+- Do not commit or push unless I explicitly ask later.
+- First make the code changes directly in the Replit workspace.
+- After changes are complete, summarize exactly what was changed and what files were touched.
+- Also list any follow-up tasks, known limitations, or TODOs.
