@@ -4,7 +4,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Navigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import { api } from "@/lib/api";
-import { Loader2, Shield, Users, TrendingUp, MessageSquare, BarChart3, Mail, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import SubscriptionDebugPanel from "@/components/SubscriptionDebugPanel";
+import { Loader2, Shield, Users, TrendingUp, MessageSquare, BarChart3, Mail, Clock, CheckCircle2, AlertCircle, CreditCard, Sparkles } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +38,33 @@ interface ContactMessage {
   admin_notes: string | null;
   created_at: string;
   user_id: string | null;
+}
+
+interface AdminSubscriptionRow {
+  user_id: string;
+  email: string;
+  display_name: string | null;
+  plan_id: string;
+  plan_label: string;
+  is_premium: boolean;
+  status: string;
+  provider: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  entitlements: { key: string; source: string; expires_at: string | null }[];
+  last_sync_at: string | null;
+}
+
+interface AdminSubscriptionsPayload {
+  users: AdminSubscriptionRow[];
+  counts: Record<string, number>;
+  recentEvents: {
+    id: string;
+    provider: string;
+    event_type: string;
+    user_id: string | null;
+    created_at: string | null;
+  }[];
 }
 
 interface Insights {
@@ -85,6 +113,7 @@ const AdminPage = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [insights, setInsights] = useState<Insights | null>(null);
+  const [subscriptions, setSubscriptions] = useState<AdminSubscriptionsPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
@@ -110,10 +139,16 @@ const AdminPage = () => {
       setLoading(true);
       setError("");
       try {
-        const [u, m, i] = await Promise.all([fetchUsers(), fetchMessages(), fetchInsights()]);
+        const [u, m, i, s] = await Promise.all([
+          fetchUsers(),
+          fetchMessages(),
+          fetchInsights(),
+          api.admin.getSubscriptions().catch(() => null),
+        ]);
         setUsers(u);
         setMessages(m);
         setInsights(i);
+        setSubscriptions(s as AdminSubscriptionsPayload | null);
       } catch (err) {
         setError(err instanceof Error ? err.message : t("serverError"));
       }
@@ -335,6 +370,182 @@ const AdminPage = () => {
     </div>
   );
 
+  const renderSubscriptions = () => {
+    if (!subscriptions) {
+      return (
+        <Card>
+          <CardContent className="py-8 text-center text-muted-foreground">
+            {t("noData")}
+          </CardContent>
+        </Card>
+      );
+    }
+    const fmt = (iso: string | null) =>
+      iso ? new Date(iso).toLocaleString() : "—";
+    return (
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <MetricCard
+            icon={Users}
+            label="Total"
+            value={subscriptions.users.length}
+          />
+          <MetricCard
+            icon={Sparkles}
+            label="Premium"
+            value={subscriptions.users.filter((u) => u.is_premium).length}
+          />
+          <MetricCard
+            icon={CreditCard}
+            label="Stripe subs"
+            value={
+              subscriptions.users.filter((u) => u.provider === "stripe").length
+            }
+          />
+          <MetricCard
+            icon={CreditCard}
+            label="Mobile subs"
+            value={
+              subscriptions.users.filter(
+                (u) => u.provider === "apple" || u.provider === "google",
+              ).length
+            }
+          />
+        </div>
+
+        <Card>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/50">
+                  <th className="text-left p-3 font-medium text-muted-foreground">
+                    User
+                  </th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">
+                    Plan
+                  </th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">
+                    Status
+                  </th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">
+                    Provider
+                  </th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">
+                    Renews / Ends
+                  </th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">
+                    Entitlements
+                  </th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">
+                    Last sync
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {subscriptions.users.map((u) => (
+                  <tr
+                    key={u.user_id}
+                    className="border-b border-border last:border-0 hover:bg-muted/30 transition align-top"
+                  >
+                    <td className="p-3">
+                      <div className="font-medium text-foreground text-xs">
+                        {u.display_name || "—"}
+                      </div>
+                      <div className="text-muted-foreground text-[11px]">
+                        {u.email}
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <Badge
+                        variant={u.is_premium ? "default" : "outline"}
+                        className="text-xs"
+                      >
+                        {u.plan_label}
+                      </Badge>
+                    </td>
+                    <td className="p-3 text-xs capitalize">{u.status}</td>
+                    <td className="p-3 text-xs capitalize">
+                      {u.provider ?? "—"}
+                    </td>
+                    <td className="p-3 text-xs text-muted-foreground">
+                      {u.current_period_end
+                        ? new Date(
+                            u.current_period_end,
+                          ).toLocaleDateString()
+                        : "—"}
+                      {u.cancel_at_period_end && (
+                        <Badge
+                          variant="outline"
+                          className="ml-1 text-[10px]"
+                        >
+                          cancels
+                        </Badge>
+                      )}
+                    </td>
+                    <td className="p-3 text-[11px] text-muted-foreground max-w-[260px]">
+                      {u.entitlements.length === 0 ? (
+                        "—"
+                      ) : (
+                        <div className="flex flex-wrap gap-1">
+                          {u.entitlements.map((e) => (
+                            <span
+                              key={e.key + e.source}
+                              title={`source: ${e.source}${e.expires_at ? ` · expires ${new Date(e.expires_at).toLocaleDateString()}` : ""}`}
+                              className="inline-block px-1.5 py-0.5 bg-muted rounded font-mono"
+                            >
+                              {e.key}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </td>
+                    <td className="p-3 text-[11px] text-muted-foreground whitespace-nowrap">
+                      {fmt(u.last_sync_at)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+
+        <SubscriptionDebugPanel />
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Recent webhook events</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {subscriptions.recentEvents.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No subscription webhook events recorded yet.
+              </p>
+            ) : (
+              <div className="space-y-1 text-xs font-mono">
+                {subscriptions.recentEvents.slice(0, 20).map((e) => (
+                  <div
+                    key={e.id}
+                    className="flex items-center justify-between gap-3 border-b border-border/40 pb-1 last:border-0"
+                  >
+                    <span className="text-muted-foreground">
+                      {fmt(e.created_at)}
+                    </span>
+                    <span className="text-foreground">
+                      [{e.provider}] {e.event_type}
+                    </span>
+                    <span className="text-muted-foreground truncate max-w-[180px]">
+                      {e.user_id ?? "—"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
   const renderInsights = () => {
     if (!insights) return <Card><CardContent className="py-8 text-center text-muted-foreground">{t("noData")}</CardContent></Card>;
 
@@ -420,7 +631,7 @@ const AdminPage = () => {
           </Card>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview" className="gap-1.5 text-xs sm:text-sm">
                 <BarChart3 className="h-4 w-4 hidden sm:block" />{t("adminOverview")}
               </TabsTrigger>
@@ -435,6 +646,9 @@ const AdminPage = () => {
                   </span>
                 )}
               </TabsTrigger>
+              <TabsTrigger value="subscriptions" className="gap-1.5 text-xs sm:text-sm">
+                <CreditCard className="h-4 w-4 hidden sm:block" />Subs
+              </TabsTrigger>
               <TabsTrigger value="insights" className="gap-1.5 text-xs sm:text-sm">
                 <TrendingUp className="h-4 w-4 hidden sm:block" />{t("adminInsights")}
               </TabsTrigger>
@@ -443,6 +657,7 @@ const AdminPage = () => {
             <TabsContent value="overview" className="mt-4">{renderOverview()}</TabsContent>
             <TabsContent value="users" className="mt-4">{renderUsers()}</TabsContent>
             <TabsContent value="support" className="mt-4">{renderSupport()}</TabsContent>
+            <TabsContent value="subscriptions" className="mt-4">{renderSubscriptions()}</TabsContent>
             <TabsContent value="insights" className="mt-4">{renderInsights()}</TabsContent>
           </Tabs>
         )}

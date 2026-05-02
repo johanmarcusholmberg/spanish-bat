@@ -6,6 +6,8 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { api } from "@/lib/api";
 import AppLayout from "@/components/AppLayout";
 import PremiumBadge from "@/components/PremiumBadge";
+import EntitlementError from "@/components/EntitlementError";
+import SubscriptionDebugPanel from "@/components/SubscriptionDebugPanel";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
@@ -44,7 +46,8 @@ const ManageSubscriptionPage: React.FC = () => {
   const { language } = useLanguage();
   const t = copy[language];
   const navigate = useNavigate();
-  const { isPremium, planId, status, data, loading } = useSubscription();
+  const { isPremium, planId, status, data, loading, error, refresh } =
+    useSubscription();
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
 
@@ -87,6 +90,16 @@ const ManageSubscriptionPage: React.FC = () => {
           {t.title}
         </h1>
 
+        {error && (
+          <div className="mb-4">
+            <EntitlementError
+              variant="entitlement-load"
+              message={error}
+              onRetry={refresh}
+            />
+          </div>
+        )}
+
         <div className="bg-card rounded-lg p-6 shadow-soft border border-border mb-4">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -128,6 +141,8 @@ const ManageSubscriptionPage: React.FC = () => {
             <Button onClick={() => navigate("/pricing")}>{t.upgrade}</Button>
           </div>
         )}
+
+        <SubscriptionDebugPanel />
       </div>
     </AppLayout>
   );

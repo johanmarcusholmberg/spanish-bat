@@ -10,6 +10,8 @@ import {
 import { Stack, router } from "expo-router";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/hooks/useSubscription";
+import { EntitlementError } from "@/components/EntitlementError";
+import { SubscriptionDebugPanel } from "@/components/SubscriptionDebugPanel";
 import {
   getCurrentOffering,
   identifyUser,
@@ -50,7 +52,7 @@ const COPY = {
 
 export default function PaywallScreen() {
   const { isLoggedIn, user, userId } = useAuth();
-  const { isPremium, refresh } = useSubscription();
+  const { isPremium, refresh, error: subError } = useSubscription();
 
   const [offering, setOffering] = useState<Offering | null>(null);
   const [loadingOfferings, setLoadingOfferings] = useState(true);
@@ -182,6 +184,14 @@ export default function PaywallScreen() {
           </View>
         )}
 
+        {subError && (
+          <EntitlementError
+            variant="entitlement-load"
+            message={subError}
+            onRetry={refresh}
+          />
+        )}
+
         {!configured && (
           <View
             style={{
@@ -299,6 +309,8 @@ export default function PaywallScreen() {
             Signed in as {user.email}
           </Text>
         )}
+
+        <SubscriptionDebugPanel />
       </ScrollView>
     </>
   );

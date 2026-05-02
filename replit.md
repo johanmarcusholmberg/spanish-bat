@@ -94,6 +94,15 @@ Tables (all exported from `index.ts`):
 - Web UI: `src/lib/api.ts` `api.stripe.*`; pages `PricingPage` (public, replaces old static `/pricing`), `BillingSuccessPage` (polls `/api/subscription` directly — not stale `isPremium` closure), `BillingCancelledPage`, `ManageSubscriptionPage`. Components `PremiumBadge`, `LockedFeature`. Routes wired in `App.tsx`.
 - Required secrets (none set yet — app runs without them): `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_PREMIUM_MONTHLY`, `STRIPE_PRICE_PREMIUM_YEARLY`, `VITE_STRIPE_PUBLISHABLE_KEY`. Setup walkthrough in `docs/stripe-setup.md`.
 
+### Phase 11 — QA / launch readiness
+- New API endpoints: `GET /api/subscription/health` (public, returns presence-only env booleans — never secret values) and `GET /api/admin/subscriptions` (admin-only, per-user plan / entitlements / last sync, plus the latest 50 webhook events).
+- `GET /api/subscription` now returns `lastSyncAt` (max of the user's `user_subscriptions.updated_at` and `user_entitlements.granted_at`).
+- Web: new `EntitlementError` component (4 variants: `entitlement-load`, `stripe-unavailable`, `revenuecat-unavailable`, `missing-env`) wired into `PricingPage` and `ManageSubscriptionPage`. New dev-only `SubscriptionDebugPanel` (gated by `import.meta.env.DEV`, tree-shaken from production builds). New `Subs` tab in `AdminPage` for current plan / entitlement / sync visibility.
+- Mobile: mirrored `EntitlementError` and `SubscriptionDebugPanel` (gated by `__DEV__`) wired into `paywall.tsx`. `useSubscription` keeps the last good payload on error so a transient blip cannot downgrade a paying user mid-session.
+- Webhook idempotency confirmed via the existing unique `(provider, provider_event_id)` index on `subscription_events` + `onConflictDoNothing`-style 23505 handling in both `stripeSync.ts` and `revenuecatSync.ts`. Entitlement sync uses wipe-and-reinsert of `plan:%` source rows so promo / manual grants survive.
+- Authorization model documented in `.local/docs/subscription-rls-policies.md` — we use Drizzle on Postgres (no Supabase RLS); policy is enforced by `requireAuth` + `req.userId` filtering on every user-facing route, and by signature/auth-header verification on webhook endpoints.
+- Launch docs (all under `.local/docs/`): `subscription-qa-checklist.md`, `subscription-rls-policies.md`, `subscription-secrets-audit.md`, `subscription-production-setup.md` (manual Stripe / RC / Apple / Google / privacy / terms steps), `subscription-launch-checklist.md`.
+
 ### Phase 10 — RevenueCat mobile subscriptions
 
 - Mobile-only; web keeps Stripe. Apple forbids Stripe Checkout inside the iOS app for digital content.

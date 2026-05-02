@@ -1,9 +1,14 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { profilesTable, userRolesTable, userStreaksTable, userProgressTable, userLastActivityTable, userVocabularyTable, contactMessagesTable, activityLogTable } from "@workspace/db";
+import { profilesTable, userRolesTable, userStreaksTable, userProgressTable, userLastActivityTable, userVocabularyTable, contactMessagesTable, activityLogTable, userSubscriptionsTable, userEntitlementsTable, subscriptionEventsTable } from "@workspace/db";
 import { eq, gte, desc } from "drizzle-orm";
+import { getPlanDefinition, type PlanId } from "@workspace/subscription";
 import { requireAuth } from "../middlewares/requireAuth";
 import { requireAdmin } from "../middlewares/requireAdmin";
+import {
+  getActiveSubscription,
+  getUserEntitlements,
+} from "../lib/subscription";
 import type { Request, Response } from "express";
 
 const router = Router();
@@ -123,6 +128,85 @@ router.get("/admin/insights", requireAuth, requireAdmin, async (req: Request, re
     });
   } catch (err) {
     req.log.error({ err }, "Failed to fetch insights");
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// GET /admin/subscriptions - per-user current plan, entitlements, last sync
+router.get("/admin/subscriptions", requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const profiles = await db.select().from(profilesTable).orderBy(desc(profilesTable.createdAt));
+    const subs = await db.select().from(userSubscriptionsTable);
+    const ents = await db.select().from(userEntitlementsTable);
+    const recentEvents = await db
+      .select()
+      .from(subscriptionEventsTable)
+      .orderBy(desc(subscriptionEventsTable.createdAt))
+      .limit(50);
+
+    // Use the shared subscription resolver per user so admin view never
+    // drifts from what users actually see in /api/subscription. Sequential
+    // is fine — admin pages are low-volume.
+    const rows = await Promise.all(
+      profiles.map(async (p) => {
+        const userSubs = subs.filter((s) => s.userId === p.userId);
+        const userEnts = ents.filter((e) => e.userId === p.userId);
+        const [view, active] = await Promise.all([
+          getUserEntitlements(p.userId),
+          getActiveSubscription(p.userId),
+        ]);
+        const def = getPlanDefinition(view.planId as PlanId);
+        const lastSubUpdate = userSubs.reduce<Date | null>((acc, s) => {
+          if (!s.updatedAt) return acc;
+          return !acc || s.updatedAt > acc ? s.updatedAt : acc;
+        }, null);
+        const lastEntGrant = userEnts.reduce<Date | null>((acc, e) => {
+          if (!e.grantedAt) return acc;
+          return !acc || e.grantedAt > acc ? e.grantedAt : acc;
+        }, null);
+        const lastSyncAt =
+          lastSubUpdate && lastEntGrant
+            ? lastSubUpdate > lastEntGrant
+              ? lastSubUpdate
+              : lastEntGrant
+            : (lastSubUpdate ?? lastEntGrant);
+        return {
+          user_id: p.userId,
+          email: p.email,
+          display_name: p.displayName,
+          plan_id: view.planId,
+          plan_label: def.displayName,
+          is_premium: view.isPremium,
+          status: view.status,
+          provider: active.provider,
+          current_period_end: active.currentPeriodEnd,
+          cancel_at_period_end: active.cancelAtPeriodEnd,
+          entitlements: userEnts.map((e) => ({
+            key: e.entitlementKey,
+            source: e.source,
+            expires_at: e.expiresAt ? e.expiresAt.toISOString() : null,
+          })),
+          last_sync_at: lastSyncAt ? lastSyncAt.toISOString() : null,
+        };
+      }),
+    );
+
+    const counts: Record<string, number> = {};
+    for (const r of rows) counts[r.plan_id] = (counts[r.plan_id] ?? 0) + 1;
+
+    res.json({
+      users: rows,
+      counts,
+      recentEvents: recentEvents.map((e) => ({
+        id: e.id,
+        provider: e.provider,
+        event_type: e.eventType,
+        user_id: e.userId,
+        created_at: e.createdAt ? e.createdAt.toISOString() : null,
+      })),
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to fetch admin subscriptions");
     res.status(500).json({ error: "Server error" });
   }
 });

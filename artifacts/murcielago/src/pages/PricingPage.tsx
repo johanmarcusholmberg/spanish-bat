@@ -8,6 +8,8 @@ import { api } from "@/lib/api";
 import AppLayout from "@/components/AppLayout";
 import Footer from "@/components/Footer";
 import PremiumBadge from "@/components/PremiumBadge";
+import EntitlementError from "@/components/EntitlementError";
+import SubscriptionDebugPanel from "@/components/SubscriptionDebugPanel";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
@@ -93,7 +95,8 @@ const PricingPage: React.FC = () => {
   const t = copy[language];
   const navigate = useNavigate();
   const { isLoggedIn, user } = useAuth();
-  const { isPremium, loading: subLoading, refresh } = useSubscription();
+  const { isPremium, loading: subLoading, refresh, error: subError } =
+    useSubscription();
   const { toast } = useToast();
 
   const [interval, setInterval] = useState<Interval>("monthly");
@@ -207,9 +210,19 @@ const PricingPage: React.FC = () => {
         </p>
       )}
 
+      {subError && isLoggedIn && (
+        <div className="mb-4">
+          <EntitlementError
+            variant="entitlement-load"
+            message={subError}
+            onRetry={refresh}
+          />
+        </div>
+      )}
+
       {!configLoading && config && !config.enabled && (
-        <div className="mb-6 rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-700 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
-          {t.notConfigured}
+        <div className="mb-6">
+          <EntitlementError variant="missing-env" />
         </div>
       )}
 
@@ -257,6 +270,8 @@ const PricingPage: React.FC = () => {
           }}
         />
       </div>
+
+      <SubscriptionDebugPanel />
 
       <Footer />
     </div>

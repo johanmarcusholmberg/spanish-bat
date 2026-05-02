@@ -57,6 +57,11 @@ export const api = {
   subscription: {
     get: () => fetchApi("/subscription"),
     getPlans: () => fetchApi("/subscription/plans"),
+    health: () => fetchApi("/subscription/health") as Promise<{
+      model: "A" | "B";
+      stripe: { configured: boolean; env: Record<string, boolean> };
+      revenuecat: { webhookConfigured: boolean; env: Record<string, boolean> };
+    }>,
   },
   stripe: {
     config: () => fetchApi("/stripe/config") as Promise<{
@@ -88,5 +93,6 @@ export const api = {
     updateMessage: (id: string, data: { status?: string; adminNotes?: string }) =>
       fetchApi(`/admin/messages/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
     getInsights: () => fetchApi("/admin/insights"),
+    getSubscriptions: () => fetchApi("/admin/subscriptions"),
   },
 };

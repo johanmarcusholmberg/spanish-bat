@@ -21,6 +21,7 @@ interface SubscriptionPayload {
   }>;
   entitlements: UserEntitlements;
   subscription: UserSubscription;
+  lastSyncAt: string | null;
 }
 
 interface UseSubscriptionResult {
@@ -31,13 +32,17 @@ interface UseSubscriptionResult {
   status: SubscriptionStatus;
   isPremium: boolean;
   entitlements: EntitlementKey[];
+  lastSyncAt: string | null;
   refresh: () => Promise<void>;
 }
 
 /**
  * Mobile twin of the web `useSubscription` hook. Same shape so screens
- * shared between platforms can be lifted unchanged. Mobile-specific
- * RevenueCat refresh logic will hook in via `refresh()` later.
+ * shared between platforms can be lifted unchanged.
+ *
+ * On error we keep the last known good payload — a transient network
+ * failure must NOT downgrade a paid user to the free UI mid-session. The
+ * `error` field is exposed so callers can render a retry banner.
  */
 export function useSubscription(): UseSubscriptionResult {
   const { isLoggedIn } = useAuth();
@@ -48,6 +53,7 @@ export function useSubscription(): UseSubscriptionResult {
   const refresh = useCallback(async () => {
     if (!isLoggedIn) {
       setData(null);
+      setError(null);
       return;
     }
     setLoading(true);
@@ -91,6 +97,7 @@ export function useSubscription(): UseSubscriptionResult {
       status: data?.entitlements.status ?? "none",
       isPremium: data?.entitlements.isPremium ?? false,
       entitlements: data?.entitlements.entitlements ?? [],
+      lastSyncAt: data?.lastSyncAt ?? null,
       refresh,
     }),
     [loading, error, data, refresh],

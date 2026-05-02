@@ -20,6 +20,7 @@ interface SubscriptionPayload {
   }>;
   entitlements: UserEntitlements;
   subscription: UserSubscription;
+  lastSyncAt: string | null;
 }
 
 interface UseSubscriptionResult {
@@ -30,6 +31,7 @@ interface UseSubscriptionResult {
   status: SubscriptionStatus;
   isPremium: boolean;
   entitlements: EntitlementKey[];
+  lastSyncAt: string | null;
   refresh: () => Promise<void>;
 }
 
@@ -37,6 +39,10 @@ interface UseSubscriptionResult {
  * Loads the signed-in user's subscription + entitlements from the API.
  * Returns a Free-tier shape for unauthenticated users so callers don't
  * need to special-case the loading/logged-out state for gating.
+ *
+ * On error, the hook keeps the last known good payload so a transient
+ * network blip doesn't accidentally downgrade a premium user in the UI;
+ * `error` is exposed so callers can render an `<EntitlementError>`.
  */
 export function useSubscription(): UseSubscriptionResult {
   const { isLoggedIn } = useAuth();
@@ -47,6 +53,7 @@ export function useSubscription(): UseSubscriptionResult {
   const refresh = useCallback(async () => {
     if (!isLoggedIn) {
       setData(null);
+      setError(null);
       return;
     }
     setLoading(true);
@@ -74,6 +81,7 @@ export function useSubscription(): UseSubscriptionResult {
       status: data?.entitlements.status ?? "none",
       isPremium: data?.entitlements.isPremium ?? false,
       entitlements: data?.entitlements.entitlements ?? [],
+      lastSyncAt: data?.lastSyncAt ?? null,
       refresh,
     }),
     [loading, error, data, refresh],
