@@ -663,13 +663,15 @@ export function generatePracticeItems(
       const promptSv = substitute(template.promptTemplate.sv, assignment);
       const answer = substitute(template.answerTemplate, assignment);
       // Surface unresolved placeholders early in dev — masks template/bank mistakes.
+      const g = globalThis as {
+        process?: { env?: { NODE_ENV?: string } };
+        console?: { warn?: (...args: unknown[]) => void };
+      };
       if (
-        typeof process !== "undefined" &&
-        process.env?.NODE_ENV !== "production" &&
+        g.process?.env?.NODE_ENV !== "production" &&
         /\{\w+(?:\.\w+)?\}/.test(promptEn + " " + promptSv + " " + answer)
       ) {
-        // eslint-disable-next-line no-console
-        console.warn(
+        g.console?.warn?.(
           `[practice-templates] unresolved placeholder in template "${template.id}":`,
           { promptEn, promptSv, answer },
         );

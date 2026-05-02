@@ -8,6 +8,8 @@ import { Screen } from "@/components/Screen";
 import { Typography } from "@/components/Typography";
 import { Card } from "@/components/Card";
 import { useColors } from "@/hooks/useColors";
+import { usePracticeStats } from "@/hooks/usePracticeStats";
+import WeakSpotsCard from "@/components/WeakSpotsCard";
 
 const MODE_ICONS: Record<PracticeMode, keyof typeof Feather.glyphMap> = {
   quick: "zap",
@@ -20,6 +22,7 @@ const MODE_ICONS: Record<PracticeMode, keyof typeof Feather.glyphMap> = {
 
 export default function PracticeModesScreen() {
   const colors = useColors();
+  const { weakSpots, todaysFocus } = usePracticeStats();
   return (
     <Screen>
       <View style={styles.header}>
@@ -36,6 +39,8 @@ export default function PracticeModesScreen() {
           Pick a mode — we'll build a fresh session for you each time.
         </Typography>
       </View>
+
+      <WeakSpotsCard weakSpots={weakSpots} todaysFocus={todaysFocus} />
 
       <View style={styles.grid}>
         {PRACTICE_MODES.map((m) => (

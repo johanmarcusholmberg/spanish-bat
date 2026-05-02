@@ -27,6 +27,7 @@ import {
   buildAllPracticeItems,
   type MobilePracticePayload,
 } from "@/lib/practiceItems";
+import { usePracticeStats } from "@/hooks/usePracticeStats";
 
 export default function PracticeSessionScreen() {
   const colors = useColors();
@@ -41,6 +42,7 @@ export default function PracticeSessionScreen() {
     | "C2";
 
   const allItems = useMemo(() => buildAllPracticeItems(), []);
+  const { stats, recordAttempt } = usePracticeStats();
   const [session, setSession] = useState<PracticeSession<MobilePracticePayload> | null>(
     null,
   );
@@ -55,6 +57,7 @@ export default function PracticeSessionScreen() {
       mode,
       level: userLevel,
       items: allItems,
+      stats,
     });
     setSession(built);
     setIndex(0);
@@ -156,7 +159,15 @@ export default function PracticeSessionScreen() {
 
   const submit = () => {
     if (picked == null) return;
-    if (picked === p.answer) setCorrect((c) => c + 1);
+    const ok = picked === p.answer;
+    if (ok) setCorrect((c) => c + 1);
+    recordAttempt({
+      itemId: current.id,
+      skill: current.skill,
+      subskill: current.category,
+      level: current.level,
+      correct: ok,
+    });
     setRevealed(true);
   };
   const next = () => {

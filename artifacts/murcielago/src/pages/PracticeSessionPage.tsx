@@ -20,6 +20,8 @@ import {
   type LocalPracticeItem,
 } from "@/lib/practiceItems";
 import { checkMultiAnswer } from "@/lib/answerUtils";
+import { usePracticeStats } from "@/hooks/usePracticeStats";
+import WeakSpotsCard from "@/components/WeakSpotsCard";
 
 const MODE_ICONS: Record<PracticeMode, React.ElementType> = {
   quick: Sparkles,
@@ -45,10 +47,20 @@ const PracticeSessionPage = () => {
 
   const userLevel = (user?.level || "A1") as Level;
   const allItems = useMemo<LocalPracticeItem[]>(() => buildAllPracticeItems(), []);
+  const {
+    stats: trackedStats,
+    recordAttempt,
+    weakSpots,
+    todaysFocus,
+  } = usePracticeStats();
 
-  // Approximate "weak skills" from progress percentages.
+  // Merge tracked subskill stats with a coarse approximation derived from
+  // existing progress percentages so brand-new users still get sensible
+  // skill-level signals before they've answered enough questions.
   const stats = useMemo(() => {
-    const skillAccuracy: Record<string, number> = {};
+    const skillAccuracy: Record<string, number> = {
+      ...(trackedStats.skillAccuracy ?? {}),
+    };
     const map: Record<string, "vocabulary" | "grammar" | "sentences" | "reading"> = {
       flashcards: "vocabulary",
       grammar: "grammar",
@@ -58,14 +70,14 @@ const PracticeSessionPage = () => {
     };
     for (const [k, v] of Object.entries(progress)) {
       const skill = map[k];
-      if (!skill) continue;
+      if (!skill || skillAccuracy[skill] !== undefined) continue;
       const cat = v as { percentage?: number };
       if (typeof cat.percentage === "number") {
         skillAccuracy[skill] = Math.min(1, cat.percentage / 100);
       }
     }
-    return { skillAccuracy };
-  }, [progress]);
+    return { ...trackedStats, skillAccuracy };
+  }, [progress, trackedStats]);
 
   const startSession = (mode: PracticeMode) => {
     const built = buildPracticeSession<PracticePayload>({
@@ -111,6 +123,13 @@ const PracticeSessionPage = () => {
       );
     }
     if (ok) setCorrectCount((c) => c + 1);
+    recordAttempt({
+      itemId: current.id,
+      skill: current.skill,
+      subskill: current.category,
+      level: current.level,
+      correct: ok,
+    });
     setRevealed(true);
   };
 
@@ -171,6 +190,9 @@ const PracticeSessionPage = () => {
               ? "Välj ett övningsläge — vi sätter ihop en ny session åt dig varje gång."
               : "Pick a practice mode — we'll assemble a fresh session for you every time."}
           </p>
+          <div className="mb-6">
+            <WeakSpotsCard weakSpots={weakSpots} todaysFocus={todaysFocus} />
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {PRACTICE_MODES.map((m) => {
               const Icon = MODE_ICONS[m.mode];

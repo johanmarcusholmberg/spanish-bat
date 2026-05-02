@@ -134,4 +134,23 @@ Tables (all exported from `index.ts`):
 - Pre-launch checklist + open blockers tracked in `artifacts/mobile/RELEASE_CHECKLIST.md`.
 - **Web preview note**: the mobile artifact's web preview shows Expo's "Welcome to Expo" placeholder because `(tabs)/_layout.tsx` imports native-only modules (`expo-router/unstable-native-tabs`, `expo-glass-effect`, `expo-symbols`). This is dev-only — Expo Go, iOS, and Android render the real app. Test on device or simulator.
 
+## Phase 15 — Weak-spot tracking (shared web + mobile)
+
+Shared in `lib/practice/src/weakSpots.ts`:
+- `SubskillStat` per `${skill}/${subskill}` key (rolling accuracy, confidence, mistake count, last-practiced).
+- `recordAttempt(stats, input)` — pure update; missing subskill normalizes to `"general"`.
+- `detectWeakSpots(stats, opts)` — flags `low_accuracy` / `repeated_misses` / `low_confidence` / `stale`; produces friendly `WeakSpotLabel` (`needs_practice`, `good_to_review`, `getting_stronger`, `focus_area`).
+- `buildTodaysFocusMessage(stats, { weakSpots })` — bilingual (en/sv), always supportive tone.
+- `friendlySubskillName`, `friendlySkillName`, `friendlyLabel` for UI.
+
+Engine integration in `lib/practice/src/index.ts`:
+- `UserPracticeStats.subskillStats` field; `InternalCtx.weakSubskills` set built from `detectWeakSpots`.
+- `scoreItem` adds +22 (or +36 in `weak_spots` mode) when `subskillKey(item.skill, item.category ?? "general")` matches a weak subskill — uncategorized items also participate.
+- `weakSubskill` exposed in score breakdown for debugging.
+
+Persistence + UI:
+- Web `artifacts/murcielago/src/hooks/usePracticeStats.ts` — localStorage `murci.practiceStats.v1.<userId|anon>`.
+- Mobile `artifacts/mobile/hooks/usePracticeStats.ts` — AsyncStorage same key; `dirtyRef` guards against late-load overwriting fresh writes.
+- `WeakSpotsCard` (web + mobile) shows top focus areas + "Today's focus" copy and links to `/practice/session?mode=weak_spots`.
+
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.

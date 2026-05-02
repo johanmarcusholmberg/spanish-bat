@@ -18,6 +18,8 @@
  *   automatically and reshuffles with spacing rules instead of blocking.
  */
 
+import { detectWeakSpots, subskillKey } from "./weakSpots";
+
 export type Level = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 
 export const LEVEL_ORDER: readonly Level[] = [
@@ -75,6 +77,12 @@ export interface UserPracticeStats {
   skillAccuracy?: Partial<Record<SkillCategory, number>>;
   /** Item ids the user got wrong recently (most recent first). */
   recentMistakeIds?: string[];
+  /**
+   * Per skill+subskill performance, populated by `recordAttempt`. Keyed
+   * by `${skill}/${subskill}`. Used by `detectWeakSpots` and by the
+   * session engine's weak-subskill scoring bonus.
+   */
+  subskillStats?: Record<string, import("./weakSpots").SubskillStat>;
 }
 
 export interface BuildSessionOptions<TPayload = unknown> {
@@ -127,6 +135,7 @@ interface InternalCtx {
   random: () => number;
   stats: UserPracticeStats;
   weakSkills: Set<SkillCategory>;
+  weakSubskills: Set<string>;
   recentMistakeIds: Set<string>;
 }
 
@@ -170,6 +179,7 @@ function generateSessionId(rng: () => number): string {
 
 export interface ItemScoreBreakdown {
   weakSkill: number;
+  weakSubskill: number;
   dueForReview: number;
   levelMatch: number;
   recentMistake: number;
@@ -191,6 +201,15 @@ export function scoreItem<TPayload>(
 
   // Weak skill match
   const weakSkill = ctx.weakSkills.has(item.skill) ? 30 : 0;
+
+  // Weak-subskill match (item.category interpreted as subskill).
+  // Mirror recordAttempt's normalization so missing categories map to "general".
+  const subKey = subskillKey(item.skill, item.category ?? "general");
+  const weakSubskill = ctx.weakSubskills.has(subKey)
+    ? mode === "weak_spots"
+      ? 36
+      : 22
+    : 0;
 
   // Due-for-review (SRS)
   let dueForReview = 0;
@@ -258,6 +277,7 @@ export function scoreItem<TPayload>(
 
   const total =
     weakSkill +
+    weakSubskill +
     dueForReview +
     levelMatch +
     recentMistake +
@@ -267,6 +287,7 @@ export function scoreItem<TPayload>(
 
   return {
     weakSkill,
+    weakSubskill,
     dueForReview,
     levelMatch,
     recentMistake,
@@ -444,11 +465,13 @@ export function buildPracticeSession<TPayload = unknown>(
   const stats: UserPracticeStats = opts.stats ?? {};
   const size = Math.max(1, opts.size ?? DEFAULT_SIZE[opts.mode]);
 
+  const weakSpots = detectWeakSpots(stats, { now });
   const ctx: InternalCtx = {
     now,
     random,
     stats,
     weakSkills: weakSkillsFromStats(stats),
+    weakSubskills: new Set(weakSpots.map((w) => subskillKey(w.skill, w.subskill))),
     recentMistakeIds: new Set(stats.recentMistakeIds ?? []),
   };
 
@@ -549,3 +572,4 @@ export const EMPTY_STATE_MESSAGE =
   "Practice content is being prepared. Try mixed review or check your connection.";
 
 export * from "./templates";
+export * from "./weakSpots";
