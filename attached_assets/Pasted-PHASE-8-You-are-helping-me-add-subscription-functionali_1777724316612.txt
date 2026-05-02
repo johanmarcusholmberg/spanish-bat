@@ -1,0 +1,125 @@
+PHASE 8
+You are helping me add subscription functionality to Spanish Bat across both the existing web app and the new Expo mobile app.
+
+Repository:
+https://github.com/johanmarcusholmberg/spanish-bat
+
+Current situation:
+Spanish Bat does not currently have subscriptions or paid access. I want you to design and implement the foundation for subscriptions for both web and mobile.
+
+Important context:
+- Existing web app is Vite + React + TypeScript + Supabase.
+- Native mobile app should be Expo + React Native in `/mobile`.
+- Web payments should use Stripe Billing / Stripe Checkout.
+- Mobile payments should not use Stripe Checkout for digital access inside the iOS app.
+- Mobile payments should use RevenueCat as the preferred abstraction for Apple In-App Purchase and Google Play Billing.
+- Supabase should be the shared source of truth for user access/entitlements.
+- Do not commit or push without my approval.
+- Do not create branches, PRs, or GitHub automation unless I explicitly ask.
+- Do not hardcode secrets.
+- Use placeholder product IDs and environment variables where external dashboard setup is required.
+
+High-level goal:
+Build a subscription architecture that supports:
+1. Web subscriptions through Stripe
+2. iOS subscriptions through Apple In-App Purchase via RevenueCat
+3. Android subscriptions through Google Play Billing via RevenueCat
+4. Shared entitlement checks through Supabase
+5. Feature gating in both web and mobile
+6. Two possible subscription models:
+   - Model A: Free / Premium
+   - Model B: Free / Learn / Pro
+
+Recommendation:
+Implement the technical foundation so both models are possible, but use Model A as the default active model:
+- Free
+- Premium
+
+Model A access rules:
+Free users get:
+- Limited lesson access
+- Limited vocabulary/flashcards
+- Limited daily exercises
+- Basic progress
+
+Premium users get:
+- Unlimited lessons
+- Unlimited vocabulary/flashcards
+- Unlimited exercises
+- Full grammar access
+- Reading practice
+- Review mode
+- Full progress/streaks
+
+Model B should be represented in config but not necessarily exposed in the UI yet:
+Free:
+- Limited daily practice
+- Small lesson sample
+- Basic flashcards
+
+Learn:
+- Full lessons
+- Vocabulary
+- Grammar
+- Exercises
+- Progress
+
+Pro:
+- Everything in Learn
+- AI tutor placeholder
+- Personalized study plan placeholder
+- Pronunciation/speaking placeholder
+- Mistake analysis placeholder
+- Advanced progress insights placeholder
+
+Phase 1 objective:
+Design and implement the shared subscription/entitlement foundation.
+
+Tasks:
+1. Inspect the existing Supabase setup, auth flow, and data model.
+2. Propose the database schema before applying migrations.
+3. Add Supabase tables or migrations for:
+   - subscription_plans
+   - user_subscriptions
+   - user_entitlements
+   - subscription_events
+   - optional customer_mapping table for Stripe/RevenueCat identifiers
+4. Add RLS policies suitable for authenticated users.
+5. Add TypeScript types for:
+   - PlanId
+   - EntitlementKey
+   - SubscriptionStatus
+   - UserSubscription
+   - UserEntitlements
+6. Add a shared subscription config file defining:
+   - Free / Premium model
+   - Free / Learn / Pro model
+   - active model flag
+   - feature access rules
+7. Add helper functions:
+   - getUserEntitlements(userId)
+   - hasEntitlement(userId, entitlementKey)
+   - getCurrentPlan(userId)
+   - isPremium(userId)
+8. Add frontend-safe entitlement hooks:
+   - useSubscription()
+   - useEntitlement()
+   - usePremiumGate()
+9. Add temporary admin/dev seed data only if needed, clearly marked as development-only.
+
+Acceptance criteria:
+- Existing free users continue to work.
+- No payment provider is required for basic app usage.
+- Entitlements can represent Free, Premium, Learn, and Pro.
+- Web and mobile can both query the same entitlement model.
+- No secrets are hardcoded.
+- Database changes are documented.
+- Existing web app is not broken.
+
+Stop after Phase 1 and summarize:
+- Schema created/proposed
+- Files changed
+- How entitlement checks work
+- Which subscription model is active
+- What still needs Stripe/RevenueCat setup
+Then wait for my approval before continuing.

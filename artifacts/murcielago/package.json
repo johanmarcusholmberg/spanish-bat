@@ -78,8 +78,6 @@
   "dependencies": {
     "@clerk/react": "^6.4.7",
     "@clerk/themes": "^2.4.57",
-    "@lovable.dev/cloud-auth-js": "^1.1.2",
-    "@supabase/supabase-js": "^2.105.1",
     "react-router-dom": "^7.14.2",
     "vitest": "^4.1.5"
   }

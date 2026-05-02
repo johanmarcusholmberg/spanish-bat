@@ -1,0 +1,91 @@
+PHASE  1
+You are helping me convert my existing Spanish Bat web application into a real native mobile application using Expo + React Native.
+
+Repository:
+https://github.com/johanmarcusholmberg/spanish-bat
+
+Current situation:
+The existing app is a Vite + React + TypeScript + Tailwind/shadcn web application with Supabase backend integration. I do NOT want a simple webview wrapper. I want a proper Expo/React Native mobile app that can eventually be published to App Store and Google Play.
+
+Important constraints:
+- Do not delete or break the existing web app.
+- Do not overwrite the current Vite app.
+- Create the mobile app either in a new `/mobile` directory or a clearly separated Expo app structure.
+- Reuse business logic, data model, Supabase configuration, types, and feature concepts where possible.
+- Rebuild UI screens in React Native components, not HTML/CSS.
+- Do not use Tailwind/shadcn web components directly in the native app.
+- Do not introduce unnecessary backend changes unless required for mobile auth or mobile functionality.
+- Keep the app lightweight, clean, and mobile-first.
+- Do not create branches, PRs, or extra GitHub automation unless I explicitly ask.
+- Make changes locally in the Replit project first. After completing the phase, explain what changed and wait for my approval before committing or pushing.
+
+Goal:
+Create a native Expo mobile version of Spanish Bat with the same core learning experience:
+- Authentication
+- Dashboard / home
+- Spanish learning exercises
+- Vocabulary / flashcards
+- Grammar
+- Reading or lesson sections
+- User progress / stats
+- Supabase persistence where already used
+- Mobile-friendly navigation and onboarding
+
+Preferred stack:
+- Expo
+- React Native
+- TypeScript
+- Expo Router if appropriate
+- React Native Paper, Tamagui, NativeWind, or a simple custom component system — choose the best lightweight option and explain the choice before implementing too much.
+- Supabase JS client
+- Secure mobile storage where needed
+- EAS-compatible configuration for future iOS/Android builds
+
+Phase 1 objective:
+Set up the native mobile foundation only.
+
+Tasks for Phase 1:
+1. Inspect the existing repository structure and identify:
+   - Main routes/pages
+   - Supabase client/auth setup
+   - Main data models/types
+   - Reusable business logic
+   - UI components that need native equivalents
+2. Create a new Expo React Native app in `/mobile`.
+3. Configure TypeScript.
+4. Configure Expo Router or an equivalent navigation setup.
+5. Add Supabase client setup for mobile.
+6. Add environment variable structure for Supabase URL and anon key.
+7. Create a basic app shell with:
+   - Auth loading state
+   - Login screen placeholder
+   - Main tab navigation placeholder
+   - Dashboard placeholder
+   - Exercises placeholder
+   - Vocabulary placeholder
+   - Grammar placeholder
+   - Profile/progress placeholder
+8. Add a short `mobile/README.md` explaining:
+   - How to run the mobile app in Replit
+   - How to preview with Expo Go
+   - Required environment variables
+   - What has been migrated so far
+   - What remains
+
+Acceptance criteria for Phase 1:
+- Existing web app still works.
+- `/mobile` Expo app starts successfully.
+- App can run in Expo preview.
+- Navigation between placeholder screens works.
+- Supabase client is configured but no sensitive keys are hardcoded.
+- No store deployment work yet.
+- No unnecessary redesign of the existing web app.
+
+After Phase 1:
+Stop and summarize:
+- Files created
+- Files changed
+- Architecture choices
+- Any blockers
+- Recommended Phase 2 migration order
+Then wait for my approval before continuing.

@@ -7,7 +7,7 @@ import { requireAuth } from "../middlewares/requireAuth";
 const router = Router();
 
 router.get("/vocabulary", requireAuth, async (req, res) => {
-  const userId = (req as any).userId;
+  const userId = req.userId!;
   try {
     const words = await db.select().from(userVocabularyTable).where(eq(userVocabularyTable.userId, userId));
     return res.json({ words });
@@ -18,7 +18,7 @@ router.get("/vocabulary", requireAuth, async (req, res) => {
 });
 
 router.post("/vocabulary", requireAuth, async (req, res) => {
-  const userId = (req as any).userId;
+  const userId = req.userId!;
   const { spanish, translation, context, category, itemType, learned, usageExample, level, topicTags } = req.body;
   try {
     const existing = await db.select().from(userVocabularyTable)
@@ -46,8 +46,8 @@ router.post("/vocabulary", requireAuth, async (req, res) => {
 });
 
 router.delete("/vocabulary/:id", requireAuth, async (req, res) => {
-  const userId = (req as any).userId;
-  const { id } = req.params;
+  const userId = req.userId!;
+  const id = String(req.params.id);
   try {
     await db.delete(userVocabularyTable)
       .where(and(eq(userVocabularyTable.id, id), eq(userVocabularyTable.userId, userId)));
@@ -59,8 +59,8 @@ router.delete("/vocabulary/:id", requireAuth, async (req, res) => {
 });
 
 router.patch("/vocabulary/:id", requireAuth, async (req, res) => {
-  const userId = (req as any).userId;
-  const { id } = req.params;
+  const userId = req.userId!;
+  const id = String(req.params.id);
   const updates = req.body;
   try {
     await db.update(userVocabularyTable).set(updates)
@@ -73,7 +73,7 @@ router.patch("/vocabulary/:id", requireAuth, async (req, res) => {
 });
 
 router.get("/flashcard-srs", requireAuth, async (req, res) => {
-  const userId = (req as any).userId;
+  const userId = req.userId!;
   try {
     const data = await db.select().from(flashcardSrsTable).where(eq(flashcardSrsTable.userId, userId));
     return res.json({ data });
@@ -84,7 +84,7 @@ router.get("/flashcard-srs", requireAuth, async (req, res) => {
 });
 
 router.post("/flashcard-srs", requireAuth, async (req, res) => {
-  const userId = (req as any).userId;
+  const userId = req.userId!;
   const { cardId, reviewState, nextReview, easeFactor, intervalDays, reviewCount, correctCount, incorrectCount } = req.body;
   try {
     const existing = await db.select().from(flashcardSrsTable)

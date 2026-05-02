@@ -37,10 +37,11 @@ router.post("/translate", requireAuth, async (req, res) => {
   }
 });
 
-router.post("/conversation", requireAuth, async (req, res) => {
+router.post("/conversation", requireAuth, async (req, res): Promise<void> => {
   const { messages, scenario, level = "A1", learningFrom = "sv" } = req.body;
   if (!messages || !Array.isArray(messages)) {
-    return res.status(400).json({ error: "messages array is required" });
+    res.status(400).json({ error: "messages array is required" });
+    return;
   }
 
   res.setHeader("Content-Type", "text/event-stream");

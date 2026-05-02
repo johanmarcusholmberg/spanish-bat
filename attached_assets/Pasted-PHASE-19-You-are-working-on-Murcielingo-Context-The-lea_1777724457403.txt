@@ -1,0 +1,97 @@
+PHASE 19
+You are working on Murcielingo.
+
+Context:
+The learning experience should feel light, motivating, and alive. Avoid making Murcielingo feel like a school checklist or a rigid course tracker.
+
+Important platform requirement:
+All UI must work well on both web and native mobile. Prioritize mobile-first layouts.
+
+Goal:
+Polish the learning/practice UX around readiness, endless practice, and friendly recommendations.
+
+Implement the following UI improvements:
+
+1. Main learning dashboard
+Show:
+- current level
+- readiness score
+- today’s recommended practice
+- today’s focus
+- test recommendation if relevant
+- continue practice button
+
+Avoid over-emphasizing:
+- total completed count
+- fixed number of remaining exercises
+- hard category completion bars
+
+2. Practice mode selector
+Create clean cards for:
+- Quick practice
+- Weak spots
+- Level practice
+- Review
+- Test prep
+- Challenge me
+
+Each card should have:
+- title
+- short description
+- estimated time
+- recommended badge if applicable
+
+3. Session intro screen
+Before a session starts, show:
+- session type
+- focus skills
+- number of questions
+- why this session was recommended
+
+Example:
+“Today we’ll practice café phrases and question order because those are useful for your A1 progress.”
+
+4. Session complete screen
+Show:
+- encouraging result summary
+- accuracy
+- strengthened skills
+- what to practice next
+- buttons for next action
+
+Buttons:
+- Practice again
+- Practice weak spots
+- Back to dashboard
+- Take level check if ready
+
+5. Friendly microcopy
+Use warm but not childish language.
+Examples:
+- “You’re getting stronger.”
+- “Good moment to review this.”
+- “You look ready for a level check.”
+- “Want to keep practicing before moving on?”
+- “Let’s make this more automatic.”
+
+6. Avoid shame-based UI
+Do not use:
+- failed
+- bad
+- poor
+- wrong level
+- not good enough
+
+Prefer:
+- needs practice
+- focus area
+- almost there
+- review recommended
+
+7. Deliverables
+- Mobile-first dashboard polish
+- Practice mode cards
+- Session intro screen
+- Session complete screen
+- Improved copy
+- Works on web and native mobile

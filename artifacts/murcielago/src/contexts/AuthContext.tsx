@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useUser, useClerk, useSignIn, useSignUp } from "@clerk/react";
+type OAuthStrategy = `oauth_${string}`;
 import { useLanguage } from "@/contexts/LanguageContext";
 import { api } from "@/lib/api";
 
@@ -18,6 +19,11 @@ interface UserProfile {
 interface SessionLike {
   user: { id: string };
   access_token: string;
+}
+
+interface ClerkError {
+  longMessage?: string;
+  message?: string;
 }
 
 interface AuthContextType {
@@ -74,7 +80,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const email = clerkUser.emailAddresses?.[0]?.emailAddress || "";
       const defaultName = clerkUser.firstName || email.split("@")[0] || "";
 
-      // Try to fetch profile from DB
       const result = await api.profile.get().catch(() => ({ profile: null, isAdmin: false }));
 
       if (result.profile) {
@@ -88,7 +93,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
         setProfileLang?.(result.profile.learningFrom || "sv");
       } else {
-        // Create a new profile
         const newProfile = {
           displayName: defaultName,
           email,
@@ -99,19 +103,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         };
         setProfile(newProfile);
         setProfileLang?.("sv");
-        // Persist the new profile
-        await api.profile.upsert({
-          displayName: defaultName,
-          email,
-          level: "A1",
-          learningFrom: "sv",
-          onboardingCompleted: false,
-          placementTestCompleted: false,
-        }).catch(() => {});
+        await api.profile
+          .upsert({
+            displayName: defaultName,
+            email,
+            level: "A1",
+            learningFrom: "sv",
+            onboardingCompleted: false,
+            placementTestCompleted: false,
+          })
+          .catch(() => {});
       }
       setIsAdmin(!!result.isAdmin);
-    } catch (err) {
-      // fail silently — show defaults
+    } catch {
       const email = clerkUser.emailAddresses?.[0]?.emailAddress || "";
       setProfile({
         displayName: clerkUser.firstName || email.split("@")[0] || "",
@@ -139,22 +143,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string): Promise<string | null> => {
     if (!signIn) return "Sign-in not available";
     try {
-      const result = await (signIn as any).create({ identifier: email, password });
-      if (result.status === "complete") return null;
+      const { error } = await signIn.create({ identifier: email, password } as Parameters<typeof signIn.create>[0]);
+      if (error) {
+        return (error as ClerkError).longMessage ?? (error as ClerkError).message ?? "Login failed";
+      }
+      // v6: status is on the resource, finalize activates the session
+      if (signIn.status === "complete") {
+        await signIn.finalize();
+        return null;
+      }
       return "Login failed";
-    } catch (err: any) {
-      return err?.errors?.[0]?.longMessage || err?.message || "Login failed";
+    } catch (err: unknown) {
+      if (err && typeof err === "object" && "errors" in err) {
+        const clerkErr = err as { errors: ClerkError[] };
+        return clerkErr.errors?.[0]?.longMessage ?? "Login failed";
+      }
+      return err instanceof Error ? err.message : "Login failed";
     }
   };
 
   const register = async (email: string, password: string): Promise<string | null> => {
     if (!signUp) return "Sign-up not available";
     try {
-      const result = await (signUp as any).create({ emailAddress: email, password });
-      if (result.status === "complete" || result.status === "missing_requirements") return null;
+      const { error } = await signUp.create({ emailAddress: email, password } as Parameters<typeof signUp.create>[0]);
+      if (error) {
+        return (error as ClerkError).longMessage ?? (error as ClerkError).message ?? "Registration failed";
+      }
+      // v6: finalize if complete, or let email verification proceed
+      if (signUp.status === "complete") {
+        await signUp.finalize();
+        return null;
+      }
+      // missing_requirements = email verification needed — not an error
+      if (signUp.status === "missing_requirements") return null;
       return "Registration failed";
-    } catch (err: any) {
-      return err?.errors?.[0]?.longMessage || err?.message || "Registration failed";
+    } catch (err: unknown) {
+      if (err && typeof err === "object" && "errors" in err) {
+        const clerkErr = err as { errors: ClerkError[] };
+        return clerkErr.errors?.[0]?.longMessage ?? "Registration failed";
+      }
+      return err instanceof Error ? err.message : "Registration failed";
     }
   };
 
@@ -165,7 +193,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const resetPassword = async (_email: string): Promise<string | null> => {
-    // Clerk handles password reset via its built-in flow
     openSignIn();
     return null;
   };
@@ -174,8 +201,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await clerkUser?.updatePassword({ newPassword: _password });
       return null;
-    } catch (err: any) {
-      return err?.errors?.[0]?.longMessage || err?.message || "Update failed";
+    } catch (err: unknown) {
+      if (err && typeof err === "object" && "errors" in err) {
+        const clerkErr = err as { errors: ClerkError[] };
+        return clerkErr.errors?.[0]?.longMessage ?? "Update failed";
+      }
+      return err instanceof Error ? err.message : "Update failed";
     }
   };
 
@@ -185,7 +216,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (newProfile) setProfile(newProfile);
     setProfileLang?.(updates.learningFrom || profile?.learningFrom || null);
 
-    // Persist to DB
     const dbUpdates: Record<string, unknown> = {};
     if (updates.displayName !== undefined) dbUpdates.displayName = updates.displayName;
     if (updates.level !== undefined) dbUpdates.level = updates.level;
@@ -196,31 +226,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await api.profile.upsert(dbUpdates).catch(() => {});
   };
 
-  const signInWithGoogle = async () => {
+  const signInWithOAuth = async (strategy: OAuthStrategy) => {
     if (!signIn) return;
     try {
-      await (signIn as any).authenticateWithRedirect({
-        strategy: "oauth_google",
+      await signIn.sso({
+        strategy: strategy as Parameters<typeof signIn.sso>[0]["strategy"],
         redirectUrl: window.location.origin + "/sso-callback",
-        redirectUrlComplete: window.location.origin + "/dashboard",
+        redirectCallbackUrl: window.location.origin + "/dashboard",
       });
     } catch (err) {
-      console.error("Google sign-in error", err);
+      console.error(`OAuth sign-in error (${strategy}):`, err);
     }
   };
 
-  const signInWithApple = async () => {
-    if (!signIn) return;
-    try {
-      await (signIn as any).authenticateWithRedirect({
-        strategy: "oauth_apple",
-        redirectUrl: window.location.origin + "/sso-callback",
-        redirectUrlComplete: window.location.origin + "/dashboard",
-      });
-    } catch (err) {
-      console.error("Apple sign-in error", err);
-    }
-  };
+  const signInWithGoogle = () => signInWithOAuth("oauth_google");
+  const signInWithApple = () => signInWithOAuth("oauth_apple");
 
   const isLoggedIn = isLoaded && !!clerkUser && !!profile;
   const loading = !isLoaded || profileLoading;
