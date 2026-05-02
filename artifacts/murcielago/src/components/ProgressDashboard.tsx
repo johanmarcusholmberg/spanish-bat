@@ -162,7 +162,11 @@ export const LevelAdvancementCard = () => {
   const handleAdvance = async () => {
     if (!nextLevel) return;
     setAdvancing(true);
-    await updateProfile({ level: nextLevel });
+    try {
+      await updateProfile({ level: nextLevel });
+    } catch {
+      // Optimistic update already applied; ignore network failure.
+    }
     setAdvancing(false);
     setShowConfirm(false);
   };

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { User, Save, Check, BookOpen, ChevronRight, Mail, Shield } from "lucide-react";
+import { User, Save, Check, BookOpen, ChevronRight, Mail, Shield, ClipboardList } from "lucide-react";
 
 const levels: Level[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
@@ -23,10 +23,15 @@ const ProfilePage = () => {
   const [saved, setSaved] = useState(false);
 
   const handleSave = async () => {
-    await updateProfile({ displayName, level, learningFrom });
-    setProfileLang?.(learningFrom);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    try {
+      await updateProfile({ displayName, level, learningFrom });
+      setProfileLang?.(learningFrom);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+      // Optimistic UI already applied in updateProfile; silently ignore
+      // network failure here to preserve existing UX.
+    }
   };
 
   return (
@@ -147,10 +152,10 @@ const ProfilePage = () => {
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-semibold">{t("quickLinks")}</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-1">
             <button
               onClick={() => navigate("/learn/vocabulary")}
-              className="w-full flex items-center justify-between gap-3 p-3 -m-1 rounded-lg hover:bg-muted transition group"
+              className="w-full flex items-center justify-between gap-3 p-3 rounded-lg hover:bg-muted transition group"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="h-9 w-9 rounded-md gradient-mint flex items-center justify-center shrink-0">
@@ -159,6 +164,25 @@ const ProfilePage = () => {
                 <div className="text-left min-w-0">
                   <p className="text-sm font-medium text-foreground">{t("myDictionary")}</p>
                   <p className="text-xs text-muted-foreground truncate">{t("myDictionaryDesc")}</p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+            <button
+              onClick={() => navigate("/placement-test")}
+              className="w-full flex items-center justify-between gap-3 p-3 rounded-lg hover:bg-muted transition group"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="h-9 w-9 rounded-md gradient-peach flex items-center justify-center shrink-0">
+                  <ClipboardList className="h-4 w-4 text-primary-foreground" />
+                </div>
+                <div className="text-left min-w-0">
+                  <p className="text-sm font-medium text-foreground">
+                    {learningFrom === "sv" ? "Placeringstest" : "Placement Test"}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {learningFrom === "sv" ? "Testa din spanskanivå igen" : "Retake the Spanish level test"}
+                  </p>
                 </div>
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 group-hover:translate-x-0.5 transition-transform" />

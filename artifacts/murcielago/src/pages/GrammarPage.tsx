@@ -206,7 +206,9 @@ const GrammarPage = () => {
 
   const handleLevelUp = () => {
     if (nextLevel) {
-      updateProfile({ level: nextLevel });
+      // Optimistic update; ignore network errors since UI already reflects
+      // the new level via context state.
+      updateProfile({ level: nextLevel }).catch(() => {});
       setShowLevelUpPrompt(false);
     }
   };

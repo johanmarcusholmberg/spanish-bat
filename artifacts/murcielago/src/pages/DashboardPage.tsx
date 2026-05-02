@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth, Level } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
@@ -8,15 +9,13 @@ import MurciMascot from "@/components/MurciMascot";
 import DailyReviewCard from "@/components/DailyReview";
 import LearningStats from "@/components/LearningStats";
 import OnboardingModal from "@/components/OnboardingModal";
-import PlacementTest from "@/components/PlacementTest";
 
 const DashboardPage = () => {
   const { t, language, setProfileLang } = useLanguage();
   const { user, updateProfile } = useAuth();
+  const navigate = useNavigate();
 
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [showPlacement, setShowPlacement] = useState(false);
-  const [onboardingLang, setOnboardingLang] = useState<"sv" | "en">("sv");
 
   useEffect(() => {
     if (user && !user.onboardingCompleted) {
@@ -25,25 +24,21 @@ const DashboardPage = () => {
   }, [user?.onboardingCompleted]);
 
   const handleOnboardingComplete = async (selectedLang: "sv" | "en", selectedLevel: Level) => {
-    setOnboardingLang(selectedLang);
     setShowOnboarding(false);
 
-    await updateProfile({ learningFrom: selectedLang, level: selectedLevel, onboardingCompleted: true });
+    try {
+      await updateProfile({ learningFrom: selectedLang, level: selectedLevel, onboardingCompleted: true });
+    } catch {
+      // Optimistic UI already applied; surface no toast here as onboarding
+      // continues to placement test which has its own error handling.
+    }
     setProfileLang?.(selectedLang);
 
+    // Route new users to the standalone placement test page so they get the
+    // single, adaptive placement experience.
     if (!user?.placementTestCompleted) {
-      setShowPlacement(true);
+      navigate("/placement-test");
     }
-  };
-
-  const handlePlacementComplete = async (level: Level, _scores: Record<string, number>) => {
-    setShowPlacement(false);
-    await updateProfile({ level, placementTestCompleted: true });
-  };
-
-  const handlePlacementSkip = async () => {
-    setShowPlacement(false);
-    await updateProfile({ placementTestCompleted: true });
   };
 
   const greeting = language === "sv"
@@ -80,12 +75,6 @@ const DashboardPage = () => {
       </div>
 
       <OnboardingModal open={showOnboarding} onComplete={handleOnboardingComplete} />
-      <PlacementTest
-        open={showPlacement}
-        lang={onboardingLang}
-        onComplete={handlePlacementComplete}
-        onSkip={handlePlacementSkip}
-      />
     </AppLayout>
   );
 };

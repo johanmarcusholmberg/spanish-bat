@@ -34,6 +34,7 @@ import NotFound from "./pages/NotFound";
 import AdminPage from "./pages/AdminPage";
 import ContactPage from "./pages/ContactPage";
 import StaticPage from "./pages/StaticPage";
+import PlacementTestPage from "./pages/PlacementTestPage";
 
 const queryClient = new QueryClient();
 
@@ -84,6 +85,7 @@ const AppRoutes = () => (
       <Route path="/learn/echo" element={<ProtectedRoute><EchoPage /></ProtectedRoute>} />
       <Route path="/exercises/freestyle" element={<ProtectedRoute><FreestylePage /></ProtectedRoute>} />
       <Route path="/stats" element={<ProtectedRoute><StatsPage /></ProtectedRoute>} />
+      <Route path="/placement-test" element={<ProtectedRoute><PlacementTestPage /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>

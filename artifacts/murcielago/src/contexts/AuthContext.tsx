@@ -267,7 +267,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (updates.onboardingCompleted !== undefined) dbUpdates.onboardingCompleted = updates.onboardingCompleted;
     if (updates.placementTestCompleted !== undefined) dbUpdates.placementTestCompleted = updates.placementTestCompleted;
 
-    await api.profile.upsert(dbUpdates).catch(() => {});
+    // Let errors propagate so callers can show user-visible feedback when
+    // persistence fails. Callers that don't care can wrap in try/catch.
+    await api.profile.upsert(dbUpdates);
   };
 
   const signInWithOAuth = async (strategy: OAuthStrategy) => {
