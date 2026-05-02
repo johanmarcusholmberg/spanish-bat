@@ -11,6 +11,7 @@
  */
 
 import type { Level, SkillCategory, UserPracticeStats } from "./index";
+import { gradeFromCorrect, scheduleReview, type SrsState } from "./srs";
 
 // ───────────────────────────────────────────────────────────────────
 // Subskill statistics
@@ -165,12 +166,28 @@ export function recordAttempt(
     ].slice(0, RECENT_MISTAKE_HISTORY);
   }
 
+  // SRS schedule update for this item.
+  const itemSchedule: Record<string, SrsState> = {
+    ...(stats.itemSchedule ?? {}),
+  };
+  itemSchedule[input.itemId] = scheduleReview(
+    itemSchedule[input.itemId],
+    gradeFromCorrect(input.correct),
+    now,
+  );
+  // Mirror nextReviewAt onto the legacy ItemStat for older readers.
+  itemStats[input.itemId] = {
+    ...itemStats[input.itemId],
+    nextReviewAt: itemSchedule[input.itemId].nextReviewAt,
+  };
+
   return {
     ...stats,
     subskillStats,
     skillAccuracy,
     itemStats,
     recentMistakeIds,
+    itemSchedule,
   };
 }
 

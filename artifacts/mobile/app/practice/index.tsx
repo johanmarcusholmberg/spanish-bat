@@ -5,6 +5,7 @@ import { router } from "expo-router";
 import {
   PRACTICE_MODES,
   recommendPracticeMode,
+  countDueItems,
   type PracticeMode,
 } from "@workspace/practice";
 
@@ -22,14 +23,19 @@ const MODE_ICONS: Record<PracticeMode, keyof typeof Feather.glyphMap> = {
   review_previous: "refresh-cw",
   test_prep: "clipboard",
   challenge: "trending-up",
+  due_review: "calendar",
 };
 
 export default function PracticeModesScreen() {
   const colors = useColors();
   const { stats, weakSpots, todaysFocus } = usePracticeStats();
+  const dueCount = useMemo(
+    () => countDueItems(stats),
+    [stats.itemSchedule, stats.itemStats],
+  );
   const recommended = useMemo(
-    () => recommendPracticeMode({ stats, weakSpots }),
-    [stats, weakSpots],
+    () => recommendPracticeMode({ stats, weakSpots, dueCount }),
+    [stats, weakSpots, dueCount],
   );
 
   return (

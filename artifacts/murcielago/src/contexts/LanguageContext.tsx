@@ -331,6 +331,15 @@ const translations: Translations = {
     sv: "En tuffare mix med en titt på nästa nivå.",
     en: "A tougher mix with a peek at the next level.",
   },
+  practiceMode_due_review_title: { sv: "Daglig repetition", en: "Daily review" },
+  practiceMode_due_review_desc: {
+    sv: "Saker som din hjärna är redo att fräscha upp idag.",
+    en: "Items your brain is ready to refresh today.",
+  },
+  practiceDueBadge: {
+    sv: "{n} att repetera",
+    en: "{n} due today",
+  },
   practiceQuestions: { sv: "frågor", en: "questions" },
   practiceRecommended: { sv: "Rekommenderat", en: "Recommended" },
   practiceTodaysLabel: { sv: "Dagens övning", en: "Today's practice" },

@@ -19,6 +19,7 @@
  */
 
 import { detectWeakSpots, subskillKey } from "./weakSpots";
+import { isDue, type SrsState } from "./srs";
 
 export type Level = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 
@@ -45,7 +46,8 @@ export type PracticeMode =
   | "level"
   | "review_previous"
   | "test_prep"
-  | "challenge";
+  | "challenge"
+  | "due_review";
 
 export interface PracticeItem<TPayload = unknown> {
   /** Stable id for de-duplication, spacing, and stats lookup. */
@@ -83,6 +85,12 @@ export interface UserPracticeStats {
    * session engine's weak-subskill scoring bonus.
    */
   subskillStats?: Record<string, import("./weakSpots").SubskillStat>;
+  /**
+   * Per-item SM-2-lite spaced repetition schedule, keyed by item id.
+   * Populated by `recordAttempt`. Items with no entry are treated as
+   * brand-new (i.e. immediately due) by the SRS layer.
+   */
+  itemSchedule?: Record<string, SrsState>;
 }
 
 export interface BuildSessionOptions<TPayload = unknown> {
@@ -123,6 +131,7 @@ const DEFAULT_SIZE: Record<PracticeMode, number> = {
   review_previous: 8,
   test_prep: 10,
   challenge: 8,
+  due_review: 10,
 };
 
 const SECONDS_PER_ITEM = 25;
@@ -211,13 +220,24 @@ export function scoreItem<TPayload>(
       : 22
     : 0;
 
-  // Due-for-review (SRS)
+  // Due-for-review (SRS). Prefer the per-item schedule when present.
   let dueForReview = 0;
-  if (stat?.nextReviewAt && stat.nextReviewAt <= ctx.now) {
-    dueForReview = 22;
+  const sched = ctx.stats.itemSchedule?.[item.id];
+  const dueByScheduleAt = sched?.nextReviewAt;
+  const dueByLegacyAt = stat?.nextReviewAt;
+  const dueAt = dueByScheduleAt ?? dueByLegacyAt;
+  if (dueAt !== undefined && dueAt <= ctx.now) {
+    // In due_review mode this is the *whole point*, so weight it heavily.
+    dueForReview = mode === "due_review" ? 60 : 22;
+    // Extra nudge for items that have been overdue for a while.
+    const overdueDays = Math.max(0, (ctx.now - dueAt) / (24 * 60 * 60 * 1000));
+    if (overdueDays > 0) {
+      dueForReview += Math.min(20, Math.round(overdueDays * 2));
+    }
   } else if (!stat || stat.timesSeen === 0) {
-    // Brand-new content gets a small bump so it isn't drowned out.
-    dueForReview = 8;
+    // Brand-new content gets a small bump so it isn't drowned out — but
+    // not in due_review mode, where the user explicitly wants reviews.
+    dueForReview = mode === "due_review" ? 0 : 8;
   }
 
   // Level match (mode-dependent)
@@ -230,7 +250,9 @@ export function scoreItem<TPayload>(
           ? 18
           : mode === "review_previous"
             ? 0
-            : 18;
+            : mode === "due_review"
+              ? 6 // small bump; due_review picks by schedule, not level
+              : 18;
   } else if (itemIdx < userIdx) {
     levelMatch =
       mode === "review_previous"
@@ -239,7 +261,9 @@ export function scoreItem<TPayload>(
           ? 8
           : mode === "level"
             ? 2
-            : 10;
+            : mode === "due_review"
+              ? 6
+              : 10;
   } else if (itemIdx === userIdx + 1) {
     levelMatch = mode === "challenge" ? 22 : -40; // preview only in challenge
   } else {
@@ -327,6 +351,8 @@ function modeCandidates<TPayload>(
       return items.filter(
         (i) => levelIndex(i.level) <= Math.min(userIdx + 1, LEVEL_ORDER.length - 1),
       );
+    case "due_review":
+      return items.filter((i) => levelIndex(i.level) <= userIdx);
     default:
       return items.slice();
   }
@@ -580,6 +606,13 @@ export const PRACTICE_MODES: readonly PracticeModeMetaWithTime[] = [
     defaultSize: DEFAULT_SIZE.challenge,
     estimatedMinutes: estimateMinutes(DEFAULT_SIZE.challenge),
   },
+  {
+    mode: "due_review",
+    title: "Daily review",
+    description: "Items your brain is ready to refresh today.",
+    defaultSize: DEFAULT_SIZE.due_review,
+    estimatedMinutes: estimateMinutes(DEFAULT_SIZE.due_review),
+  },
 ] as const;
 
 export const EMPTY_STATE_MESSAGE =
@@ -601,6 +634,13 @@ export interface RecommendModeOptions {
   readinessState?: ReadinessLikeState;
   /** True if the user has practiced at all today. */
   practicedToday?: boolean;
+  /**
+   * How many SRS-scheduled items are due right now. When ≥5 the
+   * recommender prefers `due_review` over the heuristic modes.
+   */
+  dueCount?: number;
+  /** Trigger `due_review` once at least this many items are due. Default 5. */
+  dueRecommendThreshold?: number;
   now?: number;
 }
 
@@ -614,12 +654,25 @@ export function recommendPracticeMode(
   opts: RecommendModeOptions = {},
 ): RecommendedMode {
   const weak = opts.weakSpots ?? [];
+  const dueThreshold = opts.dueRecommendThreshold ?? 5;
+  const due = opts.dueCount ?? 0;
+  // test_prep takes precedence when the user is on the cusp of a level check —
+  // we don't want to bury that signal under a long review queue.
   if (opts.readinessState === "test_recommended") {
     return {
       mode: "test_prep",
       reason: {
         en: "You look ready for a level check — let's warm up with a balanced set.",
         sv: "Du verkar redo för en nivåkoll — vi värmer upp med en balanserad mix.",
+      },
+    };
+  }
+  if (due >= dueThreshold) {
+    return {
+      mode: "due_review",
+      reason: {
+        en: `${due} items are ready for a quick review.`,
+        sv: `${due} saker är redo för en snabb repetition.`,
       },
     };
   }
@@ -665,6 +718,98 @@ export function getPracticeModeMeta(
   return PRACTICE_MODES.find((m) => m.mode === mode) ?? PRACTICE_MODES[0];
 }
 
+/**
+ * Return practice items that are due for SRS review at `now`, sorted
+ * most-overdue first. Items without a schedule entry are treated as
+ * brand-new and considered due (so first-time encounters surface here
+ * too — they're "due" in the loose sense of "haven't been seen").
+ */
+export interface GetDueItemsOptions {
+  now?: number;
+  /** Cap on returned items. Default Infinity. */
+  max?: number;
+  /** When false (default), brand-new items (no schedule yet) are skipped. */
+  includeNew?: boolean;
+}
+
+/**
+ * Lightweight count of items currently due for review. Prefers the SRS
+ * `itemSchedule`, but for backward compatibility (pre-Phase-20 stats blobs)
+ * also counts legacy `itemStats[id].nextReviewAt <= now`. The two sources
+ * are unioned by item id so a mirrored entry isn't double-counted.
+ */
+export function countDueItems(
+  stats: UserPracticeStats,
+  opts: { now?: number } = {},
+): number {
+  const now = opts.now ?? Date.now();
+  const seen = new Set<string>();
+  let n = 0;
+  const sched = stats.itemSchedule ?? {};
+  for (const id of Object.keys(sched)) {
+    if (sched[id].nextReviewAt <= now) {
+      seen.add(id);
+      n++;
+    }
+  }
+  const legacy = stats.itemStats ?? {};
+  for (const id of Object.keys(legacy)) {
+    if (seen.has(id)) continue;
+    const due = legacy[id]?.nextReviewAt;
+    if (typeof due === "number" && due <= now) n++;
+  }
+  return n;
+}
+
+export function getDueItems<TPayload>(
+  stats: UserPracticeStats,
+  items: ReadonlyArray<PracticeItem<TPayload>>,
+  opts: GetDueItemsOptions = {},
+): PracticeItem<TPayload>[] {
+  const now = opts.now ?? Date.now();
+  const max = opts.max ?? Infinity;
+  const includeNew = opts.includeNew ?? false;
+  const schedule = stats.itemSchedule ?? {};
+
+  const scored: { item: PracticeItem<TPayload>; overdueMs: number }[] = [];
+  for (const item of items) {
+    const s = schedule[item.id];
+    if (!s) {
+      if (includeNew) scored.push({ item, overdueMs: 0 });
+      continue;
+    }
+    if (!isDue(s, now)) continue;
+    scored.push({ item, overdueMs: now - s.nextReviewAt });
+  }
+  scored.sort((a, b) => b.overdueMs - a.overdueMs);
+  return scored.slice(0, max === Infinity ? scored.length : max).map((s) => s.item);
+}
+
+/**
+ * Forecast how many items will be due over the next `days` days,
+ * bucketed per day. Index 0 = today, index `days-1` = `days-1` days
+ * from now. Useful for sparkline / heat-map style UIs.
+ */
+export function dueForecast(
+  stats: UserPracticeStats,
+  days: number,
+  opts: { now?: number } = {},
+): number[] {
+  const now = opts.now ?? Date.now();
+  const buckets = new Array(Math.max(1, days)).fill(0) as number[];
+  const startOfToday = now;
+  const ms = 24 * 60 * 60 * 1000;
+  const schedule = stats.itemSchedule ?? {};
+  for (const id of Object.keys(schedule)) {
+    const s = schedule[id];
+    const idx = Math.floor((s.nextReviewAt - startOfToday) / ms);
+    if (idx < 0) buckets[0] += 1;
+    else if (idx < buckets.length) buckets[idx] += 1;
+  }
+  return buckets;
+}
+
 export * from "./templates";
 export * from "./weakSpots";
 export * from "./aiEnrichment";
+export * from "./srs";

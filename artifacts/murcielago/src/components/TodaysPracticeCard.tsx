@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   recommendPracticeMode,
   getPracticeModeMeta,
+  countDueItems,
   type PracticeMode,
 } from "@workspace/practice";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -19,6 +20,7 @@ import {
   Clock,
   Star,
   PlayCircle,
+  CalendarCheck,
 } from "lucide-react";
 
 const MODE_ICONS: Record<PracticeMode, React.ElementType> = {
@@ -28,6 +30,7 @@ const MODE_ICONS: Record<PracticeMode, React.ElementType> = {
   review_previous: History,
   test_prep: ClipboardCheck,
   challenge: Flame,
+  due_review: CalendarCheck,
 };
 
 const TodaysPracticeCard: React.FC = () => {
@@ -59,19 +62,26 @@ const TodaysPracticeCard: React.FC = () => {
     return { ...trackedStats, skillAccuracy };
   }, [progress, trackedStats]);
 
+  const dueCount = useMemo(
+    () => countDueItems(stats),
+    [stats.itemSchedule, stats.itemStats],
+  );
+
   const recommended = useMemo(
     () =>
       recommendPracticeMode({
         stats,
         weakSpots,
         readinessState: readiness?.state,
+        dueCount,
       }),
-    [stats, weakSpots, readiness?.state],
+    [stats, weakSpots, readiness?.state, dueCount],
   );
 
   const meta = getPracticeModeMeta(recommended.mode);
   const Icon = MODE_ICONS[recommended.mode];
   const showTestCta = readiness?.state === "test_recommended";
+  const dueBadgeText = t("practiceDueBadge").replace("{n}", String(dueCount));
 
   return (
     <div className="bg-card rounded-2xl p-5 shadow-soft border border-primary/20">
@@ -88,6 +98,12 @@ const TodaysPracticeCard: React.FC = () => {
               <Star className="h-2.5 w-2.5" />
               {t("practiceRecommended")}
             </span>
+            {dueCount > 0 && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide bg-amber-500/15 text-amber-700 px-2 py-0.5 rounded-full">
+                <CalendarCheck className="h-2.5 w-2.5" />
+                {dueBadgeText}
+              </span>
+            )}
           </div>
           <h3 className="font-heading font-bold text-lg leading-snug">
             {t(`practiceMode_${meta.mode}_title`)}

@@ -5,6 +5,7 @@ import { router } from "expo-router";
 import {
   recommendPracticeMode,
   getPracticeModeMeta,
+  countDueItems,
   type PracticeMode,
 } from "@workspace/practice";
 
@@ -20,6 +21,7 @@ const MODE_ICON: Record<PracticeMode, keyof typeof Feather.glyphMap> = {
   review_previous: "refresh-cw",
   test_prep: "clipboard",
   challenge: "trending-up",
+  due_review: "calendar",
 };
 
 interface Props {
@@ -29,14 +31,19 @@ interface Props {
 export const TodaysPracticeCard: React.FC<Props> = ({ readinessState }) => {
   const colors = useColors();
   const { stats, weakSpots, todaysFocus } = usePracticeStats();
+  const dueCount = useMemo(
+    () => countDueItems(stats),
+    [stats.itemSchedule, stats.itemStats],
+  );
   const recommended = useMemo(
     () =>
       recommendPracticeMode({
         stats,
         weakSpots,
         readinessState,
+        dueCount,
       }),
-    [stats, weakSpots, readinessState],
+    [stats, weakSpots, readinessState, dueCount],
   );
   const meta = getPracticeModeMeta(recommended.mode);
   const showLevelCheck = readinessState === "test_recommended";
@@ -68,6 +75,16 @@ export const TodaysPracticeCard: React.FC<Props> = ({ readinessState }) => {
                 RECOMMENDED
               </Typography>
             </View>
+            {dueCount > 0 && (
+              <View style={[styles.badge, { backgroundColor: "#f5970022" }]}>
+                <Typography
+                  variant="caption"
+                  style={{ color: "#b45309", fontWeight: "700", fontSize: 9 }}
+                >
+                  {dueCount} DUE
+                </Typography>
+              </View>
+            )}
           </View>
           <Typography variant="h3" style={{ marginTop: 4 }}>
             {meta.title}

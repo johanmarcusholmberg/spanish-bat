@@ -24,6 +24,7 @@ import {
   History,
   ClipboardCheck,
   Flame,
+  CalendarCheck,
   RefreshCw,
   Clock,
   Star,
@@ -51,6 +52,7 @@ const MODE_ICONS: Record<PracticeMode, React.ElementType> = {
   review_previous: History,
   test_prep: ClipboardCheck,
   challenge: Flame,
+  due_review: CalendarCheck,
 };
 
 const PracticeSessionPage = () => {
