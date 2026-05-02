@@ -3,22 +3,25 @@
     "name": "Murciélingo",
     "slug": "murcielago-mobile",
     "version": "1.0.0",
+    "description": "Murciélingo — learn Spanish through bite-sized lessons, real reading passages, and spaced-repetition flashcards.",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "murcielago",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/icon.png",
+      "image": "./assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#D9CFBC"
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "app.murcielago.mobile"
+      "bundleIdentifier": "app.murcielago.mobile",
+      "buildNumber": "1"
     },
     "android": {
       "package": "app.murcielago.mobile",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#D9CFBC"
@@ -40,6 +43,18 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "TODO_RUN_EAS_INIT_TO_GENERATE_PROJECT_ID"
+      },
+      "_storeMetadataTodos": {
+        "_help": "These values are tracked here for visibility but live in store consoles + Clerk dashboard, not in app.json. See artifacts/mobile/README.md → Manual setup checklist.",
+        "expoOwner": "TODO_SET_TO_YOUR_EXPO_USERNAME",
+        "privacyPolicyUrl": "TODO_SET_PUBLIC_PRIVACY_POLICY_URL",
+        "termsOfServiceUrl": "TODO_SET_PUBLIC_TOS_URL",
+        "supportEmail": "TODO_SET_SUPPORT_EMAIL"
+      }
     }
   }
 }

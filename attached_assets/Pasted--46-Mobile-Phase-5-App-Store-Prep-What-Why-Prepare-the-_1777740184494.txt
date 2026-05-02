@@ -1,0 +1,35 @@
+#46 - Mobile Phase 5 — App Store Prep
+What & Why
+Prepare the Murciélingo Expo mobile app for future App Store (iOS) and Google Play (Android) publishing — without submitting anything. Lock in correct metadata, harden the EAS configuration, add placeholder assets that the dev workflow can resolve, and produce a thorough release-readiness checklist plus a manual-steps guide so nothing is forgotten when the owner is ready to submit.
+
+No code is submitted to Apple or Google. No paid accounts are created or modified.
+
+Done looks like
+app.json has every required store metadata field filled in or clearly marked TODO: owner, description, privacyPolicyUrl, ios.buildNumber, android.versionCode, plus the splash image referenced from a dedicated splash.png (separate from icon.png).
+A placeholder assets/images/splash.png exists so the path in app.json resolves, with a README note that the real 1284×2778 splash must replace it before production.
+eas.json includes a projectId placeholder with a comment, appVersionSource: "remote" in the cli block, and properly structured submit.production blocks for both iOS (appleId, ascAppId, bundleIdentifier) and Android (serviceAccountKeyPath, track) marked TODO.
+artifacts/mobile/README.md gains three new sections:
+Required accounts — Expo (free), Apple Developer ($99/yr), Google Play Developer ($25 one-time), with links and the eas login / eas init flow.
+Manual setup checklist — Clerk production instance + production publishable key, Clerk OAuth redirect URLs (Google + Apple) using murcielago:// scheme, public privacy policy URL, public Terms of Service URL, App Store screenshots (6.9″ + 6.5″ + 5.5″), App Store description copy, Google Play assets (1024×500 feature graphic, ≥ 2 phone screenshots, short ≤ 80 chars + full ≤ 4000 chars description), content rating questionnaire, age rating, App Store Review demo credentials.
+Release-readiness checklist — every gate to tick before "Submit for Review" on either store, including swapping EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY from pk_test_* to pk_live_*, pointing EXPO_PUBLIC_API_BASE_URL at the production deployment, running eas build --platform all --profile production, and reviewing an eas submit dry-run.
+The dev workflow (pnpm --filter @workspace/mobile run dev) continues to start cleanly.
+The web app (artifacts/murcielago) and the API server are not modified.
+Out of scope
+Actual submission to Apple or Google.
+Creating or modifying any Apple Developer or Google Play console entries.
+Generating final production app icons or splash artwork (placeholders only — the existing branded bat icon stays).
+RevenueCat / Stripe / subscription configuration.
+Replacing mock grammar/reading content with API-backed content (covered by separate Drafts task #49).
+Steps
+Audit and harden app.json — Add owner (placeholder), description, privacyPolicyUrl (placeholder URL), ios.buildNumber ("1"), android.versionCode (1), and switch the splash image path from icon.png to a dedicated splash.png. Keep existing correct values (name, slug, scheme, bundleIdentifier, package, version).
+Create splash placeholder — Add assets/images/splash.png (a copy of the existing branded icon.png is fine for now) so the app.json path resolves. Document in README that this must be replaced with the real 1284×2778 splash before release.
+Harden eas.json — Add a projectId placeholder with a TODO comment explaining how to obtain it via eas init. Add appVersionSource: "remote" to the cli block. Flesh out submit.production with iOS and Android TODO fields.
+Required-accounts README section — Document Expo (free, needed for EAS), Apple Developer ($99/yr, link), and Google Play Developer ($25 one-time, link). Include the eas login / eas init CLI bootstrap.
+Manual-setup README section — Cover Clerk production instance + key swap, Clerk OAuth redirect URLs for Google and Apple using the murcielago:// scheme, privacy policy URL requirement, ToS URL requirement, App Store screenshot sizes and recommended capture tools, Google Play listing assets, content rating questionnaire, and App Store Review demo credentials guidance.
+Release-readiness checklist — A markdown checkbox list covering every gate: accounts created, eas init run with projectId set, real icon assets verified, real splash asset in place, privacy policy + ToS live at public URLs, deep link / OAuth redirect URLs registered in Clerk, Clerk production publishable key swapped, EXPO_PUBLIC_API_BASE_URL pointing at production, EAS production build passing, both store listings populated with screenshots and descriptions, age/content rating completed, submit.production blocks filled in eas.json, eas submit dry-run reviewed.
+Verify dev workflow still starts — Restart the mobile workflow and confirm Metro bundles cleanly with the updated app.json.
+Relevant files
+artifacts/mobile/app.json
+artifacts/mobile/eas.json
+artifacts/mobile/assets/images/icon.png
+artifacts/mobile/README.md

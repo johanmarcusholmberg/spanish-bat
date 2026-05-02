@@ -136,6 +136,117 @@ The app uses **NativeWind v4** (Tailwind CSS for React Native) alongside `StyleS
 - Injects `Authorization: Bearer <token>` via the token getter set from `AuthContext`
 - Covers profile, streaks, progress, vocabulary, and contact endpoints
 
+## App Store / Play Store Release (Phase 5 — Prep Only)
+
+This section captures everything needed to take the mobile app from beta-in-Expo-Go to a production release on the App Store and Google Play. **Nothing in this repo submits the app** — these are the manual steps and the release-readiness checklist that must be ticked off first.
+
+The branded bat icon (`assets/images/icon.png`) is final-quality. The current `assets/images/splash.png` is a placeholder copy of the icon — replace it with a real **1284×2778 portrait splash** before shipping production builds.
+
+### Required accounts
+
+| Account | Cost | Purpose | Where to sign up |
+|---|---|---|---|
+| **Expo** | Free | Hosts the EAS build pipeline; needed to run any `eas build` / `eas submit` | <https://expo.dev/signup> |
+| **Apple Developer Program** | $99 / year | Required to publish on the App Store | <https://developer.apple.com/programs/> |
+| **Google Play Console** | $25 one-time | Required to publish on Google Play | <https://play.google.com/console/signup> |
+
+Once those exist, bootstrap EAS from the mobile artifact root:
+
+```bash
+cd artifacts/mobile
+pnpm exec eas login            # authenticates the Expo CLI
+pnpm exec eas init             # creates a project on Expo and writes the projectId into app.json → extra.eas.projectId
+```
+
+After `eas init` runs, replace the placeholder string `TODO_RUN_EAS_INIT_TO_GENERATE_PROJECT_ID` in `app.json` with the real UUID it generates (the CLI does this automatically; verify it landed in `extra.eas.projectId`).
+
+### Manual setup checklist
+
+These items live outside the code in third-party consoles. They must be done by the project owner before a production build will work end-to-end.
+
+- [ ] **Clerk production instance** — create a separate production instance in the [Clerk Dashboard](https://dashboard.clerk.com), enable email/password sign-up, and toggle on Google + Apple OAuth providers.
+- [ ] **Swap to production Clerk publishable key** — replace `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` (currently `pk_test_*`) with the production `pk_live_*` key in EAS secrets (`eas secret:create --scope project --name EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY --value pk_live_...`).
+- [ ] **Clerk OAuth redirect URLs** — in Clerk → User & Authentication → Social Connections, register `murcielago://oauth-native-callback` as an allowed redirect URL for both Google and Apple.
+- [ ] **Production API base URL** — point `EXPO_PUBLIC_API_BASE_URL` at the deployed API server (the Replit deployment URL once the API is published), not the dev domain.
+- [ ] **Privacy Policy URL** — host a public privacy policy and put the URL into `app.json → extra._storeMetadataTodos.privacyPolicyUrl`, plus the App Store Connect and Google Play Console listing pages. Both stores reject submissions without one.
+- [ ] **Terms of Service URL** — same pattern; required by the App Store Review Guidelines once any user-generated content or accounts exist.
+- [ ] **Support email** — public email address shown on both store listings; add to `app.json → extra._storeMetadataTodos.supportEmail`.
+- [ ] **App Store screenshots** — capture in the iOS Simulator or use Rotato / Previewed; required sizes:
+  - 6.9″ (iPhone 16 Pro Max) — 1320×2868
+  - 6.5″ (iPhone 11 Pro Max) — 1242×2688
+  - 5.5″ (iPhone 8 Plus) — 1242×2208
+- [ ] **App Store description copy** — short subtitle (≤ 30 chars) and full description (≤ 4000 chars), keywords (≤ 100 chars), promotional text (≤ 170 chars).
+- [ ] **App Store Review demo credentials** — create a sample beta account (email + password) and put the credentials into App Store Connect → App Review Information so Apple's reviewers can sign in.
+- [ ] **Google Play listing assets**:
+  - Feature graphic: 1024×500 PNG/JPG
+  - At least 2 phone screenshots (recommended 8): 1080×1920 or higher
+  - Short description: ≤ 80 chars
+  - Full description: ≤ 4000 chars
+  - High-res icon: 512×512 (Play Store auto-generates from `adaptiveIcon.foregroundImage`)
+- [ ] **Content rating questionnaires** — complete the IARC questionnaire in Google Play Console and the App Store age-rating form in App Store Connect.
+- [ ] **Create the App Store Connect app record** — in App Store Connect → Apps → +, create a new app with bundle ID `app.murcielago.mobile` **before** running any submit. The `ascAppId` you put in `eas.json` comes from this record's URL.
+- [ ] **Create the Google Play app record** — in Play Console → Create app, with package name `app.murcielago.mobile`, **before** running any submit.
+- [ ] **Apple Team ID + ASC App ID** — fill the `submit.production.ios` block in `eas.json` with your real `appleId`, `ascAppId`, and `appleTeamId`.
+- [ ] **App Store Connect API key (required for non-interactive iOS submit)** — in App Store Connect → Users and Access → Integrations → App Store Connect API, create a key with the **App Manager** role, download the `.p8` file (you can only download it once), and add three fields to `eas.json → submit.production.ios`:
+  - `ascApiKeyPath`: relative path to the downloaded `.p8` (e.g. `./AuthKey_ABCD1234.p8`) — **do not commit this file to git**.
+  - `ascApiKeyId`: the Key ID shown in App Store Connect.
+  - `ascApiKeyIssuerId`: the Issuer ID shown at the top of the API Keys page.
+  Without these, `eas submit ... --non-interactive` for iOS cannot authenticate.
+- [ ] **Google Play service account** — generate a service account JSON in Google Cloud Console, grant it Play Console release permissions, save it locally as referenced by `eas.json → submit.production.android.serviceAccountKeyPath`. **Do not commit this JSON to git.**
+
+### Release-readiness checklist
+
+Tick every box before running `eas submit`. Anything unchecked is a likely rejection.
+
+**Accounts and tooling**
+- [ ] Expo account created and logged in (`pnpm exec eas whoami` shows your username)
+- [ ] `pnpm exec eas init` has run and the real `projectId` is in `app.json → extra.eas.projectId`
+- [ ] Apple Developer Program account active (not "pending")
+- [ ] Google Play Console account active
+
+**Assets**
+- [ ] `assets/images/icon.png` — 1024×1024 branded icon (already in repo)
+- [ ] `assets/images/splash.png` — real 1284×2778 portrait splash (currently a placeholder copy of icon.png)
+- [ ] All App Store screenshot sizes captured
+- [ ] All Google Play screenshots + 1024×500 feature graphic captured
+
+**Configuration**
+- [ ] `app.json → extra._storeMetadataTodos.expoOwner` set to a real Expo username
+- [ ] `app.json → extra._storeMetadataTodos.privacyPolicyUrl` set to a live public URL
+- [ ] `app.json → extra._storeMetadataTodos.termsOfServiceUrl` set to a live public URL
+- [ ] `app.json → extra._storeMetadataTodos.supportEmail` set to a real address
+- [ ] `eas.json → submit.production.ios` filled with real Apple values (`appleId`, `ascAppId`, `appleTeamId`)
+- [ ] `eas.json → submit.production.ios` also has `ascApiKeyPath`, `ascApiKeyId`, `ascApiKeyIssuerId` for non-interactive submit
+- [ ] App Store Connect app record exists with bundle ID `app.murcielago.mobile`
+- [ ] Google Play app record exists with package `app.murcielago.mobile`
+- [ ] `eas.json → submit.production.android.serviceAccountKeyPath` points to a real key file
+
+**Production secrets and endpoints**
+- [ ] `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` swapped to `pk_live_*` in EAS secrets
+- [ ] `EXPO_PUBLIC_API_BASE_URL` points at the production deployment, not `replit.dev`
+- [ ] Clerk production instance OAuth redirect URLs include `murcielago://oauth-native-callback`
+
+**Legal and store listings**
+- [ ] Privacy policy live at the URL in `app.json`
+- [ ] Terms of Service live at the URL in `app.json`
+- [ ] App Store description copy + keywords + promo text written
+- [ ] App Store demo account credentials added to App Review Information
+- [ ] Google Play short + full descriptions written
+- [ ] Both stores' content/age rating questionnaires completed
+
+**Builds**
+- [ ] `pnpm exec eas build --platform ios --profile production` succeeds
+- [ ] `pnpm exec eas build --platform android --profile production` succeeds
+- [ ] Production build installs and launches cleanly on a real iPhone and a real Android device
+- [ ] Sign-up + email verification + login work against the production Clerk instance on both platforms
+- [ ] Dashboard, lessons, reading passages, vocabulary, flashcards all load against the production API
+
+**Submission dry-run**
+- [ ] `pnpm exec eas submit --platform ios --profile production --non-interactive --dry-run` reviewed
+- [ ] `pnpm exec eas submit --platform android --profile production --non-interactive --dry-run` reviewed
+
+When every box above is ticked, drop `--dry-run` to actually submit. Apple review takes 1–3 days; Google review takes a few hours to a few days depending on history.
+
 ## What Has Been Built (Phase 4 — Beta Polish)
 
 Phase 4 hardens the app for an internal Expo Go beta. No new screens — just resilience, persistence, and feedback polish.
