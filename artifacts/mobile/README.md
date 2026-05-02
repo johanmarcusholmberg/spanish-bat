@@ -58,18 +58,68 @@ artifacts/mobile/
 
 ## Authentication
 
-The mobile app uses **Clerk** (same as the web app) for authentication:
+The mobile app uses **Clerk** (same Clerk instance as the web app) for authentication. Phase 2 covers the full unauthenticated user journey:
 
-- `@clerk/clerk-expo` handles email/password sign-in.
-- After `signIn.create()` succeeds, `setActive({ session: createdSessionId })` establishes the Clerk session.
-- The Clerk session JWT is automatically injected as `Authorization: Bearer <token>` into every API request via `setAuthTokenGetter` in `AuthContext`.
+### Auth screens
+
+| Route | Purpose | Clerk APIs used |
+|---|---|---|
+| `app/login.tsx` | Email + password sign-in, OAuth, links to register/forgot | `useSignIn().signIn.create` → `setActive` |
+| `app/register.tsx` | Email + password + display name + OAuth | `useSignUp().signUp.create({ firstName })` → `prepareEmailAddressVerification` |
+| `app/verify-email.tsx` | 6-digit OTP entry with resend (30s cooldown) | `attemptEmailAddressVerification` → `setActive`; `prepareEmailAddressVerification` for resend |
+| `app/forgot-password.tsx` | Send reset code to email | `signIn.create({ strategy: "reset_password_email_code" })` |
+| `app/reset-password.tsx` | OTP + new password | `signIn.attemptFirstFactor({ strategy: "reset_password_email_code" })` → `setActive` |
+
+The reset-password flow auto-recovers if the in-memory `SignIn` resource is missing the first-factor (e.g. after an app restart): when `attemptFirstFactor` fails and the email is known, `AuthContext.completeResetPassword` re-creates the reset flow and retries once.
+
+### OAuth (Google / Apple)
+
+Both Login and Register expose Google and Apple buttons. Implementation uses Clerk's Expo `useSSO` hook:
+
+```ts
+const { startSSOFlow } = useSSO();
+const { createdSessionId, setActive } = await startSSOFlow({ strategy: "oauth_google" });
+if (createdSessionId && setActive) await setActive({ session: createdSessionId });
+```
+
+`expo-web-browser`'s `maybeCompleteAuthSession()` is invoked at module load in `AuthContext.tsx` so the in-app browser closes cleanly after the OAuth redirect.
+
+### Token injection
+
+- `AuthContext` registers a token getter via `setAuthTokenGetter` in `lib/api.ts`.
+- The getter calls `session.getToken()` from Clerk on each request.
+- The Clerk session JWT is sent as `Authorization: Bearer <token>` to the API.
 - The backend validates the JWT via Clerk middleware — no separate mobile auth endpoint needed.
-- Token persistence is handled by Clerk's `tokenCache` backed by `AsyncStorage`.
+- Token persistence is handled by Clerk's `tokenCache` backed by `AsyncStorage` (see `lib/storage.ts`).
 
-## Auth Routing
+### Auth routing
 
-- Unauthenticated users → redirected to `/login` by `RootLayoutNav` + `(tabs)/_layout.tsx`
-- Authenticated users on `/login` → redirected to `/(tabs)` automatically
+- `app/_layout.tsx` registers all auth routes in the root `Stack` and waits for Clerk to load before rendering. It does **not** force-redirect unsigned users — that would block navigation between the public auth screens.
+- `app/(tabs)/_layout.tsx` is the actual auth gate: unsigned users hitting any protected tab are redirected to `/login`.
+- Already-signed-in users hitting `/login`, `/register`, `/verify-email`, or `/reset-password` are redirected to `/(tabs)` from inside those screens.
+
+### Clerk Dashboard checklist
+
+Before testing on a real device, confirm these are enabled in the [Clerk Dashboard](https://dashboard.clerk.com) for the same instance the web app uses:
+
+1. **Email + password sign-in** — required for all flows above.
+2. **Email verification code** — User & Authentication → Email, Phone, Username → enable "Verification code".
+3. **Reset password via code** — User & Authentication → Email, Phone, Username → enable password reset → choose "Email verification code" (not link).
+4. **Google OAuth** and **Apple OAuth** — User & Authentication → Social Connections → enable each provider and configure redirect URIs.
+5. **First name attribute** enabled (used as display name during sign-up).
+
+### Simulator vs real device caveats
+
+- **OAuth on iOS Simulator**: Apple Sign-In requires a real device — the simulator will surface "Sign in with Apple is not available". Google works in the simulator but requires Safari to be signed into a Google account.
+- **OAuth on Android Emulator**: Apple Sign-In is hidden on Android (we surface "Apple Sign-In is not available on Android" if invoked). Google works in the emulator.
+- **Email delivery**: Clerk's dev instance has rate limits — verification and reset emails may take 5–30 seconds to arrive and may land in spam.
+- **Deep links / OAuth redirects**: in Replit's Expo Go preview, the OAuth callback returns to the in-app browser and Clerk completes the flow there; no custom URL scheme is required for development. Standalone EAS builds will need a custom URL scheme registered in `app.json` and matching redirect URIs in the Clerk Dashboard (handled in Phase 5).
+
+### Phase 3 recommendations
+
+- Surface the registered display name on the Profile screen (it currently falls back to Clerk `firstName` then to the email prefix).
+- Show a "verify your email" banner if a signed-in user has an unverified primary email address.
+- Consider migrating profile fetch from `AuthContext` into a dedicated `useProfile` query hook backed by React Query so screens can react to invalidations directly.
 
 ## Styling
 
@@ -85,6 +135,16 @@ The app uses **NativeWind v4** (Tailwind CSS for React Native) alongside `StyleS
 - Reads base URL from `process.env.EXPO_PUBLIC_API_BASE_URL` (set to `https://$REPLIT_DEV_DOMAIN/api` in dev)
 - Injects `Authorization: Bearer <token>` via the token getter set from `AuthContext`
 - Covers profile, streaks, progress, vocabulary, and contact endpoints
+
+## What Has Been Built (Phase 2)
+
+- ✅ Sign-up screen with display name, email, password (strength rules), confirm password, and OAuth
+- ✅ Email verification screen with resend (30 second cooldown) and inline status messaging
+- ✅ Forgot password screen — sends Clerk reset code via email
+- ✅ Reset password screen — accepts code + new password with auto-recovery if the SignIn resource lost state
+- ✅ Google and Apple OAuth on both Login and Register via `useSSO`
+- ✅ Cross-screen navigation (login ↔ register, login → forgot, forgot → reset, verify → resend)
+- ✅ Public auth routes are reachable when signed out; only protected tabs are auth-gated
 
 ## What Has Been Built (Phase 1)
 

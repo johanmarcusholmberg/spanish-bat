@@ -21,8 +21,9 @@ interface AuthContextType {
   user: UserProfile | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<string | null>;
-  register: (email: string, password: string) => Promise<string | null>;
+  register: (email: string, password: string, displayName: string) => Promise<string | null>;
   verifyEmail: (code: string) => Promise<string | null>;
+  resendVerificationCode: () => Promise<string | null>;
   resetPassword: (email: string) => Promise<string | null>;
   completeResetPassword: (code: string, password: string, email?: string) => Promise<string | null>;
   signInWithGoogle: () => Promise<string | null>;
@@ -39,6 +40,7 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => null,
   register: async () => null,
   verifyEmail: async () => null,
+  resendVerificationCode: async () => null,
   resetPassword: async () => null,
   completeResetPassword: async () => null,
   signInWithGoogle: async () => null,
@@ -159,10 +161,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function register(email: string, password: string): Promise<string | null> {
+  async function register(email: string, password: string, displayName: string): Promise<string | null> {
     if (!signUp) return "Sign-up not available";
     try {
-      await signUp.create({ emailAddress: email, password });
+      const trimmedName = displayName.trim();
+      await signUp.create({
+        emailAddress: email,
+        password,
+        ...(trimmedName ? { firstName: trimmedName } : {}),
+      });
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       return null;
     } catch (err: unknown) {
@@ -181,6 +188,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return "Verification incomplete. Please try again.";
     } catch (err: unknown) {
       return clerkErrorMessage(err, "Verification failed");
+    }
+  }
+
+  async function resendVerificationCode(): Promise<string | null> {
+    if (!signUp) return "Sign-up not available";
+    try {
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      return null;
+    } catch (err: unknown) {
+      return clerkErrorMessage(err, "Could not resend code");
     }
   }
 
@@ -293,6 +310,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         register,
         verifyEmail,
+        resendVerificationCode,
         resetPassword,
         completeResetPassword,
         signInWithGoogle,

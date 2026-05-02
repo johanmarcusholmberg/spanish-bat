@@ -1,7 +1,7 @@
 import { useAuth as useClerkAuth } from "@clerk/clerk-expo";
-import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
+import { Redirect, useLocalSearchParams } from "expo-router";
 import { Feather } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  TouchableOpacity,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -18,17 +19,27 @@ import { Typography } from "@/components/Typography";
 import { useAuth } from "@/contexts/AuthContext";
 import { useColors } from "@/hooks/useColors";
 
+const RESEND_COOLDOWN_SECONDS = 30;
+
 export default function VerifyEmailScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   const params = useLocalSearchParams<{ email?: string }>();
-  const { verifyEmail } = useAuth();
+  const { verifyEmail, resendVerificationCode } = useAuth();
   const { isSignedIn, isLoaded } = useClerkAuth();
 
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
 
   if (isLoaded && isSignedIn) {
     return <Redirect href="/(tabs)" />;
@@ -40,11 +51,27 @@ export default function VerifyEmailScreen() {
       return;
     }
     setError(null);
+    setInfo(null);
     setLoading(true);
     const err = await verifyEmail(code.trim());
     setLoading(false);
     if (err) {
       setError(err);
+    }
+  };
+
+  const handleResend = async () => {
+    if (cooldown > 0 || resending) return;
+    setError(null);
+    setInfo(null);
+    setResending(true);
+    const err = await resendVerificationCode();
+    setResending(false);
+    if (err) {
+      setError(err);
+    } else {
+      setInfo("A new code is on its way. Check your email.");
+      setCooldown(RESEND_COOLDOWN_SECONDS);
     }
   };
 
@@ -99,6 +126,27 @@ export default function VerifyEmailScreen() {
             </View>
           ) : null}
 
+          {info ? (
+            <View
+              style={[
+                styles.infoBox,
+                { backgroundColor: colors.primary + "18", borderColor: colors.primary + "40" },
+              ]}
+            >
+              <Feather name="check-circle" size={16} color={colors.primary} />
+              <Text
+                style={{
+                  color: colors.foreground,
+                  fontSize: 14,
+                  flex: 1,
+                  fontFamily: "Inter_400Regular",
+                }}
+              >
+                {info}
+              </Text>
+            </View>
+          ) : null}
+
           <AppTextInput
             label="Verification code"
             value={code}
@@ -126,10 +174,13 @@ export default function VerifyEmailScreen() {
           <Typography variant="caption" muted center>
             Didn't receive a code?{" "}
             <Text
-              onPress={() => router.replace("/register")}
-              style={{ color: colors.primary, fontFamily: "Inter_600SemiBold" }}
+              onPress={handleResend}
+              style={{
+                color: cooldown > 0 || resending ? colors.mutedForeground : colors.primary,
+                fontFamily: "Inter_600SemiBold",
+              }}
             >
-              Try again
+              {resending ? "Sending…" : cooldown > 0 ? `Resend in ${cooldown}s` : "Resend code"}
             </Text>
           </Typography>
         </View>
@@ -160,6 +211,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   errorBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  infoBox: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,

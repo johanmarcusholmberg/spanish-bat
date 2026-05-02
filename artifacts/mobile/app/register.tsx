@@ -27,12 +27,14 @@ export default function RegisterScreen() {
   const { register, signInWithGoogle, signInWithApple } = useAuth();
   const { isSignedIn, isLoaded } = useClerkAuth();
 
+  const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const emailRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
   const confirmRef = useRef<TextInput>(null);
 
@@ -41,7 +43,8 @@ export default function RegisterScreen() {
   const hasNumber = /[0-9]/.test(password);
   const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
   const passwordsMatch = password === confirmPassword && password.length > 0;
-  const isValid = hasMinLength && hasUppercase && hasNumber && hasSpecial && passwordsMatch && email.includes("@");
+  const hasDisplayName = displayName.trim().length >= 2;
+  const isValid = hasDisplayName && hasMinLength && hasUppercase && hasNumber && hasSpecial && passwordsMatch && email.includes("@");
 
   if (isLoaded && isSignedIn) {
     return <Redirect href="/(tabs)" />;
@@ -54,7 +57,7 @@ export default function RegisterScreen() {
     }
     setError(null);
     setLoading(true);
-    const err = await register(email.trim(), password);
+    const err = await register(email.trim(), password, displayName.trim());
     setLoading(false);
     if (err) {
       setError(err);
@@ -131,6 +134,19 @@ export default function RegisterScreen() {
           ) : null}
 
           <AppTextInput
+            label="Display name"
+            value={displayName}
+            onChangeText={setDisplayName}
+            placeholder="What should we call you?"
+            autoCapitalize="words"
+            autoComplete="name"
+            returnKeyType="next"
+            onSubmitEditing={() => emailRef.current?.focus()}
+            testID="register-display-name"
+          />
+
+          <AppTextInput
+            ref={emailRef}
             label="Email"
             value={email}
             onChangeText={setEmail}
