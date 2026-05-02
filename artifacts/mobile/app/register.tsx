@@ -20,35 +20,46 @@ import { Typography } from "@/components/Typography";
 import { useAuth } from "@/contexts/AuthContext";
 import { useColors } from "@/hooks/useColors";
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { login, signInWithGoogle, signInWithApple } = useAuth();
+  const { register, signInWithGoogle, signInWithApple } = useAuth();
   const { isSignedIn, isLoaded } = useClerkAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const passwordRef = useRef<TextInput>(null);
+  const confirmRef = useRef<TextInput>(null);
+
+  const hasMinLength = password.length >= 8;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  const passwordsMatch = password === confirmPassword && password.length > 0;
+  const isValid = hasMinLength && hasUppercase && hasNumber && hasSpecial && passwordsMatch && email.includes("@");
 
   if (isLoaded && isSignedIn) {
     return <Redirect href="/(tabs)" />;
   }
 
-  const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      setError("Please enter your email and password.");
+  const handleRegister = async () => {
+    if (!isValid) {
+      setError("Please complete all fields and meet password requirements.");
       return;
     }
     setError(null);
     setLoading(true);
-    const err = await login(email.trim(), password);
+    const err = await register(email.trim(), password);
     setLoading(false);
     if (err) {
       setError(err);
+    } else {
+      router.push({ pathname: "/verify-email", params: { email: email.trim() } });
     }
   };
 
@@ -69,30 +80,35 @@ export default function LoginScreen() {
         contentContainerStyle={[
           styles.container,
           {
-            paddingTop: Platform.OS === "web" ? 80 : insets.top + 40,
+            paddingTop: Platform.OS === "web" ? 60 : insets.top + 24,
             paddingBottom: Platform.OS === "web" ? 60 : insets.bottom + 24,
           },
         ]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        <TouchableOpacity
+          onPress={() => router.replace("/login")}
+          style={styles.backRow}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
+          <Feather name="arrow-left" size={18} color={colors.mutedForeground} />
+          <Typography variant="caption" muted>Back to sign in</Typography>
+        </TouchableOpacity>
+
         <View style={styles.header}>
           <View style={[styles.logoContainer, { backgroundColor: colors.primary }]}>
-            <Feather name="book-open" size={32} color={colors.primaryForeground} />
+            <Feather name="user-plus" size={28} color={colors.primaryForeground} />
           </View>
-          <Typography variant="h1" center style={{ marginTop: 16 }}>
-            Murciélago
+          <Typography variant="h2" center style={{ marginTop: 14 }}>
+            Create your account
           </Typography>
           <Typography variant="body" muted center style={{ marginTop: 4 }}>
-            Learn Spanish naturally
+            Start learning Spanish today
           </Typography>
         </View>
 
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Typography variant="h3" style={{ marginBottom: 20 }}>
-            Sign in
-          </Typography>
-
           {error ? (
             <View
               style={[
@@ -123,7 +139,7 @@ export default function LoginScreen() {
             autoComplete="email"
             returnKeyType="next"
             onSubmitEditing={() => passwordRef.current?.focus()}
-            testID="login-email"
+            testID="register-email"
           />
 
           <AppTextInput
@@ -133,34 +149,44 @@ export default function LoginScreen() {
             onChangeText={setPassword}
             placeholder="••••••••"
             isPassword
-            returnKeyType="done"
-            onSubmitEditing={handleLogin}
-            containerStyle={{ marginBottom: 8 }}
-            testID="login-password"
+            returnKeyType="next"
+            onSubmitEditing={() => confirmRef.current?.focus()}
+            testID="register-password"
           />
 
-          <TouchableOpacity
-            onPress={() => router.push("/forgot-password")}
-            style={styles.forgotRow}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Text style={{ color: colors.primary, fontSize: 13, fontFamily: "Inter_500Medium" }}>
-              Forgot password?
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.requirements}>
+            <Requirement met={hasMinLength} text="At least 8 characters" colors={colors} />
+            <Requirement met={hasUppercase} text="One uppercase letter" colors={colors} />
+            <Requirement met={hasNumber} text="One number" colors={colors} />
+            <Requirement met={hasSpecial} text="One special character" colors={colors} />
+          </View>
+
+          <AppTextInput
+            ref={confirmRef}
+            label="Confirm password"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            placeholder="••••••••"
+            isPassword
+            returnKeyType="done"
+            onSubmitEditing={handleRegister}
+            error={confirmPassword.length > 0 && !passwordsMatch ? "Passwords don't match" : undefined}
+            containerStyle={{ marginTop: 12, marginBottom: 20 }}
+            testID="register-confirm-password"
+          />
 
           <AppButton
-            title={loading ? "Signing in…" : "Sign in"}
-            onPress={handleLogin}
+            title={loading ? "Creating account…" : "Create account"}
+            onPress={handleRegister}
             loading={loading}
-            disabled={loading}
+            disabled={loading || !isValid}
             size="lg"
-            testID="login-submit"
+            testID="register-submit"
           />
 
           <View style={styles.dividerRow}>
             <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-            <Typography variant="caption" muted>or sign in with</Typography>
+            <Typography variant="caption" muted>or sign up with</Typography>
             <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
           </View>
 
@@ -171,7 +197,7 @@ export default function LoginScreen() {
               variant="outline"
               size="lg"
               disabled={loading}
-              testID="login-google"
+              testID="register-google"
             />
             {Platform.OS !== "android" && (
               <AppButton
@@ -180,7 +206,7 @@ export default function LoginScreen() {
                 variant="outline"
                 size="lg"
                 disabled={loading}
-                testID="login-apple"
+                testID="register-apple"
               />
             )}
           </View>
@@ -188,12 +214,12 @@ export default function LoginScreen() {
 
         <View style={styles.footer}>
           <Typography variant="caption" muted center>
-            Don't have an account?{" "}
+            Already have an account?{" "}
             <Text
-              onPress={() => router.push("/register")}
+              onPress={() => router.replace("/login")}
               style={{ color: colors.primary, fontFamily: "Inter_600SemiBold" }}
             >
-              Create one
+              Sign in
             </Text>
           </Typography>
         </View>
@@ -202,25 +228,52 @@ export default function LoginScreen() {
   );
 }
 
+function Requirement({ met, text, colors }: { met: boolean; text: string; colors: ReturnType<typeof useColors> }) {
+  return (
+    <View style={styles.requirementRow}>
+      <Feather
+        name={met ? "check-circle" : "circle"}
+        size={14}
+        color={met ? colors.primary : colors.mutedForeground}
+      />
+      <Text
+        style={{
+          fontSize: 13,
+          color: met ? colors.foreground : colors.mutedForeground,
+          fontFamily: "Inter_400Regular",
+        }}
+      >
+        {text}
+      </Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     paddingHorizontal: 20,
   },
+  backRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 12,
+  },
   header: {
     alignItems: "center",
-    marginBottom: 32,
+    marginBottom: 24,
   },
   logoContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 20,
+    width: 64,
+    height: 64,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
   },
   card: {
     borderRadius: 16,
-    padding: 24,
+    padding: 22,
     borderWidth: 1,
   },
   errorBox: {
@@ -232,10 +285,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 16,
   },
-  forgotRow: {
-    alignSelf: "flex-end",
-    marginBottom: 16,
-    marginTop: -4,
+  requirements: {
+    gap: 6,
+    marginTop: -8,
+    marginBottom: 4,
+  },
+  requirementRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   dividerRow: {
     flexDirection: "row",
@@ -248,7 +306,7 @@ const styles = StyleSheet.create({
     height: 1,
   },
   footer: {
-    marginTop: 24,
+    marginTop: 20,
     paddingHorizontal: 8,
   },
 });
