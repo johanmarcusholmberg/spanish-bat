@@ -1,0 +1,48 @@
+Phase 20 plan — Spaced Repetition (SRS)
+Goal: every practice item has a nextReviewAt time, and "Today's practice" + "Daily review" pull due items first. Recommendation engine becomes "what your brain needs now," not "what we randomly sampled."
+
+Algorithm choice
+SM-2-lite (well-understood, ~30 lines, no extra deps). Per-item state:
+
+{ ease: number, intervalDays: number, repetitions: number, nextReviewAt: number, lastReviewedAt: number }
+
+On answer: easy → interval × ease; correct → step up (1d → 3d → 6d → interval×ease); wrong → reset to 1d, ease −0.2 (floor 1.3).
+
+Work breakdown
+T1 — Library: SRS core in lib/practice
+
+New file lib/practice/src/srs.ts: scheduleReview(prevState, grade), isDue(state, now), types.
+Extend UserPracticeStats with itemSchedule: Record<itemId, SrsState>.
+Update recordAttempt to also write SRS state. Backward-compatible (missing schedule = treat as new).
+Unit tests for the four-grade matrix and edge cases (first review, leech detection at 8 lapses).
+T2 — Library: due-item selection
+
+getDueItems(stats, items, { now, max }) — returns items sorted by overdue-ness.
+New practice mode "due_review" (or extend weak_spots to prefer due items first, then fall back to weak-skill picks).
+recommendPracticeMode gains a branch: if ≥5 items due, recommend due_review with reason "X items are ready for a quick review".
+T3 — Web: surface due count
+
+TodaysPracticeCard shows "X items due today" badge when applicable.
+DailyReview component pulls from getDueItems instead of its current heuristic.
+Add a small "due forecast" sparkline on the dashboard (next 7 days) — optional, skip if scope creeps.
+T4 — Mobile: parity
+
+Same updates to the mobile TodaysPracticeCard and practice/index screen ("X due now" chip on the card).
+Mobile DailyReview equivalent (if it exists) reads from getDueItems.
+T5 — Migration & persistence
+
+Stats are stored in localStorage (web) / AsyncStorage (mobile). Add a one-time migration: on load, if itemSchedule is missing, initialize empty (no backfill needed — items get scheduled on next attempt).
+Server-side: if practiceItems API stores per-user usage, add columns for SRS state so it survives device wipes. Otherwise mark as a follow-up.
+T6 — Tests
+
+Unit: scheduleReview, isDue, getDueItems, recommendPracticeMode with due items.
+Integration: a fake user practices 10 items over 30 simulated days; assert intervals lengthen for consistent successes and reset on lapses.
+Acceptance
+Answering a practice item updates its SRS state.
+Today's Practice surfaces due items first; reason explains why.
+Daily Review shows actual due cards, not a sampled mix.
+All existing practice modes still work; no regression in the recommendation engine.
+Tests cover the schedule math.
+Web (EN/SV) and mobile both show the new "X due" affordance.
+Estimated effort
+Two focused build sessions. T1+T2 is the core (~1 session); T3–T6 + polish is the second.
