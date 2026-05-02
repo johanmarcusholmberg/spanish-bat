@@ -1,6 +1,13 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from "react";
 import { useAuth } from "./AuthContext";
 import { api } from "@/lib/api";
+import {
+  calculateReadiness,
+  progressRowsToInputs,
+  getNextLevel,
+  type Level,
+  type ReadinessResult,
+} from "@workspace/readiness";
 
 interface CategoryProgress {
   completed: number;
@@ -24,16 +31,24 @@ interface LastActivity {
 }
 
 interface ProgressContextType {
+  /** Legacy view of progress, kept for backward compatibility. */
   progress: LevelProgress;
   lastActivity: LastActivity | null;
+  /** Phase 12: readiness for the user's current level. */
+  readiness: ReadinessResult;
+  /** True once the user has taken & passed the level check for their current level. */
+  hasPassedCurrentLevelCheck: boolean;
+  markLevelCheckPassed: () => void;
   updateProgress: (category: keyof Omit<LevelProgress, "overall">, completed: number, total: number) => void;
   trackLastActivity: (type: string, path: string, label: string) => void;
   getNextRecommendation: () => { category: string; path: string; reason: string } | null;
+  /** Backward-compat alias for "test_recommended" or "passed_but_can_continue". */
   canAdvanceLevel: () => boolean;
 }
 
 const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
 
+// Soft "target" totals — kept so legacy completed/total UI still has values.
 const LEVEL_REQUIREMENTS = {
   A1: { grammar: 5, flashcards: 20, reading: 3, sentences: 10, exercises: 15 },
   A2: { grammar: 6, flashcards: 30, reading: 4, sentences: 15, exercises: 20 },
@@ -46,9 +61,12 @@ const LEVEL_REQUIREMENTS = {
 const calcPercentage = (completed: number, total: number) =>
   total > 0 ? Math.min(100, Math.round((completed / total) * 100)) : 0;
 
+const passedKey = (userId: string, level: string) => `murci.passedLevelCheck.${userId}.${level}`;
+
 export const ProgressProvider = ({ children }: { children: ReactNode }) => {
   const { user, session } = useAuth();
   const [lastActivity, setLastActivity] = useState<LastActivity | null>(null);
+  const [hasPassedCurrentLevelCheck, setHasPassed] = useState(false);
   const [progress, setProgress] = useState<LevelProgress>({
     grammar: { completed: 0, total: 5, percentage: 0 },
     flashcards: { completed: 0, total: 20, percentage: 0 },
@@ -58,10 +76,25 @@ export const ProgressProvider = ({ children }: { children: ReactNode }) => {
     overall: 0,
   });
 
+  const currentLevel: Level = (user?.level as Level) || "A1";
+
+  // Hydrate "passed level check" flag from localStorage (per user + level).
+  useEffect(() => {
+    if (!session?.user?.id) {
+      setHasPassed(false);
+      return;
+    }
+    try {
+      const v = window.localStorage.getItem(passedKey(session.user.id, currentLevel));
+      setHasPassed(v === "1");
+    } catch {
+      setHasPassed(false);
+    }
+  }, [session?.user?.id, currentLevel]);
+
   useEffect(() => {
     if (!session?.user) return;
-    const level = user?.level || "A1";
-    const requirements = LEVEL_REQUIREMENTS[level as keyof typeof LEVEL_REQUIREMENTS] || LEVEL_REQUIREMENTS.A1;
+    const requirements = LEVEL_REQUIREMENTS[currentLevel as keyof typeof LEVEL_REQUIREMENTS] || LEVEL_REQUIREMENTS.A1;
 
     const loadFromDB = async () => {
       try {
@@ -113,7 +146,7 @@ export const ProgressProvider = ({ children }: { children: ReactNode }) => {
     };
 
     loadFromDB();
-  }, [session?.user?.id, user?.level]);
+  }, [session?.user?.id, currentLevel]);
 
   const updateProgress = useCallback((category: keyof Omit<LevelProgress, "overall">, completed: number, total: number) => {
     const percentage = calcPercentage(completed, total);
@@ -148,6 +181,34 @@ export const ProgressProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [session?.user?.id]);
 
+  const markLevelCheckPassed = useCallback(() => {
+    setHasPassed(true);
+    if (session?.user?.id) {
+      try {
+        window.localStorage.setItem(passedKey(session.user.id, currentLevel), "1");
+      } catch {
+        // ignore
+      }
+    }
+  }, [session?.user?.id, currentLevel]);
+
+  // Phase 12: derive readiness from current progress rows.
+  const readiness = useMemo<ReadinessResult>(() => {
+    const inputs = progressRowsToInputs(
+      [
+        { category: "grammar", completed: progress.grammar.completed },
+        { category: "flashcards", completed: progress.flashcards.completed },
+        { category: "reading", completed: progress.reading.completed },
+        { category: "sentences", completed: progress.sentences.completed },
+        // "exercises" historically blends multiple skill types — treat as
+        // additional vocabulary practice so it still contributes.
+        { category: "vocabulary", completed: progress.exercises.completed },
+      ],
+      { hasPassedLevelTest: hasPassedCurrentLevelCheck },
+    );
+    return calculateReadiness(currentLevel, inputs);
+  }, [progress, currentLevel, hasPassedCurrentLevelCheck]);
+
   const getNextRecommendation = useCallback(() => {
     const categories = [
       { key: "grammar", label: "grammarLessons", path: "/learn/grammar", percentage: progress.grammar.percentage },
@@ -178,17 +239,21 @@ export const ProgressProvider = ({ children }: { children: ReactNode }) => {
   }, [progress]);
 
   const canAdvanceLevel = useCallback(() => {
-    const allStarted =
-      progress.grammar.percentage > 0 &&
-      progress.flashcards.percentage > 0 &&
-      progress.reading.percentage > 0 &&
-      progress.sentences.percentage > 0 &&
-      progress.exercises.percentage > 0;
-    return progress.overall >= 80 && allStarted;
-  }, [progress]);
+    return readiness.state !== "learning" && getNextLevel(currentLevel) !== null;
+  }, [readiness.state, currentLevel]);
 
   return (
-    <ProgressContext.Provider value={{ progress, lastActivity, updateProgress, trackLastActivity, getNextRecommendation, canAdvanceLevel }}>
+    <ProgressContext.Provider value={{
+      progress,
+      lastActivity,
+      readiness,
+      hasPassedCurrentLevelCheck,
+      markLevelCheckPassed,
+      updateProgress,
+      trackLastActivity,
+      getNextRecommendation,
+      canAdvanceLevel,
+    }}>
       {children}
     </ProgressContext.Provider>
   );

@@ -7,26 +7,47 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { ArrowRight, Star, TrendingUp, Play, ChevronUp, Sparkles } from "lucide-react";
+import { ArrowRight, Star, TrendingUp, Play, Sparkles, Target } from "lucide-react";
+import { getNextLevel, type SkillCategory } from "@workspace/readiness";
 
-const LEVEL_ORDER: Level[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
+const interp = (str: string, vars: Record<string, string>) =>
+  str.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? `{${k}}`);
 
-const getNextLevel = (current: Level): Level | null => {
-  const idx = LEVEL_ORDER.indexOf(current);
-  return idx < LEVEL_ORDER.length - 1 ? LEVEL_ORDER[idx + 1] : null;
+const CATEGORY_KEY: Record<SkillCategory, string> = {
+  vocabulary: "catVocabulary",
+  grammar: "catGrammar",
+  sentences: "catSentences",
+  reading: "catReading",
+  listening: "catListening",
+  speaking: "catSpeaking",
 };
 
+const CATEGORY_PATH: Record<SkillCategory, string> = {
+  vocabulary: "/learn/flashcards",
+  grammar: "/learn/grammar",
+  sentences: "/learn/sentences",
+  reading: "/learn/reading",
+  listening: "/exercises",
+  speaking: "/conversation",
+};
+
+const CATEGORY_ICON: Record<SkillCategory, string> = {
+  vocabulary: "🎴",
+  grammar: "📚",
+  sentences: "🧩",
+  reading: "📖",
+  listening: "🎧",
+  speaking: "🗣️",
+};
+
+/**
+ * Phase 12: Readiness-based progress overview.
+ * Replaces the old "X of Y exercises completed" framing with a soft
+ * "Level readiness" score and per-skill contribution bars.
+ */
 export const ProgressOverview = () => {
   const { t } = useLanguage();
-  const { progress } = useProgress();
-
-  const categories = [
-    { key: "grammar", icon: "📚", label: t("grammarLessons"), data: progress.grammar },
-    { key: "flashcards", icon: "🎴", label: t("flashcards"), data: progress.flashcards },
-    { key: "reading", icon: "📖", label: t("reading"), data: progress.reading },
-    { key: "sentences", icon: "🧩", label: t("sentenceBuilder"), data: progress.sentences },
-    { key: "exercises", icon: "✍️", label: t("practice"), data: progress.exercises },
-  ];
+  const { readiness } = useProgress();
 
   return (
     <Card>
@@ -35,31 +56,38 @@ export const ProgressOverview = () => {
           <div>
             <CardTitle className="flex items-center gap-2 text-lg">
               <TrendingUp className="h-5 w-5 text-primary" />
-              {t("progressOverview")}
+              {interp(t("readinessFor"), { level: readiness.level })}
             </CardTitle>
-            <CardDescription className="mt-0.5">{t("trackYourLearning")}</CardDescription>
+            <CardDescription className="mt-0.5">{t("readinessDescription")}</CardDescription>
           </div>
           <div className="text-right">
-            <div className="text-3xl font-bold text-primary leading-none">{progress.overall}%</div>
-            <div className="text-[11px] text-muted-foreground mt-0.5">{t("overallProgress")}</div>
+            <div className="text-3xl font-bold text-primary leading-none tabular-nums">{readiness.score}%</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">
+              {readiness.state === "learning" ? t("buildingConfidence") : null}
+              {readiness.state === "test_recommended"
+                ? interp(t("nearlyReady"), { next: getNextLevel(readiness.level) ?? readiness.level })
+                : null}
+              {readiness.state === "passed_but_can_continue" ? t("readyToAdvance") : null}
+            </div>
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-3.5">
-        {categories.map((cat) => (
-          <div key={cat.key} className="space-y-1">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-medium flex items-center gap-2">
-                <span className="text-base">{cat.icon}</span>
-                {cat.label}
-              </span>
-              <span className="text-muted-foreground tabular-nums text-xs">
-                {cat.data.completed}/{cat.data.total} · {cat.data.percentage}%
-              </span>
+        <Progress value={readiness.score} className="h-2" />
+        <div className="space-y-2.5 pt-1">
+          {readiness.breakdown.map((b) => (
+            <div key={b.category} className="space-y-1">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-medium flex items-center gap-2">
+                  <span className="text-base">{CATEGORY_ICON[b.category]}</span>
+                  {t(CATEGORY_KEY[b.category])}
+                </span>
+                <span className="text-muted-foreground tabular-nums text-xs">{b.percentage}%</span>
+              </div>
+              <Progress value={b.percentage} className="h-1.5" />
             </div>
-            <Progress value={cat.data.percentage} className="h-1.5" />
-          </div>
-        ))}
+          ))}
+        </div>
       </CardContent>
     </Card>
   );
@@ -101,12 +129,15 @@ export const ContinueCard = () => {
 
 export const NextStepsCard = () => {
   const { t } = useLanguage();
-  const { getNextRecommendation } = useProgress();
+  const { getNextRecommendation, readiness } = useProgress();
   const navigate = useNavigate();
 
   const recommendation = getNextRecommendation();
 
-  if (!recommendation) return null;
+  // If user has weak spots, surface the first one as a "practice weak spot" CTA.
+  const weakSpot = readiness.weakSpots[0];
+
+  if (!recommendation && !weakSpot) return null;
 
   const getReasonText = (reason: string) => {
     switch (reason) {
@@ -134,28 +165,59 @@ export const NextStepsCard = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          <div>
-            <div className="font-semibold">{t(recommendation.category)}</div>
-            <p className="text-sm text-muted-foreground mt-1">{getReasonText(recommendation.reason)}</p>
-          </div>
-          <Button onClick={() => navigate(recommendation.path)} className="w-full group" size="sm">
-            {t("startNow")}
-            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-          </Button>
+          {recommendation && (
+            <>
+              <div>
+                <div className="font-semibold">{t(recommendation.category)}</div>
+                <p className="text-sm text-muted-foreground mt-1">{getReasonText(recommendation.reason)}</p>
+              </div>
+              <Button onClick={() => navigate(recommendation.path)} className="w-full group" size="sm">
+                {t("startNow")}
+                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </>
+          )}
+          {weakSpot && (
+            <div className="pt-2 border-t border-border/40">
+              <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1.5">
+                {t("weakSpotsLabel")}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(CATEGORY_PATH[weakSpot])}
+                className="w-full justify-between"
+              >
+                <span className="flex items-center gap-2">
+                  <Target className="h-3.5 w-3.5" />
+                  {t("practiceWeakSpots")}: {t(CATEGORY_KEY[weakSpot])}
+                </span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
   );
 };
 
+/**
+ * Phase 12: Level state card.
+ *
+ * Three states, never forces advancement:
+ *   - learning              → "Keep practicing"
+ *   - test_recommended      → "Take level check" / "Keep practicing" / "Practice weak spots"
+ *   - passed_but_can_continue → "Move to next level" / "Continue current level" / "Mix"
+ */
 export const LevelAdvancementCard = () => {
   const { t, language } = useLanguage();
-  const { canAdvanceLevel, progress } = useProgress();
+  const { readiness } = useProgress();
   const { user, updateProfile } = useAuth();
+  const navigate = useNavigate();
   const [showConfirm, setShowConfirm] = useState(false);
   const [advancing, setAdvancing] = useState(false);
 
-  const canAdvance = canAdvanceLevel();
   const currentLevel = (user?.level || "A1") as Level;
   const nextLevel = getNextLevel(currentLevel);
 
@@ -165,7 +227,7 @@ export const LevelAdvancementCard = () => {
     try {
       await updateProfile({ level: nextLevel });
     } catch {
-      // Optimistic update already applied; ignore network failure.
+      // Optimistic update already applied
     }
     setAdvancing(false);
     setShowConfirm(false);
@@ -173,48 +235,118 @@ export const LevelAdvancementCard = () => {
 
   const levelName = (lvl: Level) => t(`level${lvl}`);
 
+  // Build the localized status message.
+  const statusMessage = (() => {
+    if (readiness.state === "passed_but_can_continue") {
+      if (!nextLevel) return t("msgPassedTopLevel");
+      return interp(t("msgPassedCanContinue"), { current: currentLevel, next: nextLevel });
+    }
+    if (readiness.state === "test_recommended") {
+      return interp(t("msgTestRecommended"), { current: currentLevel, next: nextLevel ?? currentLevel });
+    }
+    return t("msgKeepPracticing");
+  })();
+
+  const cardClass =
+    readiness.state === "test_recommended"
+      ? "border-amber-500/40 bg-amber-50/50 dark:bg-amber-950/20"
+      : readiness.state === "passed_but_can_continue"
+        ? "border-green-500/40 bg-green-50/50 dark:bg-green-950/20"
+        : "";
+
   return (
     <>
-      <Card className={canAdvance ? "border-green-500/40 bg-green-50/50 dark:bg-green-950/20" : ""}>
+      <Card className={cardClass}>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <ChevronUp className="h-5 w-5 text-primary" />
-            {t("levelAdvancement")}
+            <Sparkles className="h-5 w-5 text-primary" />
+            {levelName(currentLevel)}
           </CardTitle>
-          <CardDescription>
-            {canAdvance ? t("readyToAdvance") : t("keepLearning")}
-          </CardDescription>
+          <CardDescription>{statusMessage}</CardDescription>
         </CardHeader>
         <CardContent>
-          {canAdvance && nextLevel ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm">
-                <Sparkles className="h-4 w-4 text-green-600" />
-                <span>{t("congratulationsAdvance")}</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground">{levelName(currentLevel)}</span>
-                <ArrowRight className="h-3 w-3" />
-                <span className="font-semibold text-primary">{levelName(nextLevel)}</span>
-              </div>
-              <Button onClick={() => setShowConfirm(true)} className="w-full" size="sm">
-                {t("advanceToNextLevel")}
+          <div className="space-y-2">
+            {readiness.state === "learning" && (
+              <Button
+                variant="outline"
+                className="w-full justify-between"
+                size="sm"
+                onClick={() => navigate("/exercises")}
+              >
+                {t("keepPracticingThisLevel")}
+                <ArrowRight className="h-3.5 w-3.5" />
               </Button>
-            </div>
-          ) : !nextLevel ? (
-            <div className="text-center py-2">
-              <div className="text-sm font-medium text-muted-foreground">{t("maxLevelReached")}</div>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>{t("progressToAdvance")}</span>
-                <span className="font-semibold tabular-nums">{progress.overall}%</span>
-              </div>
-              <Progress value={progress.overall} className="h-2" />
-              <p className="text-xs text-muted-foreground mt-1">{t("completeAllCategories")}</p>
-            </div>
-          )}
+            )}
+
+            {readiness.state === "test_recommended" && (
+              <>
+                <Button
+                  className="w-full"
+                  size="sm"
+                  onClick={() => {
+                    // Navigate to the level check. The pass flag is only set
+                    // after the test reports a successful result via
+                    // `markLevelCheckPassed()` from ProgressContext — never
+                    // on the click itself, so users who decline or fail are
+                    // not prematurely marked as passed.
+                    navigate("/placement-test");
+                  }}
+                >
+                  {t("takeLevelCheck")}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  size="sm"
+                  onClick={() => navigate("/exercises")}
+                >
+                  {t("keepPracticingThisLevel")}
+                </Button>
+                {readiness.weakSpots[0] && (
+                  <Button
+                    variant="ghost"
+                    className="w-full"
+                    size="sm"
+                    onClick={() => navigate(CATEGORY_PATH[readiness.weakSpots[0]])}
+                  >
+                    {t("practiceWeakSpots")}
+                  </Button>
+                )}
+              </>
+            )}
+
+            {readiness.state === "passed_but_can_continue" && (
+              <>
+                {nextLevel ? (
+                  <>
+                    <Button className="w-full" size="sm" onClick={() => setShowConfirm(true)}>
+                      {t("moveToNextLevel")}: {levelName(nextLevel)}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      size="sm"
+                      onClick={() => navigate("/exercises")}
+                    >
+                      {t("continueCurrentLevel")}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full"
+                      size="sm"
+                      onClick={() => navigate("/exercises")}
+                    >
+                      {t("mixCurrentAndNext")}
+                    </Button>
+                  </>
+                ) : (
+                  <div className="text-sm text-muted-foreground text-center py-2">
+                    {t("maxLevelReached")}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -234,7 +366,7 @@ export const LevelAdvancementCard = () => {
               {t("stayCurrentLevel")}
             </Button>
             <Button onClick={handleAdvance} disabled={advancing} size="sm">
-              {advancing ? "..." : t("advanceToNextLevel")}
+              {advancing ? "..." : t("moveToNextLevel")}
             </Button>
           </DialogFooter>
         </DialogContent>
