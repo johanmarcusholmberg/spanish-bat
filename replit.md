@@ -67,7 +67,7 @@ Tables (all exported from `index.ts`):
 - `subscription_events` — append-only provider webhook log (Phase 8)
 - `customer_mapping` — internal user_id ↔ Stripe / RevenueCat customer ids (Phase 8)
 
-## Subscriptions (Phase 8 — foundation only)
+## Subscriptions (Phase 8 — foundation, Phase 9 — Stripe web)
 
 - Spec referenced Supabase; this project uses Clerk + Drizzle/Postgres, so the Supabase tables/RLS were implemented as Drizzle tables with API-server enforcement instead. Same architectural goals.
 - Shared package: `@workspace/subscription` (`lib/subscription/`) — contains `PlanId`, `EntitlementKey`, `SubscriptionStatus`, `UserSubscription`, `UserEntitlements` types plus the Model A / Model B plan config and `entitlementsForPlan()`.
@@ -78,7 +78,21 @@ Tables (all exported from `index.ts`):
   - `GET /api/subscription/plans` (public) — plan list for the active model.
 - Frontend hooks (web): `useSubscription`, `useEntitlement(key)`, `usePremiumGate()` in `artifacts/murcielago/src/hooks/`.
 - Frontend hooks (mobile): same names/shape in `artifacts/mobile/hooks/`.
-- **Not yet implemented (later phases)**: Stripe Checkout/webhook handlers, RevenueCat SDK init, paywall UI, plan upgrade screens, App Store / Play product registration. Plan rows for Stripe price IDs and store product IDs are nullable placeholders in `subscription_plans`.
+
+### Phase 9 — Stripe web subscriptions
+
+- Web only; mobile keeps RevenueCat (App Store / Play Store policy).
+- Stripe SDK installed in `@workspace/api-server`. Lazy client in `src/lib/stripe.ts` — `isStripeConfigured()` / `warnIfStripeMissing()`. Boots cleanly without env vars (logs a single startup warning, `/api/stripe/config` returns `enabled:false`).
+- Sync layer `src/lib/stripeSync.ts` handles `checkout.session.completed`, `customer.subscription.{created,updated,deleted}`, `invoice.payment_{succeeded,failed}`. Upserts `user_subscriptions` + `customer_mapping`, then rewrites entitlements: deletes ALL `plan:%` rows for the user and re-inserts current plan grants if active. Manual / promo grants (`promo:`, `manual:`) are preserved. Duplicates detected by Postgres unique-violation code (23505) only — other DB errors propagate so Stripe retries.
+- Routes (`src/routes/stripe.ts`, all auth-required except config):
+  - `GET /api/stripe/config` — public, `{ enabled, publishableKey, prices }`.
+  - `POST /api/stripe/checkout` — creates a Checkout Session (mode=subscription) with `metadata.userId` + `client_reference_id`.
+  - `POST /api/stripe/portal` — Customer Portal session.
+  - `GET /api/stripe/checkout/:id` — strict ownership: metadata, `client_reference_id`, OR `customer_mapping` must match `req.userId`.
+  - `GET /api/stripe/subscriptions` — current user's Stripe subs.
+- Webhook (`src/routes/stripeWebhook.ts`) mounted at exact path `/api/stripe/webhook` with `express.raw({type:"application/json"})` BEFORE `express.json()` in `app.ts`. Other `/api` routes still parse JSON normally.
+- Web UI: `src/lib/api.ts` `api.stripe.*`; pages `PricingPage` (public, replaces old static `/pricing`), `BillingSuccessPage` (polls `/api/subscription` directly — not stale `isPremium` closure), `BillingCancelledPage`, `ManageSubscriptionPage`. Components `PremiumBadge`, `LockedFeature`. Routes wired in `App.tsx`.
+- Required secrets (none set yet — app runs without them): `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_PREMIUM_MONTHLY`, `STRIPE_PRICE_PREMIUM_YEARLY`, `VITE_STRIPE_PUBLISHABLE_KEY`. Setup walkthrough in `docs/stripe-setup.md`.
 
 ## Auth
 

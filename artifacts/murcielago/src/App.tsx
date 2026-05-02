@@ -35,6 +35,10 @@ import AdminPage from "./pages/AdminPage";
 import ContactPage from "./pages/ContactPage";
 import StaticPage from "./pages/StaticPage";
 import PlacementTestPage from "./pages/PlacementTestPage";
+import PricingPage from "./pages/PricingPage";
+import BillingSuccessPage from "./pages/BillingSuccessPage";
+import BillingCancelledPage from "./pages/BillingCancelledPage";
+import ManageSubscriptionPage from "./pages/ManageSubscriptionPage";
 
 const queryClient = new QueryClient();
 
@@ -63,7 +67,10 @@ const AppRoutes = () => (
       <Route path="/cookies" element={<StaticPage />} />
       <Route path="/accessibility" element={<StaticPage />} />
       <Route path="/support" element={<StaticPage />} />
-      <Route path="/pricing" element={<StaticPage />} />
+      <Route path="/pricing" element={<PricingPage />} />
+      <Route path="/billing/success" element={<ProtectedRoute><BillingSuccessPage /></ProtectedRoute>} />
+      <Route path="/billing/cancelled" element={<ProtectedRoute><BillingCancelledPage /></ProtectedRoute>} />
+      <Route path="/billing/manage" element={<ProtectedRoute><ManageSubscriptionPage /></ProtectedRoute>} />
       <Route path="/changelog" element={<StaticPage />} />
       <Route path="/delete-account" element={<StaticPage />} />
       <Route path="/feedback" element={<StaticPage />} />

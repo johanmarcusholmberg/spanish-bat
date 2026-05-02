@@ -58,6 +58,30 @@ export const api = {
     get: () => fetchApi("/subscription"),
     getPlans: () => fetchApi("/subscription/plans"),
   },
+  stripe: {
+    config: () => fetchApi("/stripe/config") as Promise<{
+      enabled: boolean;
+      publishableKey: string | null;
+      prices: { monthly: string | null; yearly: string | null };
+    }>,
+    checkout: (interval: "monthly" | "yearly", email?: string) =>
+      fetchApi("/stripe/checkout", {
+        method: "POST",
+        body: JSON.stringify({ interval, email }),
+      }) as Promise<{ url: string; sessionId: string }>,
+    portal: () =>
+      fetchApi("/stripe/portal", { method: "POST" }) as Promise<{ url: string }>,
+    getCheckoutSession: (sessionId: string) =>
+      fetchApi(`/stripe/checkout/${sessionId}`) as Promise<{
+        status: string | null;
+        paymentStatus: string | null;
+        subscriptionId: string | null;
+      }>,
+    listSubscriptions: () =>
+      fetchApi("/stripe/subscription") as Promise<{
+        subscriptions: Array<Record<string, unknown>>;
+      }>,
+  },
   admin: {
     getUsers: () => fetchApi("/admin/users"),
     getMessages: () => fetchApi("/admin/messages"),

@@ -9,6 +9,8 @@ import {
   getClerkProxyHost,
 } from "./middlewares/clerkProxyMiddleware";
 import router from "./routes";
+import stripeWebhookRouter from "./routes/stripeWebhook";
+import { warnIfStripeMissing } from "./lib/stripe";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
@@ -36,8 +38,20 @@ app.use(
 app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 
 app.use(cors({ credentials: true, origin: true }));
+
+// Stripe webhook MUST be mounted with the raw body parser BEFORE
+// express.json(), otherwise signature verification fails. Bind it to its
+// exact path so other /api routes still get the JSON parser.
+app.use(
+  "/api/stripe/webhook",
+  express.raw({ type: "application/json" }),
+  stripeWebhookRouter,
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+warnIfStripeMissing();
 
 app.use(
   clerkMiddleware((req: Request) => ({

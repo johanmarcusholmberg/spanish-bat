@@ -8,6 +8,7 @@ import contactRouter from "./contact";
 import aiRouter from "./ai";
 import adminRouter from "./admin";
 import subscriptionRouter from "./subscription";
+import stripeRouter from "./stripe";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(contactRouter);
 router.use(aiRouter);
 router.use(adminRouter);
 router.use(subscriptionRouter);
+router.use(stripeRouter);
 
 export default router;
