@@ -84,6 +84,12 @@ export const api = {
     update: (id: string, updates: Record<string, unknown>) =>
       fetchApi(`/vocabulary/${id}`, { method: "PATCH", body: JSON.stringify(updates) }),
   },
+  flashcardSrs: {
+    get: () =>
+      fetchApi("/flashcard-srs") as Promise<{ data: Record<string, unknown>[] }>,
+    upsert: (data: Record<string, unknown>) =>
+      fetchApi("/flashcard-srs", { method: "POST", body: JSON.stringify(data) }),
+  },
   contact: {
     send: (data: { subject: string; message: string; email: string }) =>
       fetchApi("/contact", { method: "POST", body: JSON.stringify(data) }),

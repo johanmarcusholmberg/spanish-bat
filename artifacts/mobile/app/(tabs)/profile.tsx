@@ -1,23 +1,66 @@
-import React from "react";
-import { View, StyleSheet, Alert } from "react-native";
+import React, { useState } from "react";
+import { View, StyleSheet, Alert, Pressable } from "react-native";
+import { router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
+
 import { Screen } from "@/components/Screen";
 import { Typography } from "@/components/Typography";
 import { AppButton } from "@/components/AppButton";
+import { AppTextInput } from "@/components/AppTextInput";
+import { Card } from "@/components/Card";
 import { useColors } from "@/hooks/useColors";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, Level } from "@/contexts/AuthContext";
 
-const LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"];
+const LEVELS: Level[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
 export default function ProfileScreen() {
   const colors = useColors();
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin, updateProfile } = useAuth();
+
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState(user?.displayName ?? "");
+  const [saving, setSaving] = useState(false);
 
   const handleLogout = () => {
     Alert.alert("Sign out", "Are you sure you want to sign out?", [
       { text: "Cancel", style: "cancel" },
       { text: "Sign out", style: "destructive", onPress: logout },
     ]);
+  };
+
+  const saveName = async () => {
+    const trimmed = nameDraft.trim();
+    if (!trimmed) {
+      Alert.alert("Name required", "Display name cannot be empty.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await updateProfile({ displayName: trimmed });
+      setEditingName(false);
+    } catch {
+      Alert.alert("Failed to save", "Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const setLevel = async (lvl: Level) => {
+    if (lvl === user?.level) return;
+    try {
+      await updateProfile({ level: lvl });
+    } catch {
+      Alert.alert("Failed to save", "Please try again.");
+    }
+  };
+
+  const setLanguage = async (lang: "sv" | "en") => {
+    if (lang === user?.learningFrom) return;
+    try {
+      await updateProfile({ learningFrom: lang });
+    } catch {
+      Alert.alert("Failed to save", "Please try again.");
+    }
   };
 
   return (
@@ -31,14 +74,58 @@ export default function ProfileScreen() {
             {(user?.displayName?.[0] ?? "?").toUpperCase()}
           </Typography>
         </View>
-        <Typography variant="h2" center style={{ marginTop: 14 }}>
-          {user?.displayName ?? "Learner"}
-        </Typography>
+
+        {editingName ? (
+          <View style={{ width: "100%", marginTop: 14 }}>
+            <AppTextInput
+              value={nameDraft}
+              onChangeText={setNameDraft}
+              placeholder="Display name"
+              autoFocus
+            />
+            <View style={styles.editActions}>
+              <AppButton
+                title="Cancel"
+                variant="outline"
+                size="sm"
+                onPress={() => {
+                  setNameDraft(user?.displayName ?? "");
+                  setEditingName(false);
+                }}
+              />
+              <AppButton
+                title="Save"
+                size="sm"
+                loading={saving}
+                onPress={saveName}
+              />
+            </View>
+          </View>
+        ) : (
+          <Pressable
+            onPress={() => {
+              setNameDraft(user?.displayName ?? "");
+              setEditingName(true);
+            }}
+            style={{ alignItems: "center", marginTop: 14 }}
+          >
+            <View style={styles.nameRow}>
+              <Typography variant="h2">{user?.displayName ?? "Learner"}</Typography>
+              <Feather name="edit-2" size={14} color={colors.mutedForeground} />
+            </View>
+          </Pressable>
+        )}
+
         <Typography variant="body" muted center style={{ marginTop: 4 }}>
           {user?.email ?? ""}
         </Typography>
         {isAdmin && (
-          <View style={[styles.adminBadge, { backgroundColor: colors.accent + "30", borderColor: colors.accent }]}>
+          <View
+            style={[
+              styles.adminBadge,
+              { backgroundColor: colors.accent + "30", borderColor: colors.accent },
+            ]}
+          >
             <Typography variant="caption" style={{ color: colors.primary }}>
               Admin
             </Typography>
@@ -46,57 +133,93 @@ export default function ProfileScreen() {
         )}
       </View>
 
-      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Typography variant="label" muted style={{ marginBottom: 12 }}>
-          LEARNING SETTINGS
+      {/* Level selector */}
+      <Card style={{ marginBottom: 12 }}>
+        <Typography variant="label" muted style={{ marginBottom: 10 }}>
+          CURRENT LEVEL
         </Typography>
+        <View style={styles.levelRow}>
+          {LEVELS.map((lvl) => {
+            const active = user?.level === lvl;
+            return (
+              <Pressable
+                key={lvl}
+                onPress={() => setLevel(lvl)}
+                style={[
+                  styles.levelChip,
+                  {
+                    backgroundColor: active ? colors.primary : colors.muted,
+                    borderColor: active ? colors.primary : colors.border,
+                  },
+                ]}
+              >
+                <Typography
+                  variant="label"
+                  style={{
+                    color: active ? colors.primaryForeground : colors.mutedForeground,
+                  }}
+                >
+                  {lvl}
+                </Typography>
+              </Pressable>
+            );
+          })}
+        </View>
+      </Card>
 
-        <View style={styles.row}>
-          <View style={[styles.rowIcon, { backgroundColor: colors.secondary + "40" }]}>
+      {/* Language */}
+      <Card style={{ marginBottom: 12 }}>
+        <Typography variant="label" muted style={{ marginBottom: 10 }}>
+          LEARNING FROM
+        </Typography>
+        <View style={styles.langRow}>
+          {([
+            { code: "sv" as const, label: "🇸🇪 Swedish" },
+            { code: "en" as const, label: "🇬🇧 English" },
+          ]).map((opt) => {
+            const active = user?.learningFrom === opt.code;
+            return (
+              <Pressable
+                key={opt.code}
+                onPress={() => setLanguage(opt.code)}
+                style={[
+                  styles.langCard,
+                  {
+                    backgroundColor: active ? colors.primary + "15" : colors.card,
+                    borderColor: active ? colors.primary : colors.border,
+                  },
+                ]}
+              >
+                <Typography
+                  variant="label"
+                  style={{ color: active ? colors.primary : colors.foreground }}
+                >
+                  {opt.label}
+                </Typography>
+                {active ? (
+                  <Feather name="check" size={16} color={colors.primary} />
+                ) : null}
+              </Pressable>
+            );
+          })}
+        </View>
+      </Card>
+
+      {/* Stats link */}
+      <Card onPress={() => router.push("/stats")} style={{ marginBottom: 12 }}>
+        <View style={styles.linkRow}>
+          <View style={[styles.linkIcon, { backgroundColor: colors.secondary + "40" }]}>
             <Feather name="bar-chart-2" size={18} color={colors.secondaryForeground} />
           </View>
           <View style={{ flex: 1 }}>
-            <Typography variant="label">Current Level</Typography>
-            <Typography variant="caption" muted>
-              {user?.level ?? "A1"} — {levelName(user?.level)}
+            <Typography variant="label">Statistics</Typography>
+            <Typography variant="caption" muted style={{ marginTop: 2 }}>
+              Streaks, progress, vocabulary mastery
             </Typography>
           </View>
+          <Feather name="chevron-right" size={18} color={colors.mutedForeground} />
         </View>
-
-        <View style={[styles.divider, { backgroundColor: colors.border }]} />
-
-        <View style={styles.row}>
-          <View style={[styles.rowIcon, { backgroundColor: colors.secondary + "40" }]}>
-            <Feather name="globe" size={18} color={colors.secondaryForeground} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Typography variant="label">Learning From</Typography>
-            <Typography variant="caption" muted>
-              {user?.learningFrom === "sv" ? "🇸🇪 Swedish" : "🇬🇧 English"}
-            </Typography>
-          </View>
-        </View>
-
-        <View style={[styles.divider, { backgroundColor: colors.border }]} />
-
-        <View style={styles.row}>
-          <View style={[styles.rowIcon, { backgroundColor: colors.secondary + "40" }]}>
-            <Feather name="shield" size={18} color={colors.secondaryForeground} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Typography variant="label">Account</Typography>
-            <Typography variant="caption" muted>
-              Free plan
-            </Typography>
-          </View>
-        </View>
-      </View>
-
-      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Typography variant="caption" muted center style={{ marginBottom: 12 }}>
-          Profile editing and learning settings available in Phase 2.
-        </Typography>
-      </View>
+      </Card>
 
       <AppButton
         title="Sign out"
@@ -110,22 +233,10 @@ export default function ProfileScreen() {
   );
 }
 
-function levelName(level?: string): string {
-  const names: Record<string, string> = {
-    A1: "Beginner",
-    A2: "Elementary",
-    B1: "Intermediate",
-    B2: "Upper Intermediate",
-    C1: "Advanced",
-    C2: "Mastery",
-  };
-  return names[level ?? "A1"] ?? "Beginner";
-}
-
 const styles = StyleSheet.create({
   avatarSection: {
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 20,
   },
   avatar: {
     width: 80,
@@ -134,6 +245,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  editActions: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 10,
+    justifyContent: "flex-end",
+  },
   adminBadge: {
     marginTop: 8,
     paddingHorizontal: 10,
@@ -141,27 +263,40 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
   },
-  card: {
-    borderRadius: 16,
-    padding: 18,
-    borderWidth: 1,
-    marginBottom: 12,
+  levelRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
   },
-  row: {
+  levelChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 14,
+    borderWidth: 1.5,
+  },
+  langRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  langCard: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1.5,
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
-    paddingVertical: 6,
+    justifyContent: "space-between",
   },
-  rowIcon: {
+  linkRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  linkIcon: {
     width: 38,
     height: 38,
     borderRadius: 11,
     alignItems: "center",
     justifyContent: "center",
-  },
-  divider: {
-    height: 1,
-    marginVertical: 10,
   },
 });

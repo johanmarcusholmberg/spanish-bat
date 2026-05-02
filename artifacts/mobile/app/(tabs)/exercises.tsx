@@ -1,17 +1,45 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
+
 import { Screen } from "@/components/Screen";
 import { Typography } from "@/components/Typography";
+import { Card } from "@/components/Card";
 import { useColors } from "@/hooks/useColors";
 
-const EXERCISE_TYPES = [
-  { icon: "book-open" as const, title: "Grammar Lessons", desc: "Learn Spanish grammar rules with examples and exercises" },
-  { icon: "file-text" as const, title: "Reading", desc: "Practice reading comprehension at your level" },
-  { icon: "shuffle" as const, title: "Sentence Builder", desc: "Build correct sentences from Spanish words" },
-  { icon: "message-circle" as const, title: "Conversation", desc: "Practice AI-powered conversations in Spanish" },
-  { icon: "mic" as const, title: "Pronunciation", desc: "Improve your Spanish pronunciation and accent" },
-  { icon: "layers" as const, title: "Flashcards", desc: "Spaced repetition flashcard practice" },
+interface ExerciseCard {
+  icon: keyof typeof Feather.glyphMap;
+  title: string;
+  desc: string;
+  href: string;
+}
+
+const EXERCISES: ExerciseCard[] = [
+  {
+    icon: "book-open",
+    title: "Grammar Lessons",
+    desc: "Structured lessons from A1 to C2 with examples and practice.",
+    href: "/(tabs)/grammar",
+  },
+  {
+    icon: "file-text",
+    title: "Reading",
+    desc: "Read short Spanish passages and answer comprehension questions.",
+    href: "/(tabs)/reading",
+  },
+  {
+    icon: "layers",
+    title: "Flashcards",
+    desc: "Review your saved vocabulary with spaced repetition.",
+    href: "/flashcards",
+  },
+  {
+    icon: "book",
+    title: "My Vocabulary",
+    desc: "Browse, search, and review the words you've saved.",
+    href: "/(tabs)/vocabulary",
+  },
 ];
 
 export default function ExercisesScreen() {
@@ -22,31 +50,30 @@ export default function ExercisesScreen() {
       <View style={styles.header}>
         <Typography variant="h2">Exercises</Typography>
         <Typography variant="body" muted style={{ marginTop: 4 }}>
-          Practice and reinforce your Spanish skills
+          Pick a way to practice today.
         </Typography>
       </View>
 
       <View style={styles.grid}>
-        {EXERCISE_TYPES.map((ex) => (
-          <View
+        {EXERCISES.map((ex) => (
+          <Card
             key={ex.title}
-            style={[styles.exerciseCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+            onPress={() => router.push(ex.href as never)}
+            padding={16}
           >
-            <View style={[styles.iconBox, { backgroundColor: colors.primary + "20" }]}>
-              <Feather name={ex.icon} size={22} color={colors.primary} />
+            <View style={styles.cardRow}>
+              <View style={[styles.iconBox, { backgroundColor: colors.primary + "20" }]}>
+                <Feather name={ex.icon} size={22} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Typography variant="label">{ex.title}</Typography>
+                <Typography variant="caption" muted style={{ marginTop: 2 }}>
+                  {ex.desc}
+                </Typography>
+              </View>
+              <Feather name="chevron-right" size={20} color={colors.mutedForeground} />
             </View>
-            <View style={{ flex: 1 }}>
-              <Typography variant="label">{ex.title}</Typography>
-              <Typography variant="caption" muted style={{ marginTop: 2 }}>
-                {ex.desc}
-              </Typography>
-            </View>
-            <View style={[styles.comingSoon, { backgroundColor: colors.muted }]}>
-              <Typography variant="caption" muted>
-                Coming
-              </Typography>
-            </View>
-          </View>
+          </Card>
         ))}
       </View>
     </Screen>
@@ -54,19 +81,12 @@ export default function ExercisesScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    marginBottom: 20,
-  },
-  grid: {
-    gap: 10,
-  },
-  exerciseCard: {
+  header: { marginBottom: 18 },
+  grid: { gap: 10 },
+  cardRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
-    padding: 16,
-    borderRadius: 14,
-    borderWidth: 1,
   },
   iconBox: {
     width: 46,
@@ -74,10 +94,5 @@ const styles = StyleSheet.create({
     borderRadius: 13,
     alignItems: "center",
     justifyContent: "center",
-  },
-  comingSoon: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
   },
 });

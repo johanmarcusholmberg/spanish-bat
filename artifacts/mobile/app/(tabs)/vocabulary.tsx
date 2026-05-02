@@ -1,114 +1,277 @@
-import React from "react";
-import { View, StyleSheet } from "react-native";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { View, StyleSheet, TextInput, Pressable, FlatList, Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import { Screen } from "@/components/Screen";
-import { Typography } from "@/components/Typography";
-import { useColors } from "@/hooks/useColors";
+import { router, useFocusEffect } from "expo-router";
 
-const VOCAB_FEATURES = [
-  { icon: "book" as const, title: "My Dictionary", desc: "Words you've saved from conversations and exercises" },
-  { icon: "layers" as const, title: "Flashcard SRS", desc: "Spaced repetition for efficient vocabulary retention" },
-  { icon: "search" as const, title: "Browse & Filter", desc: "Filter by type, source, or learning status" },
-  { icon: "mic" as const, title: "Audio Pronunciation", desc: "Listen to native Spanish pronunciation" },
-];
+import { Typography } from "@/components/Typography";
+import { Card } from "@/components/Card";
+import { EmptyState } from "@/components/EmptyState";
+import { LoadingState } from "@/components/LoadingState";
+import { ErrorState } from "@/components/ErrorState";
+import { AppButton } from "@/components/AppButton";
+import { useColors } from "@/hooks/useColors";
+import { api } from "@/lib/api";
+
+type FilterTab = "all" | "unlearned" | "learned";
+
+interface VocabWord {
+  id: string;
+  spanish: string;
+  translation: string;
+  context?: string | null;
+  category?: string | null;
+  itemType?: string | null;
+  learned?: boolean | null;
+  level?: string | null;
+}
 
 export default function VocabularyScreen() {
   const colors = useColors();
+  const insets = useSafeAreaInsets();
+  const [words, setWords] = useState<VocabWord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<FilterTab>("all");
+
+  const load = useCallback(async () => {
+    setError(null);
+    try {
+      const res = await api.vocabulary.get();
+      setWords(((res.words ?? []) as unknown[]).map((w) => w as VocabWord));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load vocabulary");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return words.filter((w) => {
+      if (filter === "learned" && !w.learned) return false;
+      if (filter === "unlearned" && w.learned) return false;
+      if (!q) return true;
+      return (
+        w.spanish.toLowerCase().includes(q) ||
+        (w.translation ?? "").toLowerCase().includes(q)
+      );
+    });
+  }, [words, search, filter]);
+
+  const total = words.length;
+  const learnedCount = words.filter((w) => w.learned).length;
+
+  const containerStyle = {
+    flex: 1,
+    backgroundColor: colors.background,
+    ...(Platform.OS === "web" ? { paddingTop: 67 } : { paddingTop: insets.top }),
+  };
+
+  if (loading && words.length === 0) {
+    return (
+      <View style={containerStyle}>
+        <LoadingState fullscreen label="Loading vocabulary…" />
+      </View>
+    );
+  }
+
+  if (error && words.length === 0) {
+    return (
+      <View style={containerStyle}>
+        <ErrorState message={error} onRetry={load} />
+      </View>
+    );
+  }
 
   return (
-    <Screen>
-      <View style={styles.header}>
-        <View style={[styles.iconBox, { backgroundColor: colors.primary + "20" }]}>
-          <Feather name="book-open" size={28} color={colors.primary} />
+    <View style={containerStyle}>
+      <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
+        <Typography variant="h2">Vocabulary</Typography>
+        <Typography variant="body" muted style={{ marginTop: 4 }}>
+          {total} {total === 1 ? "word" : "words"} · {learnedCount} learned
+        </Typography>
+
+        <View style={[styles.searchBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Feather name="search" size={18} color={colors.mutedForeground} />
+          <TextInput
+            placeholder="Search Spanish or translation…"
+            placeholderTextColor={colors.mutedForeground}
+            value={search}
+            onChangeText={setSearch}
+            style={[styles.searchInput, { color: colors.foreground }]}
+            autoCorrect={false}
+            autoCapitalize="none"
+          />
+          {search ? (
+            <Pressable onPress={() => setSearch("")}>
+              <Feather name="x" size={18} color={colors.mutedForeground} />
+            </Pressable>
+          ) : null}
         </View>
-        <Typography variant="h2" style={{ marginTop: 14 }}>
-          Vocabulary
-        </Typography>
-        <Typography variant="body" muted center style={{ marginTop: 6, marginBottom: 6 }}>
-          Build and review your personal Spanish dictionary.
-        </Typography>
+
+        <View style={styles.tabsRow}>
+          {(["all", "unlearned", "learned"] as FilterTab[]).map((t) => {
+            const active = filter === t;
+            return (
+              <Pressable
+                key={t}
+                onPress={() => setFilter(t)}
+                style={[
+                  styles.tab,
+                  {
+                    backgroundColor: active ? colors.primary : colors.muted,
+                    borderColor: active ? colors.primary : colors.border,
+                  },
+                ]}
+              >
+                <Typography
+                  variant="caption"
+                  style={{
+                    color: active ? colors.primaryForeground : colors.mutedForeground,
+                    fontWeight: "600",
+                  }}
+                >
+                  {labelFor(t)}
+                </Typography>
+              </Pressable>
+            );
+          })}
+          <View style={{ flex: 1 }} />
+          <AppButton
+            title="Review"
+            size="sm"
+            onPress={() => router.push("/flashcards")}
+          />
+        </View>
       </View>
 
-      <View style={[styles.statsRow]}>
-        {[
-          { label: "Words", value: "—" },
-          { label: "Learned", value: "—" },
-          { label: "Phrases", value: "—" },
-        ].map((stat) => (
-          <View
-            key={stat.label}
-            style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border, flex: 1 }]}
-          >
-            <Typography variant="h3">{stat.value}</Typography>
-            <Typography variant="caption" muted>
-              {stat.label}
-            </Typography>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.featureList}>
-        {VOCAB_FEATURES.map((f) => (
-          <View
-            key={f.title}
-            style={[styles.featureCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-          >
-            <View style={[styles.featureIcon, { backgroundColor: colors.secondary + "40" }]}>
-              <Feather name={f.icon} size={20} color={colors.secondaryForeground} />
+      <FlatList
+        data={filtered}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{
+          padding: 16,
+          paddingBottom: Platform.OS === "web" ? 100 : 80,
+          gap: 8,
+        }}
+        ListEmptyComponent={
+          <EmptyState
+            icon="book"
+            title={
+              search
+                ? "No matches"
+                : filter !== "all"
+                ? "Nothing here yet"
+                : "Your dictionary is empty"
+            }
+            description={
+              search
+                ? `No words match "${search}".`
+                : filter === "learned"
+                ? "Mark words as learned in flashcards to fill this list."
+                : "Save words from grammar lessons or reading to build your dictionary."
+            }
+            actionLabel={!search && filter === "all" ? "Browse exercises" : undefined}
+            onAction={!search && filter === "all" ? () => router.push("/(tabs)/exercises") : undefined}
+          />
+        }
+        renderItem={({ item }) => (
+          <Card onPress={() => router.push(`/word/${item.id}`)}>
+            <View style={styles.wordRow}>
+              <View style={{ flex: 1 }}>
+                <Typography variant="label" style={{ fontSize: 16 }}>
+                  {item.spanish}
+                </Typography>
+                <Typography variant="bodySmall" muted style={{ marginTop: 2 }}>
+                  {item.translation}
+                </Typography>
+              </View>
+              <View
+                style={[
+                  styles.statusPill,
+                  {
+                    backgroundColor: item.learned ? colors.success + "30" : colors.muted,
+                    borderColor: item.learned ? colors.success : colors.border,
+                  },
+                ]}
+              >
+                <Typography
+                  variant="caption"
+                  style={{ color: item.learned ? colors.success : colors.mutedForeground, fontWeight: "600" }}
+                >
+                  {item.learned ? "Learned" : "Learning"}
+                </Typography>
+              </View>
+              <Feather name="chevron-right" size={18} color={colors.mutedForeground} />
             </View>
-            <View style={{ flex: 1 }}>
-              <Typography variant="label">{f.title}</Typography>
-              <Typography variant="caption" muted style={{ marginTop: 2 }}>
-                {f.desc}
-              </Typography>
-            </View>
-          </View>
-        ))}
-      </View>
-    </Screen>
+          </Card>
+        )}
+      />
+    </View>
   );
 }
 
+function labelFor(t: FilterTab): string {
+  switch (t) {
+    case "all":
+      return "All";
+    case "unlearned":
+      return "Learning";
+    case "learned":
+      return "Learned";
+  }
+}
+
 const styles = StyleSheet.create({
-  header: {
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  iconBox: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  statsRow: {
+  searchBox: {
     flexDirection: "row",
-    gap: 10,
-    marginBottom: 20,
-  },
-  statCard: {
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderRadius: 12,
-    padding: 14,
     borderWidth: 1,
-    alignItems: "center",
-    gap: 2,
+    marginTop: 14,
   },
-  featureList: {
-    gap: 10,
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: "Inter_400Regular",
+    paddingVertical: 0,
   },
-  featureCard: {
+  tabsRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
-    padding: 16,
+    gap: 8,
+    marginTop: 12,
+    marginBottom: 6,
+  },
+  tab: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 14,
     borderWidth: 1,
   },
-  featureIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
+  wordRow: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    gap: 12,
+  },
+  statusPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    borderWidth: 1,
   },
 });

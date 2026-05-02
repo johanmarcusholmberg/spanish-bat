@@ -18,7 +18,7 @@ function NativeTabLayout() {
         <Label>Dashboard</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="exercises">
-        <Icon sf={{ default: "pencil", selected: "pencil.fill" }} />
+        <Icon sf={{ default: "pencil", selected: "pencil" }} />
         <Label>Exercises</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="vocabulary">
@@ -118,6 +118,12 @@ function ClassicTabLayout() {
             ) : (
               <Feather name="book-open" size={22} color={color} />
             ),
+        }}
+      />
+      <Tabs.Screen
+        name="reading"
+        options={{
+          href: null,
         }}
       />
       <Tabs.Screen
