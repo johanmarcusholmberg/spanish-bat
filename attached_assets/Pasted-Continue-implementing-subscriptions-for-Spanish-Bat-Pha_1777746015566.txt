@@ -1,0 +1,62 @@
+Continue implementing subscriptions for Spanish Bat.
+
+Phase objective:
+Add mobile subscription flow in the Expo app using RevenueCat for Apple In-App Purchase and Google Play Billing.
+
+Important constraints:
+- Do not use Stripe Checkout inside the iOS app for digital content.
+- Use RevenueCat for mobile subscriptions.
+- Use placeholder product IDs until Apple/Google products are created.
+- Keep Stripe web payments separate.
+- Shared access state should still flow through Supabase entitlements.
+- Do not commit or push without my approval.
+
+Tasks:
+1. Inspect `/mobile` Expo app.
+2. Add RevenueCat React Native SDK.
+3. Add environment variables/config for:
+   - RevenueCat iOS API key
+   - RevenueCat Android API key
+   - entitlement identifier
+   - product IDs
+4. Add mobile subscription service:
+   - initialize RevenueCat
+   - identify/log in user with Supabase user ID
+   - fetch offerings
+   - purchase package
+   - restore purchases
+   - check customer info
+5. Add mobile UI:
+   - Mobile paywall screen
+   - Monthly/yearly subscription choices
+   - Restore purchases button
+   - Premium badge
+   - Locked feature screens
+6. Add RevenueCat webhook strategy:
+   - Document required webhook from RevenueCat to Supabase Edge Function
+   - Add webhook handler if possible
+   - Map RevenueCat entitlement state to Supabase user_entitlements
+7. Add fallback:
+   - If RevenueCat is unavailable, show a clear error and keep existing free access.
+8. Update `/mobile/README.md` with manual setup:
+   - Apple subscription products
+   - Google Play subscription products
+   - RevenueCat project
+   - RevenueCat entitlement
+   - RevenueCat webhook
+   - product ID mapping
+
+Acceptance criteria:
+- Mobile app can show subscription offerings.
+- Mobile app can distinguish Free and Premium users.
+- Restore purchases exists.
+- RevenueCat customer info can map to Supabase user ID.
+- Stripe is not used inside the iOS app for digital subscriptions.
+- Existing web Stripe subscription flow remains separate.
+- Manual setup steps are documented clearly.
+
+Stop and summarize:
+- RevenueCat integration added
+- Mobile paywall added
+- What works with placeholders
+- What requires Apple/Google/RevenueCat dashboard setup
