@@ -16,9 +16,11 @@ import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Sparkles, Target, GraduationCap, History, ClipboardCheck, Flame, RefreshCw } from "lucide-react";
 import {
   buildAllPracticeItems,
+  aiItemsToPracticeItems,
   type PracticePayload,
   type LocalPracticeItem,
 } from "@/lib/practiceItems";
+import { api } from "@/lib/api";
 import { checkMultiAnswer } from "@/lib/answerUtils";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
 import WeakSpotsCard from "@/components/WeakSpotsCard";
@@ -93,6 +95,48 @@ const PracticeSessionPage = () => {
     setCorrectCount(0);
     setFinished(false);
     trackLastActivity("exercises", `/practice/session?mode=${mode}`, t("practice"));
+    // Background AI enrichment — never blocks, never required.
+    void enrichSessionFromAI(mode);
+  };
+
+  // Fetches AI-generated practice items in the background and appends
+  // them to the current session. Silently no-ops on failure.
+  const enrichSessionFromAI = async (mode: PracticeMode) => {
+    try {
+      const weakSubs = (weakSpots ?? [])
+        .slice(0, 5)
+        .map((w) => w.subskill)
+        .filter(Boolean);
+      const recentMistakes = (stats.recentMistakeIds ?? []).slice(0, 5);
+      const resp = await api.practice.generate({
+        userLevel,
+        practiceMode: mode,
+        count: 4,
+        interfaceLanguage: language === "sv" ? "sv" : "en",
+        weakSpots: weakSubs,
+        previousMistakes: recentMistakes,
+      });
+      if (!resp?.items?.length) return;
+      const newItems = aiItemsToPracticeItems(
+        resp.items,
+        language === "sv" ? "sv" : "en",
+      );
+      if (newItems.length === 0) return;
+      // Only enrich if the user is still near the start of the session.
+      // Appending mid-session would shift the "finish" goalpost and confuse
+      // the progress bar.
+      setSession((prev) => {
+        if (!prev || prev.mode !== mode) return prev;
+        if (revealed || finished) return prev;
+        if (index > 0) return prev;
+        const existingIds = new Set(prev.items.map((i) => i.id));
+        const fresh = newItems.filter((i) => !existingIds.has(i.id));
+        if (fresh.length === 0) return prev;
+        return { ...prev, items: [...prev.items, ...fresh] };
+      });
+    } catch {
+      // Graceful: AI is enrichment, not a requirement.
+    }
   };
 
   // Auto-start if ?mode= is provided, else show mode picker.

@@ -95,6 +95,35 @@ export const api = {
     send: (data: { subject: string; message: string; email: string }) =>
       fetchApi("/contact", { method: "POST", body: JSON.stringify(data) }),
   },
+  practice: {
+    generate: (input: {
+      userLevel: string;
+      targetSkill?: string;
+      weakSpots?: string[];
+      count?: number;
+      interfaceLanguage?: "en" | "sv";
+      previousMistakes?: string[];
+      practiceMode?: string;
+      avoidPrompts?: string[];
+    }) =>
+      fetchApi("/generate-practice-session", {
+        method: "POST",
+        body: JSON.stringify(input),
+      }) as Promise<{
+        items: Array<{
+          level: string;
+          skill: string;
+          subskill: string;
+          prompt: string;
+          expectedAnswer: string;
+          acceptedAnswers?: string[];
+          explanation?: string;
+          difficulty: number;
+          source: "ai";
+        }>;
+        degraded?: boolean;
+      }>,
+  },
   subscription: {
     get: () => fetchApi("/subscription"),
     getPlans: () => fetchApi("/subscription/plans"),

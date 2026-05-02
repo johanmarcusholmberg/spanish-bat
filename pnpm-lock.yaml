@@ -184,6 +184,12 @@ importers:
       '@workspace/integrations-openai-ai-server':
         specifier: workspace:*
         version: link:../../lib/integrations-openai-ai-server
+      '@workspace/practice':
+        specifier: workspace:*
+        version: link:../../lib/practice
+      '@workspace/practice-ai':
+        specifier: workspace:*
+        version: link:../../lib/practice-ai
       '@workspace/subscription':
         specifier: workspace:*
         version: link:../../lib/subscription
@@ -877,6 +883,12 @@ importers:
         version: link:../practice
 
   lib/practice: {}
+
+  lib/practice-ai:
+    dependencies:
+      '@workspace/practice':
+        specifier: workspace:*
+        version: link:../practice
 
   lib/readiness: {}
 

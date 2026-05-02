@@ -573,3 +573,4 @@ export const EMPTY_STATE_MESSAGE =
 
 export * from "./templates";
 export * from "./weakSpots";
+export * from "./aiEnrichment";

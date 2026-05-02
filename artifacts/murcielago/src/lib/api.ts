@@ -87,6 +87,35 @@ export const api = {
         subscriptions: Array<Record<string, unknown>>;
       }>,
   },
+  practice: {
+    generate: (input: {
+      userLevel: string;
+      targetSkill?: string;
+      weakSpots?: string[];
+      count?: number;
+      interfaceLanguage?: "en" | "sv";
+      previousMistakes?: string[];
+      practiceMode?: string;
+      avoidPrompts?: string[];
+    }) =>
+      fetchApi("/generate-practice-session", {
+        method: "POST",
+        body: JSON.stringify(input),
+      }) as Promise<{
+        items: Array<{
+          level: string;
+          skill: string;
+          subskill: string;
+          prompt: string;
+          expectedAnswer: string;
+          acceptedAnswers?: string[];
+          explanation?: string;
+          difficulty: number;
+          source: "ai";
+        }>;
+        degraded?: boolean;
+      }>,
+  },
   admin: {
     getUsers: () => fetchApi("/admin/users"),
     getMessages: () => fetchApi("/admin/messages"),

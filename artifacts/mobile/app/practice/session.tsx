@@ -25,9 +25,11 @@ import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   buildAllPracticeItems,
+  aiItemsToPracticeItems,
   type MobilePracticePayload,
 } from "@/lib/practiceItems";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
+import { api } from "@/lib/api";
 
 export default function PracticeSessionScreen() {
   const colors = useColors();
@@ -65,6 +67,34 @@ export default function PracticeSessionScreen() {
     setRevealed(false);
     setCorrect(0);
     setDone(false);
+    void enrichFromAI(mode);
+  };
+
+  const enrichFromAI = async (mode: PracticeMode) => {
+    try {
+      const recentMistakes = (stats.recentMistakeIds ?? []).slice(0, 5);
+      const resp = await api.practice.generate({
+        userLevel,
+        practiceMode: mode,
+        count: 6,
+        interfaceLanguage: "en",
+        previousMistakes: recentMistakes,
+      });
+      if (!resp?.items?.length) return;
+      const newItems = aiItemsToPracticeItems(resp.items, "en");
+      if (newItems.length === 0) return;
+      setSession((prev) => {
+        if (!prev || prev.mode !== mode) return prev;
+        // Don't shift the finish line mid-session.
+        if (revealed || done || index > 0) return prev;
+        const existingIds = new Set(prev.items.map((i) => i.id));
+        const fresh = newItems.filter((i) => !existingIds.has(i.id));
+        if (fresh.length === 0) return prev;
+        return { ...prev, items: [...prev.items, ...fresh] };
+      });
+    } catch {
+      // Silent fallback — AI is enrichment, not required.
+    }
   };
 
   useEffect(() => {

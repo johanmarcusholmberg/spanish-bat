@@ -16,6 +16,8 @@ import { quizItems } from "@/data/spanishData";
 import { grammarLessons } from "@/data/grammarLessons";
 import { sentenceExercises } from "@/data/sentenceBuilder";
 
+export type PracticeSource = "curated" | "template" | "ai";
+
 export type PracticePayload =
   | {
       kind: "translate";
@@ -23,7 +25,8 @@ export type PracticePayload =
       answer: string;
       acceptedAnswers?: string[];
       category: string;
-      source?: "curated" | "template";
+      explanation?: { en: string; sv: string };
+      source?: PracticeSource;
     }
   | {
       kind: "mcq";
@@ -32,7 +35,7 @@ export type PracticePayload =
       answer: string;
       explanation?: { en: string; sv: string };
       lessonId: string;
-      source?: "curated" | "template";
+      source?: PracticeSource;
     }
   | {
       kind: "fill";
@@ -41,7 +44,7 @@ export type PracticePayload =
       answer: string;
       hint?: { sv: string; en: string };
       lessonId: string;
-      source?: "curated" | "template";
+      source?: PracticeSource;
     }
   | {
       kind: "sentence";
@@ -49,8 +52,57 @@ export type PracticePayload =
       alternateOrders?: string[][];
       translation: { sv: string; en: string };
       grammarFocus?: string;
-      source?: "curated" | "template";
+      source?: PracticeSource;
     };
+
+/**
+ * Convert an AI-generated practice item from the backend into a
+ * `LocalPracticeItem` shaped payload the existing renderers understand.
+ * AI items currently always render as the "translate" kind because the
+ * backend produces free-form prompt + expected Spanish answer.
+ */
+export interface AIGeneratedItem {
+  level: string;
+  skill: string;
+  subskill: string;
+  prompt: string;
+  expectedAnswer: string;
+  acceptedAnswers?: string[];
+  explanation?: string;
+  difficulty: number;
+}
+
+export function aiItemsToPracticeItems(
+  raw: AIGeneratedItem[],
+  interfaceLanguage: "en" | "sv",
+): LocalPracticeItem[] {
+  return raw.map((it, i) => {
+    const promptText = it.prompt;
+    const explanationText = it.explanation;
+    return {
+      id: `ai-${Date.now()}-${i}`,
+      skill: (it.skill as LocalPracticeItem["skill"]) ?? "vocabulary",
+      level: (it.level as Level) ?? "A1",
+      category: it.subskill || "general",
+      payload: {
+        kind: "translate",
+        prompt:
+          interfaceLanguage === "sv"
+            ? { sv: promptText, en: promptText }
+            : { en: promptText, sv: promptText },
+        answer: it.expectedAnswer,
+        acceptedAnswers: it.acceptedAnswers,
+        category: it.subskill || "general",
+        explanation: explanationText
+          ? interfaceLanguage === "sv"
+            ? { sv: explanationText, en: explanationText }
+            : { en: explanationText, sv: explanationText }
+          : undefined,
+        source: "ai",
+      },
+    };
+  });
+}
 
 export type LocalPracticeItem = PracticeItem<PracticePayload>;
 
