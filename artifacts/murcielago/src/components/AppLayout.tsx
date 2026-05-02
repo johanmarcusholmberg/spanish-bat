@@ -4,7 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import Footer from "@/components/Footer";
 import logo from "@/assets/murcielago-logo.png";
-import { Home, BookOpen, User, LogOut, BarChart3, Moon, Sun, Shield } from "lucide-react";
+import { Sun, Moon, LogOut, Shield, Sparkles, Dumbbell, Library, TrendingUp, User } from "lucide-react";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const { t } = useLanguage();
@@ -28,9 +28,10 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   const navItems = [
-    { to: "/dashboard", icon: Home, label: t("dashboard") },
-    { to: "/exercises", icon: BookOpen, label: t("exercises") },
-    { to: "/stats", icon: BarChart3, label: t("statistics") },
+    { to: "/dashboard", icon: Sparkles, label: t("navToday") },
+    { to: "/practice", icon: Dumbbell, label: t("navPractice") },
+    { to: "/library", icon: Library, label: t("navLibrary") },
+    { to: "/stats", icon: TrendingUp, label: t("navProgress") },
     { to: "/profile", icon: User, label: t("profile") },
     ...(isAdmin ? [{ to: "/admin", icon: Shield, label: t("adminPanel") }] : []),
   ];

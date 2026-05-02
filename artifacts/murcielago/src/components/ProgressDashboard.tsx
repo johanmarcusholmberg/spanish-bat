@@ -271,7 +271,7 @@ export const LevelAdvancementCard = () => {
                 variant="outline"
                 className="w-full justify-between"
                 size="sm"
-                onClick={() => navigate("/exercises")}
+                onClick={() => navigate("/practice")}
               >
                 {t("keepPracticingThisLevel")}
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -298,7 +298,7 @@ export const LevelAdvancementCard = () => {
                   variant="outline"
                   className="w-full"
                   size="sm"
-                  onClick={() => navigate("/exercises")}
+                  onClick={() => navigate("/practice")}
                 >
                   {t("keepPracticingThisLevel")}
                 </Button>
@@ -326,7 +326,7 @@ export const LevelAdvancementCard = () => {
                       variant="outline"
                       className="w-full"
                       size="sm"
-                      onClick={() => navigate("/exercises")}
+                      onClick={() => navigate("/practice")}
                     >
                       {t("continueCurrentLevel")}
                     </Button>
@@ -334,7 +334,7 @@ export const LevelAdvancementCard = () => {
                       variant="ghost"
                       className="w-full"
                       size="sm"
-                      onClick={() => navigate("/exercises")}
+                      onClick={() => navigate("/practice")}
                     >
                       {t("mixCurrentAndNext")}
                     </Button>

@@ -269,7 +269,7 @@ const PracticeSessionPage = () => {
       <AppLayout>
         <div className="max-w-2xl mx-auto px-4 py-8 text-center">
           <p className="text-muted-foreground">{EMPTY_STATE_MESSAGE}</p>
-          <Button className="mt-4" onClick={() => navigate("/exercises")}>
+          <Button className="mt-4" onClick={() => navigate("/practice")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             {t("back")}
           </Button>
@@ -284,7 +284,7 @@ const PracticeSessionPage = () => {
       <AppLayout>
         <div className="max-w-3xl mx-auto px-4 py-6">
           <button
-            onClick={() => navigate("/exercises")}
+            onClick={() => navigate("/practice")}
             className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
           >
             <ArrowLeft className="h-4 w-4" /> {t("back")}

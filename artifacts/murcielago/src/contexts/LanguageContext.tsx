@@ -362,6 +362,21 @@ const translations: Translations = {
     sv: "Du ser redo ut för en nivåkoll",
     en: "You look ready for a level check",
   },
+
+  // Phase 22: Today / Practice / Library / Progress navigation
+  navToday: { sv: "Idag", en: "Today" },
+  navPractice: { sv: "Öva", en: "Practice" },
+  navLibrary: { sv: "Bibliotek", en: "Library" },
+  navProgress: { sv: "Framsteg", en: "Progress" },
+  todayGreeting: { sv: "Vad sägs om en kort övning?", en: "Up for a short practice?" },
+  todaysFocusLabel: { sv: "Dagens fokus", en: "Today's focus" },
+  todaysReadiness: { sv: "Nivåberedskap", en: "Level readiness" },
+  echoTagline: { sv: "Eka språket", en: "Echo the language" },
+  echoStepSee: { sv: "Se", en: "See" },
+  echoStepHear: { sv: "Hör", en: "Hear" },
+  echoStepEcho: { sv: "Eka", en: "Echo" },
+  echoStepBuild: { sv: "Bygg", en: "Build" },
+  echoStepUse: { sv: "Använd", en: "Use" },
 };
 
 interface LanguageContextType {
