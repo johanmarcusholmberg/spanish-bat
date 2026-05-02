@@ -78,8 +78,8 @@ const RegisterPage = () => {
         <LanguageToggle />
       </header>
 
-      <div className="flex-1 flex justify-center px-4 pt-8 sm:pt-12 pb-6">
-        <div className="w-full max-w-sm" style={{ animation: "fade-in 0.4s ease-out both" }}>
+      <div className="flex-1 flex justify-center px-4 pt-6 sm:pt-10 pb-6">
+        <div className="w-full max-w-sm sm:max-w-xl" style={{ animation: "fade-in 0.4s ease-out both" }}>
           <Link
             to="/login"
             className="inline-flex items-center gap-1 text-foreground/70 hover:text-foreground transition mb-3 text-sm font-body"
@@ -87,12 +87,14 @@ const RegisterPage = () => {
             <ArrowLeft className="h-4 w-4" />
             {t("backToLogin")}
           </Link>
-          <div className="text-center mb-5">
-            <h1 className="text-2xl font-heading font-bold text-foreground">{t("createAccount")}</h1>
-            <p className="text-sm text-muted-foreground mt-1">{t("registerInfo")}</p>
+          <div className="text-center mb-4">
+            <h1 className="text-xl sm:text-2xl font-heading font-bold text-foreground">{t("createAccount")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {language === "sv" ? "Det tar bara en minut." : "It only takes a minute."}
+            </p>
           </div>
 
-          <div className="bg-card rounded-2xl p-5 shadow-sm border border-border">
+          <div className="bg-card rounded-2xl p-4 sm:p-5 shadow-sm border border-border">
             <form onSubmit={handleRegister} className="space-y-3">
               <div>
                 <label className="block text-xs font-medium text-foreground mb-1">{t("email")}</label>
@@ -107,6 +109,7 @@ const RegisterPage = () => {
                 />
               </div>
 
+              <div className="grid sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-foreground mb-1">{t("password")}</label>
                 <div className="relative">
@@ -153,6 +156,7 @@ const RegisterPage = () => {
                     {language === "sv" ? "Lösenorden matchar inte" : "Passwords don't match"}
                   </p>
                 )}
+              </div>
               </div>
 
               <button
