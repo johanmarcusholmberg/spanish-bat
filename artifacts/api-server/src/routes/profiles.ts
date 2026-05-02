@@ -1,6 +1,18 @@
 import { Router } from "express";
+import { clerkClient } from "@clerk/express";
 import { db } from "@workspace/db";
-import { profilesTable, userRolesTable } from "@workspace/db";
+import {
+  profilesTable,
+  userRolesTable,
+  userStreaksTable,
+  activityLogTable,
+  userProgressTable,
+  userLastActivityTable,
+  grammarProgressTable,
+  userVocabularyTable,
+  flashcardSrsTable,
+  contactMessagesTable,
+} from "@workspace/db";
 import type { Profile } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { requireAuth } from "../middlewares/requireAuth";
@@ -57,6 +69,48 @@ router.post("/profile", requireAuth, async (req, res) => {
     return res.json({ profile: profile[0] });
   } catch (err) {
     req.log.error({ err }, "Failed to upsert profile");
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+// DELETE /profile — permanently delete the signed-in user's account.
+//
+// Required by App Store guideline 5.1.1(v) and Google Play account-deletion
+// policy. We:
+//   1. Delete every per-user row in our DB.
+//   2. Delete the user from Clerk (which invalidates all of their sessions).
+// The mobile app then signs out locally.
+router.delete("/profile", requireAuth, async (req, res) => {
+  const userId = req.userId!;
+  try {
+    // Delete app data first; even if the Clerk delete later fails, the user's
+    // content is already gone from our side and they can retry deletion.
+    await Promise.all([
+      db.delete(flashcardSrsTable).where(eq(flashcardSrsTable.userId, userId)),
+      db.delete(userVocabularyTable).where(eq(userVocabularyTable.userId, userId)),
+      db.delete(grammarProgressTable).where(eq(grammarProgressTable.userId, userId)),
+      db.delete(userLastActivityTable).where(eq(userLastActivityTable.userId, userId)),
+      db.delete(userProgressTable).where(eq(userProgressTable.userId, userId)),
+      db.delete(activityLogTable).where(eq(activityLogTable.userId, userId)),
+      db.delete(userStreaksTable).where(eq(userStreaksTable.userId, userId)),
+      db.delete(userRolesTable).where(eq(userRolesTable.userId, userId)),
+      db.delete(contactMessagesTable).where(eq(contactMessagesTable.userId, userId)),
+    ]);
+    await db.delete(profilesTable).where(eq(profilesTable.userId, userId));
+
+    try {
+      await clerkClient.users.deleteUser(userId);
+    } catch (err) {
+      req.log.error({ err, userId }, "Clerk user deletion failed after DB wipe");
+      return res.status(502).json({
+        error:
+          "Account data deleted, but identity provider deletion failed. Please contact support to finish removing your account.",
+      });
+    }
+
+    return res.json({ ok: true });
+  } catch (err) {
+    req.log.error({ err }, "Failed to delete account");
     return res.status(500).json({ error: "Server error" });
   }
 });

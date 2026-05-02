@@ -57,6 +57,7 @@ export const api = {
     get: () => fetchApi("/profile") as Promise<{ profile: Record<string, unknown> | null; isAdmin: boolean }>,
     upsert: (data: Record<string, unknown>) =>
       fetchApi("/profile", { method: "POST", body: JSON.stringify(data) }),
+    delete: () => fetchApi("/profile", { method: "DELETE" }),
   },
   streaks: {
     get: () => fetchApi("/streaks") as Promise<{ streak: Record<string, unknown> | null; activityLog: { activityDate: string; count: number }[] }>,

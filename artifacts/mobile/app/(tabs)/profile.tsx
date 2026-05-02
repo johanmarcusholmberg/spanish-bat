@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Alert, Pressable } from "react-native";
+import { View, StyleSheet, Alert, Pressable, Linking, Platform } from "react-native";
 import { router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
+import * as WebBrowser from "expo-web-browser";
 
 import { Screen } from "@/components/Screen";
 import { Typography } from "@/components/Typography";
@@ -10,6 +11,8 @@ import { AppTextInput } from "@/components/AppTextInput";
 import { Card } from "@/components/Card";
 import { useColors } from "@/hooks/useColors";
 import { useAuth, Level } from "@/contexts/AuthContext";
+import { api } from "@/lib/api";
+import { legalLinks } from "@/lib/legal";
 
 const LEVELS: Level[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
@@ -20,12 +23,86 @@ export default function ProfileScreen() {
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(user?.displayName ?? "");
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const handleLogout = () => {
     Alert.alert("Sign out", "Are you sure you want to sign out?", [
       { text: "Cancel", style: "cancel" },
       { text: "Sign out", style: "destructive", onPress: logout },
     ]);
+  };
+
+  const openExternal = async (url?: string) => {
+    if (!url) return;
+    try {
+      if (Platform.OS === "web") {
+        await Linking.openURL(url);
+      } else {
+        await WebBrowser.openBrowserAsync(url);
+      }
+    } catch {
+      Alert.alert("Could not open link", "Please try again later.");
+    }
+  };
+
+  const openSupport = async () => {
+    const { supportEmail, supportUrl } = legalLinks;
+    if (supportEmail) {
+      const subject = encodeURIComponent("Murciélingo support");
+      const url = `mailto:${supportEmail}?subject=${subject}`;
+      const can = await Linking.canOpenURL(url).catch(() => false);
+      if (can) {
+        Linking.openURL(url).catch(() => openExternal(supportUrl));
+        return;
+      }
+    }
+    openExternal(supportUrl);
+  };
+
+  const performDelete = async () => {
+    setDeleting(true);
+    try {
+      await api.profile.delete();
+      // Server has wiped data + Clerk user; sign out locally to clear session
+      // and per-device cache. logout() handles routing back to /login.
+      await logout();
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Could not delete your account. Please try again or contact support.";
+      Alert.alert("Account deletion failed", message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete account",
+      "This permanently deletes your Murciélingo account, including your profile, progress, vocabulary, flashcards, and streaks. This cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Continue",
+          style: "destructive",
+          onPress: () => {
+            Alert.alert(
+              "Are you sure?",
+              "Tap “Delete my account” to permanently remove your account and all of your data.",
+              [
+                { text: "Cancel", style: "cancel" },
+                {
+                  text: "Delete my account",
+                  style: "destructive",
+                  onPress: performDelete,
+                },
+              ],
+            );
+          },
+        },
+      ],
+    );
   };
 
   const saveName = async () => {
@@ -221,6 +298,55 @@ export default function ProfileScreen() {
         </View>
       </Card>
 
+      {/* Account & legal */}
+      <Card style={{ marginBottom: 12 }}>
+        <Typography variant="label" muted style={{ marginBottom: 10 }}>
+          ACCOUNT
+        </Typography>
+
+        <Pressable
+          onPress={() => openExternal(legalLinks.privacyPolicyUrl)}
+          style={styles.linkRow}
+          testID="privacy-link"
+        >
+          <View style={[styles.linkIcon, { backgroundColor: colors.muted }]}>
+            <Feather name="shield" size={16} color={colors.mutedForeground} />
+          </View>
+          <Typography variant="label" style={{ flex: 1 }}>
+            Privacy Policy
+          </Typography>
+          <Feather name="external-link" size={16} color={colors.mutedForeground} />
+        </Pressable>
+
+        <Pressable
+          onPress={() => openExternal(legalLinks.termsOfServiceUrl)}
+          style={[styles.linkRow, { marginTop: 10 }]}
+          testID="terms-link"
+        >
+          <View style={[styles.linkIcon, { backgroundColor: colors.muted }]}>
+            <Feather name="file-text" size={16} color={colors.mutedForeground} />
+          </View>
+          <Typography variant="label" style={{ flex: 1 }}>
+            Terms of Service
+          </Typography>
+          <Feather name="external-link" size={16} color={colors.mutedForeground} />
+        </Pressable>
+
+        <Pressable
+          onPress={openSupport}
+          style={[styles.linkRow, { marginTop: 10 }]}
+          testID="support-link"
+        >
+          <View style={[styles.linkIcon, { backgroundColor: colors.muted }]}>
+            <Feather name="help-circle" size={16} color={colors.mutedForeground} />
+          </View>
+          <Typography variant="label" style={{ flex: 1 }}>
+            Contact support
+          </Typography>
+          <Feather name="external-link" size={16} color={colors.mutedForeground} />
+        </Pressable>
+      </Card>
+
       <AppButton
         title="Sign out"
         onPress={handleLogout}
@@ -229,6 +355,30 @@ export default function ProfileScreen() {
         style={{ marginTop: 8 }}
         testID="logout-button"
       />
+
+      <AppButton
+        title={deleting ? "Deleting…" : "Delete account"}
+        onPress={handleDeleteAccount}
+        variant="outline"
+        size="lg"
+        loading={deleting}
+        disabled={deleting}
+        style={{
+          marginTop: 12,
+          borderColor: colors.destructive ?? "#B33A3A",
+        }}
+        textStyle={{ color: colors.destructive ?? "#B33A3A" }}
+        testID="delete-account-button"
+      />
+      <Typography
+        variant="caption"
+        muted
+        center
+        style={{ marginTop: 8, marginBottom: 8 }}
+      >
+        Deleting your account permanently removes your profile and all
+        learning data from Murciélingo.
+      </Typography>
     </Screen>
   );
 }

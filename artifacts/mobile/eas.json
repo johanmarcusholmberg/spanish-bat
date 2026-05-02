@@ -6,13 +6,40 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "TODO_SET_DEV_API_BASE_URL",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "TODO_SET_CLERK_PK_TEST_KEY"
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "channel": "preview",
+      "ios": {
+        "simulator": false,
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "TODO_SET_STAGING_API_BASE_URL",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "TODO_SET_CLERK_PK_TEST_OR_LIVE_KEY"
+      }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "channel": "production",
+      "ios": {
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "TODO_SET_PROD_API_BASE_URL",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "TODO_SET_CLERK_PK_LIVE_KEY"
+      }
     }
   },
   "submit": {

@@ -23,6 +23,9 @@ Scope: this covers what we control inside the repo (code, app config, EAS config
 
 ## 1. Code & content cleanup
 
+- [x] **In-app account deletion.** `DELETE /api/profile` wipes all user-owned rows and deletes the Clerk user; Profile screen exposes a "Delete account" button with double confirmation that calls it and signs out. Satisfies App Store guideline 5.1.1(v) and Google Play account-deletion policy.
+- [x] **Privacy / Terms / Support links surfaced in-app.** Profile → Account section opens Privacy Policy, Terms of Service, and Contact Support via in-app browser. URLs read from `expo.extra._storeMetadataTodos` in `app.json` with safe public fallbacks (`https://murcielingo.app/...`).
+- [x] **Empty-state copy.** Grammar and Reading screens use neutral copy ("Try a different level above — we're adding new passages regularly") instead of "coming soon".
 - [ ] **Replace mock content with API endpoints.** `lib/mockContent.ts` still ships hard-coded grammar lessons, reading passages, and flashcard decks. Tracked by **Task #49** ("Move grammar lessons & reading passages from mobile mock content into the API") and **Task #50** ("Expand grammar lesson and reading passage library beyond one item per level"). Either ship those tasks first or document in App Review notes that the beta library is intentionally small.
 - [ ] **End-to-end test coverage.** Tracked by **Task #51** ("Cover the new mobile screens with end-to-end tests"). Make sure it lands green before tagging a build.
 - [ ] **Manual smoke test on a real device** (iPhone + Android phone):
@@ -66,6 +69,9 @@ Scope: this covers what we control inside the repo (code, app config, EAS config
 ---
 
 ## 3. EAS config (`eas.json`) — must be set before `eas submit`
+
+- [x] `preview` and `production` build profiles are defined with `channel`, platform-specific build settings (`apk` for preview Android, `app-bundle` for production), and `env` blocks for `EXPO_PUBLIC_API_BASE_URL` and `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`. The env values are still `TODO_…` placeholders — fill in before running `eas build`.
+
 
 - [ ] iOS submit block (`submit.production.ios`):
   - [ ] `appleId` — Apple ID email with App Store Connect access.

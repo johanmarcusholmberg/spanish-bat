@@ -74,7 +74,8 @@ export default function ReadingScreen() {
         {passages.length === 0 ? (
           <Card>
             <Typography variant="body" muted center>
-              No passages for {activeLevel} yet — more coming soon.
+              No reading passages for level {activeLevel} yet. Try a different
+              level above — we're adding new passages regularly.
             </Typography>
           </Card>
         ) : (

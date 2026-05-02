@@ -143,7 +143,8 @@ export default function GrammarScreen() {
         {lessons.length === 0 ? (
           <Card>
             <Typography variant="body" muted center>
-              No lessons available for {activeLevel} yet. More coming soon.
+              No grammar lessons for level {activeLevel} yet. Try a different
+              level above — we're adding new lessons regularly.
             </Typography>
           </Card>
         ) : (
