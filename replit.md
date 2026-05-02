@@ -24,7 +24,7 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 
 ## Artifacts
 
-### `artifacts/murcielago` — Murciélago Spanish Learning App (web)
+### `artifacts/murcielago` — Murciélingo Spanish Learning App (web)
 - React + Vite + TypeScript frontend
 - Routes: `/` (login), `/register`, `/dashboard`, `/practice/*`, `/grammar`, `/conversation`, `/admin`, etc.
 - Auth: **Clerk** (`@clerk/react` v6) — email/password + Google OAuth + Apple OAuth

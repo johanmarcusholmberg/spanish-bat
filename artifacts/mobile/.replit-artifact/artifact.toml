@@ -1,6 +1,6 @@
 kind = "mobile"
 previewPath = "/mobile/"
-title = "Murciélago Mobile"
+title = "Murciélingo Mobile"
 version = "1.0.0"
 id = "artifacts/mobile"
 router = "expo-domain"

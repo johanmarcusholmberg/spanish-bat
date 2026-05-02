@@ -1,6 +1,6 @@
-# Murciélago Mobile App
+# Murciélingo Mobile App
 
-React Native + Expo mobile app for the Murciélago Spanish learning platform.
+React Native + Expo mobile app for the Murciélingo Spanish learning platform.
 
 ## Getting Started in Replit
 

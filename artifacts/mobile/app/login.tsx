@@ -81,7 +81,7 @@ export default function LoginScreen() {
             <Feather name="book-open" size={32} color={colors.primaryForeground} />
           </View>
           <Typography variant="h1" center style={{ marginTop: 16 }}>
-            Murciélago
+            Murciélingo
           </Typography>
           <Typography variant="body" muted center style={{ marginTop: 4 }}>
             Learn Spanish naturally

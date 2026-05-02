@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/"
-title = "Murciélago - Spanish Learning App"
+title = "Murciélingo - Spanish Learning App"
 version = "1.0.0"
 id = "artifacts/murcielago"
 router = "path"
