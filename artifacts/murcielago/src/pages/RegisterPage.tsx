@@ -70,22 +70,25 @@ const RegisterPage = () => {
 
   return (
     <div className="min-h-screen bg-sand flex flex-col">
-      <header className="px-4 sm:px-6 py-3 flex items-center justify-between">
-        <Link to="/login" className="flex items-center gap-1 text-foreground/80 hover:text-foreground transition">
-          <ArrowLeft className="h-4 w-4" />
-          <span className="font-body text-sm">{t("backToLogin")}</span>
+      <header className="px-4 sm:px-6 py-3 flex items-center justify-between border-b border-border bg-sand/90 backdrop-blur">
+        <Link to="/" className="flex items-center gap-2">
+          <img src={logo} alt="Murcielingo" className="h-8 w-8" />
+          <span className="font-heading font-bold text-lg text-foreground">Murcielingo</span>
         </Link>
         <LanguageToggle />
       </header>
 
-      <div className="flex-1 flex items-center justify-center px-4 py-6">
+      <div className="flex-1 flex justify-center px-4 pt-8 sm:pt-12 pb-6">
         <div className="w-full max-w-sm" style={{ animation: "fade-in 0.4s ease-out both" }}>
+          <Link
+            to="/login"
+            className="inline-flex items-center gap-1 text-foreground/70 hover:text-foreground transition mb-3 text-sm font-body"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {t("backToLogin")}
+          </Link>
           <div className="text-center mb-5">
-            <Link to="/" className="inline-flex items-center gap-2">
-              <img src={logo} alt="Murcielingo" className="h-10 w-10" />
-              <span className="font-heading font-bold text-xl text-foreground">Murcielingo</span>
-            </Link>
-            <h1 className="text-2xl font-heading font-bold text-foreground mt-4">{t("createAccount")}</h1>
+            <h1 className="text-2xl font-heading font-bold text-foreground">{t("createAccount")}</h1>
             <p className="text-sm text-muted-foreground mt-1">{t("registerInfo")}</p>
           </div>
 
