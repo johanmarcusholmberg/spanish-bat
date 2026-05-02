@@ -1,0 +1,84 @@
+PHASE 12
+You are working on the Murcielingo language-learning app.
+
+Context:
+Murcielingo should no longer feel like practice is a finite checklist. The app should never feel “out of practice” unless the user is genuinely ready for a level test. Even then, the user must be able to decline the test and keep practicing.
+
+Important platform requirement:
+This implementation must work for both web and native mobile. Avoid web-only assumptions. Use shared logic, reusable components, and platform-safe UI patterns.
+
+Goal:
+Refactor the learning progress model from “completed X of Y practices” to “level readiness”.
+
+Current issue:
+The current experience feels stiff because users see total practice counters and can feel like they have completed or exhausted a level. Murcielingo should instead show whether the user is becoming ready for the next level.
+
+Implement the following:
+
+1. Add a readiness-based progress model
+Create or update shared progress logic so each level has a readiness score from 0–100.
+
+The readiness score should consider:
+- vocabulary practice
+- grammar practice
+- sentence building
+- reading
+- listening/speaking if available
+- recent accuracy
+- repeated mistakes
+- whether the user has practiced across multiple skill categories
+
+Do not remove existing progress data if it is needed, but stop making fixed totals the primary UI concept.
+
+2. Update dashboard copy and UI
+Replace UI language such as:
+- “15/15 exercises completed”
+- “total practices”
+- “completed level”
+
+With softer learning language such as:
+- “A1 readiness”
+- “You’re building confidence”
+- “Nearly ready for the A2 check”
+- “Keep practicing”
+- “Practice weak spots”
+- “Take level check”
+
+3. Add three level states
+Each level should have one of these states:
+
+A. learning
+User still needs more varied practice.
+Message example:
+“Keep practicing A1. Today’s focus: basic questions and daily phrases.”
+
+B. test_recommended
+User appears ready for a level test.
+Message example:
+“You look ready for the A2 check. Take the test now, or keep practicing A1.”
+
+C. passed_but_can_continue
+User passed the level check but can still continue practicing.
+Message example:
+“You passed the A1 check. Move to A2, or keep strengthening A1.”
+
+4. Do not force level advancement
+When the user is test-ready, show:
+- Take level check
+- Keep practicing this level
+- Practice weak spots
+
+When the user passes, show:
+- Move to next level
+- Continue current level
+- Mix current + next level
+
+5. Preserve backward compatibility
+Do not break existing saved progress. If needed, map old completion counters into the new readiness model.
+
+6. Deliverables
+- Shared readiness calculation utility
+- Updated dashboard/progress components
+- Updated copy
+- Platform-safe UI for web and mobile
+- Brief explanation in comments or a short markdown note explaining how readiness is calculated
