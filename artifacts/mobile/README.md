@@ -136,6 +136,51 @@ The app uses **NativeWind v4** (Tailwind CSS for React Native) alongside `StyleS
 - Injects `Authorization: Bearer <token>` via the token getter set from `AuthContext`
 - Covers profile, streaks, progress, vocabulary, and contact endpoints
 
+## What Has Been Built (Phase 3)
+
+Phase 3 ports the web app's core product surfaces to React Native. Every new screen uses the shared UI primitives (`Card`, `ProgressBar`, `EmptyState`, `LoadingState`, `ErrorState`) and consistent loading / error handling.
+
+### Screens shipped
+
+| Screen | Route | Data source | Notes |
+|---|---|---|---|
+| Dashboard | `/(tabs)/` | live: streaks, progress, vocabulary | Streak card, "Continue learning" resume card, progress bars, quick actions. Pull-to-refresh. |
+| Exercises hub | `/(tabs)/exercises` | navigation only | Card grid linking to Grammar, Reading, Flashcards, Vocabulary. |
+| Vocabulary | `/(tabs)/vocabulary` | live: vocabulary | Search + filter (all / learning / learned). Empty state with CTA to Exercises. |
+| Word detail | `/word/[id]` | live: vocabulary | Mark learned/learning, remove from dictionary. |
+| Flashcards (SRS) | `/flashcards` | live: vocabulary + flashcardSrs (mock seeds when empty) | SM-2-style scheduling in `lib/srs.ts`. Persists ratings via `/flashcard-srs`. Falls back to seed cards from `lib/mockContent.ts` when the user has no saved vocab yet. |
+| Grammar | `/(tabs)/grammar` | mock content + live progress | Lessons grouped by CEFR (A1–C2). Per-lesson `bestScore` / `attempts` from `/grammar-progress`. |
+| Lesson detail | `/lesson/[id]` | mock content + live progress | Learn → multiple-choice practice → result. ≥80% saves as completed. |
+| Reading | `/(tabs)/reading` | mock content | Hidden from the tab bar (accessed from Dashboard / Exercises). Passages grouped by level. |
+| Passage detail | `/passage/[id]` | mock content | Spanish text, optional translation, comprehension quiz with scoring. |
+| Stats | `/stats` | live: streaks + progress + vocabulary | 7-day activity grid, category progress bars, vocab mastery circular progress. Reachable from Dashboard + Profile. |
+| Profile | `/(tabs)/profile` | live: profile | Editable display name, level (A1–C2), learning language (sv/en). All persisted via `/profile`. |
+
+### Navigation
+
+- Tabs (5): Dashboard · Exercises · Vocabulary · Grammar · Profile.
+- Reading lives in `(tabs)/reading.tsx` but is hidden from the tab bar via `href: null` and surfaced from Dashboard quick actions and the Exercises hub.
+- Stack routes registered in `app/_layout.tsx`: `flashcards`, `stats`, `lesson/[id]`, `passage/[id]`, `word/[id]`.
+
+### Shared UI kit
+
+| Component | Purpose |
+|---|---|
+| `Card` | Surface container with `default` / `muted` / `primary` / `outline` variants and optional `onPress` (haptic). |
+| `ProgressBar` | Linear progress with optional label, plus `CircularProgress` for ring-style displays. |
+| `EmptyState` | Illustrated empty list / zero-state with optional action button. |
+| `LoadingState` | Inline or full-screen spinner with optional label. |
+| `ErrorState` | Error display with retry button. |
+
+### Remaining gaps (TODO)
+
+These are flagged with `TODO(api)` in source and currently use seed data in `lib/mockContent.ts`:
+
+- **Grammar lessons** — no `/grammar-lessons` endpoint yet. Content is hard-coded for A1, A2, B1, B2, C1, C2 (one lesson per level). Per-lesson **progress** (completed flag, best score, attempts) IS live via `/grammar-progress`.
+- **Reading passages** — no `/reading-passages` endpoint. A1, A2, B1, B2 each have one seeded passage with comprehension questions.
+- **Flashcard seed deck** — when the user has zero saved vocabulary, the Flashcards screen serves a small seed deck (8 A1–A2 cards) so a session is still possible. Real saved vocab fully overrides the seeds; SRS state persists either way for non-seed cards.
+- **Sentence builder, conversation, pronunciation exercises** — listed in the web app, intentionally not in Phase 3 scope.
+
 ## What Has Been Built (Phase 2)
 
 - ✅ Sign-up screen with display name, email, password (strength rules), confirm password, and OAuth
