@@ -222,9 +222,6 @@ const HomePage = () => {
       <section className="relative overflow-hidden">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 md:py-24 grid md:grid-cols-2 gap-10 md:gap-16 items-center">
           <div className="space-y-6 text-center md:text-left">
-            <Badge className="bg-mint/40 text-foreground hover:bg-mint/40 border-0 rounded-full px-3 py-1 font-body">
-              <Sparkles className="w-3.5 h-3.5 mr-1.5" /> Echo the language
-            </Badge>
             <h1 className="font-heading font-bold text-4xl sm:text-5xl md:text-6xl text-foreground leading-tight">
               Echo the language
             </h1>
