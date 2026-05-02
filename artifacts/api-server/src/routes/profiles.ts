@@ -83,20 +83,22 @@ router.post("/profile", requireAuth, async (req, res) => {
 router.delete("/profile", requireAuth, async (req, res) => {
   const userId = req.userId!;
   try {
-    // Delete app data first; even if the Clerk delete later fails, the user's
-    // content is already gone from our side and they can retry deletion.
-    await Promise.all([
-      db.delete(flashcardSrsTable).where(eq(flashcardSrsTable.userId, userId)),
-      db.delete(userVocabularyTable).where(eq(userVocabularyTable.userId, userId)),
-      db.delete(grammarProgressTable).where(eq(grammarProgressTable.userId, userId)),
-      db.delete(userLastActivityTable).where(eq(userLastActivityTable.userId, userId)),
-      db.delete(userProgressTable).where(eq(userProgressTable.userId, userId)),
-      db.delete(activityLogTable).where(eq(activityLogTable.userId, userId)),
-      db.delete(userStreaksTable).where(eq(userStreaksTable.userId, userId)),
-      db.delete(userRolesTable).where(eq(userRolesTable.userId, userId)),
-      db.delete(contactMessagesTable).where(eq(contactMessagesTable.userId, userId)),
-    ]);
-    await db.delete(profilesTable).where(eq(profilesTable.userId, userId));
+    // Wrap all per-user row deletes in a transaction so a partial failure
+    // mid-deletion rolls back cleanly and the user can safely retry. Even
+    // if the Clerk delete later fails, the user's content is gone from our
+    // side once this transaction commits.
+    await db.transaction(async (tx) => {
+      await tx.delete(flashcardSrsTable).where(eq(flashcardSrsTable.userId, userId));
+      await tx.delete(userVocabularyTable).where(eq(userVocabularyTable.userId, userId));
+      await tx.delete(grammarProgressTable).where(eq(grammarProgressTable.userId, userId));
+      await tx.delete(userLastActivityTable).where(eq(userLastActivityTable.userId, userId));
+      await tx.delete(userProgressTable).where(eq(userProgressTable.userId, userId));
+      await tx.delete(activityLogTable).where(eq(activityLogTable.userId, userId));
+      await tx.delete(userStreaksTable).where(eq(userStreaksTable.userId, userId));
+      await tx.delete(userRolesTable).where(eq(userRolesTable.userId, userId));
+      await tx.delete(contactMessagesTable).where(eq(contactMessagesTable.userId, userId));
+      await tx.delete(profilesTable).where(eq(profilesTable.userId, userId));
+    });
 
     try {
       await clerkClient.users.deleteUser(userId);
