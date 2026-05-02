@@ -1,4 +1,5 @@
-import { useRouter } from "expo-router";
+import { useAuth as useClerkAuth } from "@clerk/clerk-expo";
+import { Redirect, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
@@ -23,10 +24,15 @@ export default function ForgotPasswordScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { resetPassword } = useAuth();
+  const { isSignedIn, isLoaded } = useClerkAuth();
 
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  if (isLoaded && isSignedIn) {
+    return <Redirect href="/(tabs)" />;
+  }
 
   const handleSubmit = async () => {
     if (!email.trim() || !email.includes("@")) {
