@@ -291,6 +291,9 @@ importers:
       '@workspace/api-client-react':
         specifier: workspace:*
         version: link:../../lib/api-client-react
+      '@workspace/level-check':
+        specifier: workspace:*
+        version: link:../../lib/level-check
       '@workspace/practice':
         specifier: workspace:*
         version: link:../../lib/practice
@@ -715,6 +718,9 @@ importers:
       '@workspace/api-client-react':
         specifier: workspace:*
         version: link:../../lib/api-client-react
+      '@workspace/level-check':
+        specifier: workspace:*
+        version: link:../../lib/level-check
       '@workspace/practice':
         specifier: workspace:*
         version: link:../../lib/practice
@@ -863,6 +869,12 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 25.3.5
+
+  lib/level-check:
+    dependencies:
+      '@workspace/practice':
+        specifier: workspace:*
+        version: link:../practice
 
   lib/practice: {}
 

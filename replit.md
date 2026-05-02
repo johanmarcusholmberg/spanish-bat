@@ -153,4 +153,20 @@ Persistence + UI:
 - Mobile `artifacts/mobile/hooks/usePracticeStats.ts` — AsyncStorage same key; `dirtyRef` guards against late-load overwriting fresh writes.
 - `WeakSpotsCard` (web + mobile) shows top focus areas + "Today's focus" copy and links to `/practice/session?mode=weak_spots`.
 
+## Phase 16 — Level Check (shared web + mobile)
+
+- New shared package `@workspace/level-check` (`lib/level-check/`):
+  - Blueprint types: `LevelCheckBlueprint` + `LevelCheckSection` (skill, optional subskill, count, `minAccuracy` for critical sections).
+  - Initial blueprints: `A1_BLUEPRINT` (vocab 5 / phrases 5 / sentences 5 / reading 3 / listening-speaking 2, threshold 0.75) and `A2_BLUEPRINT` (vocab / grammar / sentences 5 each / dialogue 3 / scenario 2, threshold 0.75). Exposed via `getLevelCheckBlueprint(level)` and `LEVEL_CHECK_BLUEPRINTS`.
+  - `buildLevelCheckSession({ blueprint, items })` selects items section-by-section with widening fallbacks (exact skill+subskill → skill at level → skill any level → any item at level). Reuses `PracticeItem` from `@workspace/practice` so existing content sources work directly.
+  - `evaluateLevelCheck(session, answers)` returns a weighted overall accuracy plus per-section results, strengths (≥0.8), focus areas (<0.7), and a `passed` flag (overall ≥ threshold AND no critical section below `minAccuracy`).
+  - `getLevelCheckCopy(result, lang, nextLevel)` provides bilingual headlines/buttons; `getLevelCheckRecommendation(level, readinessState)` returns the non-blocking trigger payload.
+- Web (`artifacts/murcielago`):
+  - New `LevelCheckPage` at `/level-check` (intro → test runner → result). Test runner shows no hints/explanations during questions.
+  - `LevelAdvancementCard` "Take level check" now navigates to `/level-check` instead of `/placement-test`. Existing "Keep practicing" / "Practice weak spots" buttons remain — never blocking.
+- Mobile (`artifacts/mobile`):
+  - New `app/level-check.tsx` screen registered in `_layout.tsx`. Persists pass state to `AsyncStorage` under `murci.passedLevelCheck.<userId>.<level>` so the dashboard readiness card picks it up.
+  - Dashboard `test_recommended` block now reads "You look ready for the {next} check." and routes "Take level check" to `/level-check`. "Keep practicing" and "Practice weak spots" remain.
+- The level-check flow is intentionally non-blocking: the user can always exit, decline the recommendation, or jump straight to weak-spot practice instead. Pass state is only set after a successful evaluation, never on click.
+
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.

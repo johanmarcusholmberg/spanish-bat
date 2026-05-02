@@ -36,6 +36,7 @@ import AdminPage from "./pages/AdminPage";
 import ContactPage from "./pages/ContactPage";
 import StaticPage from "./pages/StaticPage";
 import PlacementTestPage from "./pages/PlacementTestPage";
+import LevelCheckPage from "./pages/LevelCheckPage";
 import PricingPage from "./pages/PricingPage";
 import BillingSuccessPage from "./pages/BillingSuccessPage";
 import BillingCancelledPage from "./pages/BillingCancelledPage";
@@ -96,6 +97,7 @@ const AppRoutes = () => (
       <Route path="/exercises/freestyle" element={<ProtectedRoute><FreestylePage /></ProtectedRoute>} />
       <Route path="/stats" element={<ProtectedRoute><StatsPage /></ProtectedRoute>} />
       <Route path="/placement-test" element={<ProtectedRoute><PlacementTestPage /></ProtectedRoute>} />
+      <Route path="/level-check" element={<ProtectedRoute><LevelCheckPage /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>

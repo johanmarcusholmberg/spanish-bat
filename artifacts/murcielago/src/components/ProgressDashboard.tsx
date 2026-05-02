@@ -284,12 +284,12 @@ export const LevelAdvancementCard = () => {
                   className="w-full"
                   size="sm"
                   onClick={() => {
-                    // Navigate to the level check. The pass flag is only set
-                    // after the test reports a successful result via
-                    // `markLevelCheckPassed()` from ProgressContext — never
-                    // on the click itself, so users who decline or fail are
-                    // not prematurely marked as passed.
-                    navigate("/placement-test");
+                    // Navigate to the structured level check. The pass flag
+                    // is only set after the test reports a successful result
+                    // via `markLevelCheckPassed()` from ProgressContext —
+                    // never on the click itself, so users who decline or
+                    // fail are not prematurely marked as passed.
+                    navigate("/level-check");
                   }}
                 >
                   {t("takeLevelCheck")}

@@ -50,6 +50,7 @@
     "@workspace/api-client-react": "workspace:*",
     "@workspace/readiness": "workspace:*",
     "@workspace/practice": "workspace:*",
+    "@workspace/level-check": "workspace:*",
     "@workspace/subscription": "workspace:*",
     "autoprefixer": "^10.5.0",
     "class-variance-authority": "catalog:",

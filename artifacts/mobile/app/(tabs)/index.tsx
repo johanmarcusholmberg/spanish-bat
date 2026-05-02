@@ -352,22 +352,25 @@ export default function DashboardScreen() {
         )}
         {readiness.state === "test_recommended" && (
           <View style={{ gap: 8 }}>
+            <Typography variant="caption" muted>
+              You look ready for the {nextLevel ?? currentLevel} check.
+            </Typography>
             <Card
               variant="primary"
               padding={12}
-              onPress={() => router.push("/(tabs)/exercises")}
+              onPress={() => router.push("/level-check" as never)}
             >
               <Typography variant="label">Take level check</Typography>
             </Card>
             <Card variant="muted" padding={12} onPress={() => router.push("/(tabs)/exercises")}>
-              <Typography variant="label">Keep practicing this level</Typography>
+              <Typography variant="label">Keep practicing {currentLevel}</Typography>
             </Card>
             {readiness.weakSpots[0] && (
               <Card
                 variant="muted"
                 padding={12}
                 onPress={() =>
-                  router.push(CATEGORY_PATH[readiness.weakSpots[0]] as never)
+                  router.push("/practice/session?mode=weak_spots" as never)
                 }
               >
                 <Typography variant="label">
