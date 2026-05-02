@@ -1,0 +1,75 @@
+PHASE 16
+You are working on Murcielingo.
+
+Context:
+Murcielingo should recommend a level check when the user appears ready, but it should never force the user to stop practicing. The user can always decline the test and continue practicing the current level.
+
+Important platform requirement:
+The flow must work for both web and native mobile.
+
+Goal:
+Create a level check system separate from normal practice.
+
+Level checks should be structured, not just random practice.
+
+Create a level check blueprint for each CEFR level, starting with A1 and A2.
+
+A1 blueprint example:
+- vocabulary: 5 items
+- daily phrases: 5 items
+- sentence building: 5 items
+- reading comprehension: 3 items
+- listening/speaking if available: 2 items
+- pass threshold: around 75–80%
+- no critical skill below minimum threshold
+
+A2 blueprint example:
+- vocabulary: 5 items
+- grammar: 5 items
+- sentence building: 5 items
+- short dialogue comprehension: 3 items
+- practical scenario response: 2 items
+- pass threshold: around 75–80%
+
+Implement:
+1. Readiness trigger
+When readiness is high enough, show:
+“You look ready for the A2 check.”
+
+Buttons:
+- Take level check
+- Keep practicing A1
+- Practice weak spots
+
+2. Level check session
+Level check should:
+- have a stable structure
+- avoid giving immediate hints during the test
+- show results after completion
+- identify strengths and focus areas
+
+3. Result states
+If passed:
+“You passed the A1 check.”
+Buttons:
+- Move to A2
+- Continue A1
+- Mix A1 + A2
+
+If not passed:
+“Almost there. Let’s strengthen a few areas first.”
+Buttons:
+- Practice weak spots
+- Try another level check later
+- Continue A1 practice
+
+4. Do not block normal practice
+Even when test is recommended, the user can keep practicing.
+
+5. Deliverables
+- Level check blueprint types
+- A1/A2 initial blueprints
+- Level check session generator
+- Level check result screen
+- Non-blocking test recommendation UI
+- Works on both web and native mobile
