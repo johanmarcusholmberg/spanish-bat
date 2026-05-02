@@ -7,7 +7,10 @@
  * grade it; the session runner switches on `payload.kind`.
  */
 
-import type { PracticeItem } from "@workspace/practice";
+import {
+  generatePracticeItems,
+  type PracticeItem,
+} from "@workspace/practice";
 import type { Level } from "@/contexts/AuthContext";
 import { quizItems } from "@/data/spanishData";
 import { grammarLessons } from "@/data/grammarLessons";
@@ -20,6 +23,7 @@ export type PracticePayload =
       answer: string;
       acceptedAnswers?: string[];
       category: string;
+      source?: "curated" | "template";
     }
   | {
       kind: "mcq";
@@ -28,6 +32,7 @@ export type PracticePayload =
       answer: string;
       explanation?: { en: string; sv: string };
       lessonId: string;
+      source?: "curated" | "template";
     }
   | {
       kind: "fill";
@@ -36,6 +41,7 @@ export type PracticePayload =
       answer: string;
       hint?: { sv: string; en: string };
       lessonId: string;
+      source?: "curated" | "template";
     }
   | {
       kind: "sentence";
@@ -43,6 +49,7 @@ export type PracticePayload =
       alternateOrders?: string[][];
       translation: { sv: string; en: string };
       grammarFocus?: string;
+      source?: "curated" | "template";
     };
 
 export type LocalPracticeItem = PracticeItem<PracticePayload>;
@@ -120,8 +127,64 @@ export function buildAllPracticeItems(): LocalPracticeItem[] {
         alternateOrders: s.alternateOrders,
         translation: s.translation,
         grammarFocus: s.grammarFocus,
+        source: "curated",
       },
     });
+  }
+
+  // Template-generated A1/A2 items — rule-based, runs locally, no AI.
+  // Returned in the same `PracticeItem` shape as curated items so they
+  // slot straight into `buildPracticeSession`.
+  for (const g of generatePracticeItems({ upToLevel: "A2", maxPerTemplate: 8 })) {
+    if (g.format === "mcq" && g.options) {
+      items.push({
+        id: g.id,
+        skill: g.skill,
+        level: g.level as Level,
+        category: g.category,
+        difficulty: g.difficulty,
+        payload: {
+          kind: "mcq",
+          prompt: { en: g.prompt.en, sv: g.prompt.sv },
+          options: g.options,
+          answer: g.answer,
+          explanation: g.explanation,
+          lessonId: g.templateId,
+          source: "template",
+        },
+      });
+    } else if (g.format === "fill") {
+      items.push({
+        id: g.id,
+        skill: g.skill,
+        level: g.level as Level,
+        category: g.category,
+        difficulty: g.difficulty,
+        payload: {
+          kind: "fill",
+          prompt: g.prompt,
+          answer: g.answer,
+          lessonId: g.templateId,
+          source: "template",
+        },
+      });
+    } else {
+      items.push({
+        id: g.id,
+        skill: g.skill,
+        level: g.level as Level,
+        category: g.category,
+        difficulty: g.difficulty,
+        payload: {
+          kind: "translate",
+          prompt: g.prompt,
+          answer: g.answer,
+          acceptedAnswers: g.acceptedAnswers,
+          category: g.category,
+          source: "template",
+        },
+      });
+    }
   }
 
   return items;

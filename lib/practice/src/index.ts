@@ -547,3 +547,5 @@ export const PRACTICE_MODES: readonly PracticeModeMeta[] = [
 
 export const EMPTY_STATE_MESSAGE =
   "Practice content is being prepared. Try mixed review or check your connection.";
+
+export * from "./templates";
