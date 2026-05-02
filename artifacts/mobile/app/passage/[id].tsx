@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { Feather } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 
 import { Screen } from "@/components/Screen";
 import { Typography } from "@/components/Typography";
@@ -10,9 +11,12 @@ import { AppButton } from "@/components/AppButton";
 import { ProgressBar } from "@/components/ProgressBar";
 import { ErrorState } from "@/components/ErrorState";
 import { RequireAuth } from "@/components/RequireAuth";
+import { AnimatedScore } from "@/components/AnimatedScore";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
 import { READING_PASSAGES } from "@/lib/mockContent";
+import { recentLessons } from "@/lib/storage";
+import { encouragementFor } from "@/lib/encouragement";
 
 type Step = "read" | "quiz" | "result";
 
@@ -31,6 +35,14 @@ function PassageDetailScreenInner() {
   const lang = user?.learningFrom ?? "sv";
 
   const passage = useMemo(() => READING_PASSAGES.find((p) => p.id === id), [id]);
+
+  useEffect(() => {
+    if (passage) {
+      recentLessons
+        .add({ type: "passage", id: passage.id, title: passage.title[lang], level: passage.level })
+        .catch(() => {});
+    }
+  }, [passage, lang]);
 
   const [step, setStep] = useState<Step>("read");
   const [showTranslation, setShowTranslation] = useState(false);
@@ -66,12 +78,22 @@ function PassageDetailScreenInner() {
 
   const check = () => {
     if (!selected || !currentQ) return;
-    setResults((r) => [...r, selected === currentQ.answer]);
+    const isCorrect = selected === currentQ.answer;
+    setResults((r) => [...r, isCorrect]);
     setShowFeedback(true);
+    Haptics.notificationAsync(
+      isCorrect ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Error
+    ).catch(() => {});
   };
 
   const next = () => {
     if (qIndex + 1 >= passage.questions.length) {
+      const finalScore = Math.round(
+        (results.filter(Boolean).length / Math.max(1, passage.questions.length)) * 100
+      );
+      if (finalScore >= 80) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      }
       setStep("result");
     } else {
       setQIndex((i) => i + 1);
@@ -209,31 +231,38 @@ function PassageDetailScreenInner() {
           </>
         )}
 
-        {step === "result" && (
-          <>
-            <Card variant="primary" padding={24}>
-              <Typography variant="h1" center>
-                {score}%
-              </Typography>
-              <Typography variant="body" muted center style={{ marginTop: 6 }}>
-                {results.filter(Boolean).length} / {passage.questions.length} correct
-              </Typography>
-            </Card>
-            <AppButton
-              title="Try again"
-              onPress={startQuiz}
-              variant="outline"
-              size="lg"
-              style={{ marginTop: 16 }}
-            />
-            <AppButton
-              title="Back to reading"
-              onPress={() => router.back()}
-              size="md"
-              style={{ marginTop: 8 }}
-            />
-          </>
-        )}
+        {step === "result" && (() => {
+          const enc = encouragementFor(score, lang);
+          return (
+            <>
+              <Card variant="primary" padding={24}>
+                <AnimatedScore value={score} />
+                <Typography variant="body" muted center style={{ marginTop: 6 }}>
+                  {results.filter(Boolean).length} / {passage.questions.length} correct
+                </Typography>
+                <Typography variant="h3" center style={{ marginTop: 16 }}>
+                  {enc.emoji}
+                </Typography>
+                <Typography variant="body" center style={{ marginTop: 6 }}>
+                  {enc.text}
+                </Typography>
+              </Card>
+              <AppButton
+                title="Try again"
+                onPress={startQuiz}
+                variant="outline"
+                size="lg"
+                style={{ marginTop: 16 }}
+              />
+              <AppButton
+                title="Back to reading"
+                onPress={() => router.back()}
+                size="md"
+                style={{ marginTop: 8 }}
+              />
+            </>
+          );
+        })()}
       </Screen>
     </>
   );

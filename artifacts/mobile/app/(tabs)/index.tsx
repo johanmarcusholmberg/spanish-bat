@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet, RefreshControl, ScrollView, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 
 import { Typography } from "@/components/Typography";
 import { Card } from "@/components/Card";
@@ -12,6 +12,7 @@ import { ErrorState } from "@/components/ErrorState";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
+import { dashboardCache, recentLessons, type RecentLesson } from "@/lib/storage";
 
 interface DashboardData {
   streak: { currentStreak: number; longestStreak: number; lastActiveDate: string } | null;
@@ -28,6 +29,7 @@ export default function DashboardScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [recents, setRecents] = useState<RecentLesson[]>([]);
 
   const load = useCallback(async () => {
     setError(null);
@@ -37,12 +39,14 @@ export default function DashboardScreen() {
         api.progress.get().catch(() => ({ progress: [], lastActivity: null })),
         api.vocabulary.get().catch(() => ({ words: [] })),
       ]);
-      setData({
+      const next: DashboardData = {
         streak: streaksRes.streak as DashboardData["streak"],
         progress: progressRes.progress ?? [],
         lastActivity: progressRes.lastActivity as DashboardData["lastActivity"],
         vocabCount: (vocabRes.words ?? []).length,
-      });
+      };
+      setData(next);
+      dashboardCache.set(next).catch(() => {});
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load dashboard");
     } finally {
@@ -52,8 +56,36 @@ export default function DashboardScreen() {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+    dashboardCache
+      .get<DashboardData>()
+      .then((cached) => {
+        if (!cancelled && cached) {
+          setData(cached);
+          setLoading(false);
+        }
+      })
+      .catch(() => {});
     load();
+    return () => {
+      cancelled = true;
+    };
   }, [load]);
+
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      recentLessons
+        .get()
+        .then((items) => {
+          if (active) setRecents(items.slice(0, 3));
+        })
+        .catch(() => {});
+      return () => {
+        active = false;
+      };
+    }, [])
+  );
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -166,6 +198,36 @@ export default function DashboardScreen() {
           {data?.lastActivity ? "Tap to resume" : "Browse exercises"}
         </Typography>
       </Card>
+
+      {/* Pick up where you left off */}
+      {recents.length > 0 && (
+        <>
+          <Typography variant="h3" style={{ marginBottom: 10 }}>
+            Pick up where you left off
+          </Typography>
+          <View style={styles.recentsRow}>
+            {recents.map((r) => (
+              <Card
+                key={`${r.type}-${r.id}`}
+                onPress={() =>
+                  router.push(r.type === "lesson" ? `/lesson/${r.id}` : `/passage/${r.id}`)
+                }
+                padding={12}
+                style={{ flexBasis: "47%", flexGrow: 1 }}
+              >
+                <Typography variant="caption" muted>
+                  {r.type === "lesson" ? "GRAMMAR" : "READING"}
+                  {r.level ? ` · ${r.level}` : ""}
+                </Typography>
+                <Typography variant="label" style={{ marginTop: 6 }} numberOfLines={2}>
+                  {r.title}
+                </Typography>
+              </Card>
+            ))}
+          </View>
+          <View style={{ height: 16 }} />
+        </>
+      )}
 
       {/* Progress overview */}
       <Typography variant="h3" style={{ marginBottom: 10 }}>
@@ -306,5 +368,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
+  },
+  recentsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
   },
 });

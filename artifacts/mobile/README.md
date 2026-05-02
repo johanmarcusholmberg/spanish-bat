@@ -136,6 +136,74 @@ The app uses **NativeWind v4** (Tailwind CSS for React Native) alongside `StyleS
 - Injects `Authorization: Bearer <token>` via the token getter set from `AuthContext`
 - Covers profile, streaks, progress, vocabulary, and contact endpoints
 
+## What Has Been Built (Phase 4 — Beta Polish)
+
+Phase 4 hardens the app for an internal Expo Go beta. No new screens — just resilience, persistence, and feedback polish.
+
+### Persistence (`lib/storage.ts`)
+
+| Helper | Purpose |
+|---|---|
+| `recentLessons.add/get` | Remembers the last 10 lessons + reading passages a user opened (FIFO, deduped). Surfaced on the Dashboard as a "Pick up where you left off" row. |
+| `dashboardCache.get/set` | Caches the dashboard payload (streak, progress, vocab count, last activity) for 5 minutes so the dashboard renders instantly on re-open instead of showing a spinner. |
+| `exerciseDraft.get/set/clear` | Per-exercise draft slot for resuming a partially answered question across navigation pops. Reserved for future Phase 5 use. |
+
+All storage helpers are try/catch wrapped — a corrupt or unwritable AsyncStorage entry never crashes the app.
+
+### Offline detection (`components/OfflineBanner.tsx`)
+
+A red banner slides down from the top of every screen when `@react-native-community/netinfo` reports no connectivity (or no internet reachability). It auto-hides when the connection returns. Mounted in `app/_layout.tsx` so it overlays both the auth flow and the tabbed app.
+
+### Post-exercise feedback
+
+| Behavior | Where |
+|---|---|
+| Haptic success / error pulse on each answer | `app/lesson/[id].tsx`, `app/passage/[id].tsx` (`Haptics.notificationAsync`) |
+| Animated count-up of the final score | `components/AnimatedScore.tsx` (eased over 700 ms with `requestAnimationFrame`) |
+| Encouragement copy keyed to the score range | `lib/encouragement.ts` (5 buckets: 90+ / 75+ / 60+ / 40+ / <40, both `sv` and `en`) |
+| Extra success haptic when score ≥ 80 % | Lesson + passage finish handlers |
+
+### Beta test checklist
+
+Use this checklist when smoke-testing the app in Expo Go before sharing a build with beta users.
+
+**Auth flow**
+- [ ] Sign up with a new email — receive verification code, enter it, land on the Dashboard.
+- [ ] Log out from Profile, log back in with the same credentials.
+- [ ] Use Forgot password — receive reset code, set a new password, log in with it.
+- [ ] Sign in with Google (real device or Safari-signed simulator).
+- [ ] Sign in with Apple (real iOS device only).
+
+**Navigation**
+- [ ] Each of the 5 tabs (Dashboard, Exercises, Vocabulary, Grammar, Profile) loads without error.
+- [ ] From Dashboard, tap a quick action → reach Flashcards / Exercises / Reading / Vocabulary.
+- [ ] From Dashboard, tap "View stats" → Stats screen renders.
+- [ ] From Profile → "View detailed stats" → Stats screen renders.
+- [ ] Open a grammar lesson, complete the practice → result screen shows animated score and encouragement.
+- [ ] Open a reading passage, complete the quiz → result screen shows animated score and encouragement.
+- [ ] Hardware back button returns to the previous screen on Android.
+
+**Persistence**
+- [ ] Open two grammar lessons or reading passages — Dashboard "Pick up where you left off" shows them.
+- [ ] Force-close the app and reopen — recent items survive.
+- [ ] Reopen the Dashboard within 5 minutes — it appears instantly without a spinner (cached).
+
+**Offline graceful degradation**
+- [ ] Enable airplane mode while inside the app — red "You're offline" banner appears.
+- [ ] Disable airplane mode — banner disappears.
+- [ ] Tap a screen that fetches data while offline — `ErrorState` renders with a Retry button (no crash, no white screen).
+
+**Visual QA**
+- [ ] iPhone SE / small device: nothing is clipped, status bar is respected.
+- [ ] iPhone 14 Pro / dynamic island device: header content stays clear of the island.
+- [ ] Android (Pixel-class): tab bar text is fully visible, no truncation.
+- [ ] Light + dark system theme: brand colors stay readable in both.
+
+**Known limitations (intentional for beta)**
+- Grammar lessons + reading passages are seeded from `lib/mockContent.ts` (one lesson per CEFR level, A1–B2 reading). API-backed content is the next phase.
+- Flashcards fall back to an 8-card seed deck when the user has no saved vocabulary.
+- Sentence-builder, conversation, and pronunciation exercises listed in the web app are not yet ported.
+
 ## What Has Been Built (Phase 3)
 
 Phase 3 ports the web app's core product surfaces to React Native. Every new screen uses the shared UI primitives (`Card`, `ProgressBar`, `EmptyState`, `LoadingState`, `ErrorState`) and consistent loading / error handling.

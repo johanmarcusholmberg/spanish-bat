@@ -3,6 +3,7 @@ import { useSignIn, useSignUp, useSession, useUser, useClerk, useSSO } from "@cl
 import * as WebBrowser from "expo-web-browser";
 import { Platform } from "react-native";
 import { setAuthTokenGetter, api } from "@/lib/api";
+import { clearAllUserData } from "@/lib/storage";
 
 export type Level = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 
@@ -277,9 +278,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function logout(): Promise<void> {
-    await signOut();
-    setProfile(null);
-    setIsAdmin(false);
+    try {
+      await signOut();
+    } finally {
+      setProfile(null);
+      setIsAdmin(false);
+      // Wipe per-user persistence so a second user on the same device cannot
+      // see the previous user's recents, dashboard cache, or exercise drafts.
+      // Runs even if signOut() throws (network error, token expired, etc.).
+      await clearAllUserData();
+    }
   }
 
   async function updateProfile(updates: Partial<UserProfile>): Promise<void> {

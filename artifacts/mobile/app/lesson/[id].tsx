@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { Feather } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 
 import { Screen } from "@/components/Screen";
 import { Typography } from "@/components/Typography";
@@ -10,10 +11,13 @@ import { AppButton } from "@/components/AppButton";
 import { ProgressBar } from "@/components/ProgressBar";
 import { ErrorState } from "@/components/ErrorState";
 import { RequireAuth } from "@/components/RequireAuth";
+import { AnimatedScore } from "@/components/AnimatedScore";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { GRAMMAR_LESSONS } from "@/lib/mockContent";
+import { recentLessons } from "@/lib/storage";
+import { encouragementFor } from "@/lib/encouragement";
 
 type Step = "learn" | "practice" | "result";
 
@@ -32,6 +36,14 @@ function LessonDetailScreenInner() {
   const lang = user?.learningFrom ?? "sv";
 
   const lesson = useMemo(() => GRAMMAR_LESSONS.find((l) => l.id === id), [id]);
+
+  useEffect(() => {
+    if (lesson) {
+      recentLessons
+        .add({ type: "lesson", id: lesson.id, title: lesson.title[lang], level: lesson.level })
+        .catch(() => {});
+    }
+  }, [lesson, lang]);
 
   const [step, setStep] = useState<Step>("learn");
   const [qIndex, setQIndex] = useState(0);
@@ -70,18 +82,23 @@ function LessonDetailScreenInner() {
     const isCorrect = selected === currentQ.answer;
     setResults((r) => [...r, isCorrect]);
     setShowFeedback(true);
+    Haptics.notificationAsync(
+      isCorrect ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Error
+    ).catch(() => {});
   };
 
   const nextQuestion = () => {
     if (qIndex + 1 >= lesson.questions.length) {
-      // finish
       const finalResults = results;
-      const score = Math.round(
+      const finalScore = Math.round(
         (finalResults.filter(Boolean).length / Math.max(1, lesson.questions.length)) * 100
       );
       api.progress
-        .upsertGrammarProgress(lesson.id, score >= 80, score, 1)
+        .upsertGrammarProgress(lesson.id, finalScore >= 80, finalScore, 1)
         .catch(() => {});
+      if (finalScore >= 80) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      }
       setStep("result");
     } else {
       setQIndex((i) => i + 1);
@@ -216,34 +233,41 @@ function LessonDetailScreenInner() {
           </>
         )}
 
-        {step === "result" && (
-          <>
-            <Card variant="primary" padding={24}>
-              <Typography variant="h1" center>
-                {score}%
-              </Typography>
-              <Typography variant="body" muted center style={{ marginTop: 6 }}>
-                {results.filter(Boolean).length} of {lesson.questions.length} correct
-              </Typography>
-              <Typography variant="bodySmall" center style={{ marginTop: 12 }}>
-                {score >= 80 ? "Lesson passed 🎉" : "Keep practicing — 80% to pass"}
-              </Typography>
-            </Card>
-            <AppButton
-              title="Try again"
-              onPress={startPractice}
-              variant="outline"
-              size="lg"
-              style={{ marginTop: 16 }}
-            />
-            <AppButton
-              title="Back to grammar"
-              onPress={() => router.back()}
-              size="md"
-              style={{ marginTop: 8 }}
-            />
-          </>
-        )}
+        {step === "result" && (() => {
+          const enc = encouragementFor(score, lang);
+          return (
+            <>
+              <Card variant="primary" padding={24}>
+                <AnimatedScore value={score} />
+                <Typography variant="body" muted center style={{ marginTop: 6 }}>
+                  {results.filter(Boolean).length} of {lesson.questions.length} correct
+                </Typography>
+                <Typography variant="h3" center style={{ marginTop: 16 }}>
+                  {enc.emoji}
+                </Typography>
+                <Typography variant="body" center style={{ marginTop: 6 }}>
+                  {enc.text}
+                </Typography>
+                <Typography variant="caption" muted center style={{ marginTop: 10 }}>
+                  {score >= 80 ? "Lesson passed" : "80% needed to pass"}
+                </Typography>
+              </Card>
+              <AppButton
+                title="Try again"
+                onPress={startPractice}
+                variant="outline"
+                size="lg"
+                style={{ marginTop: 16 }}
+              />
+              <AppButton
+                title="Back to grammar"
+                onPress={() => router.back()}
+                size="md"
+                style={{ marginTop: 8 }}
+              />
+            </>
+          );
+        })()}
       </Screen>
     </>
   );

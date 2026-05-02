@@ -16,6 +16,7 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { OfflineBanner } from "@/components/OfflineBanner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { clerkTokenCache } from "@/lib/storage";
 
@@ -37,19 +38,22 @@ function RootLayoutNav() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="login" options={{ headerShown: false }} />
-      <Stack.Screen name="register" options={{ headerShown: false }} />
-      <Stack.Screen name="verify-email" options={{ headerShown: false }} />
-      <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
-      <Stack.Screen name="reset-password" options={{ headerShown: false }} />
-      <Stack.Screen name="flashcards" options={{ headerShown: true }} />
-      <Stack.Screen name="stats" options={{ headerShown: true }} />
-      <Stack.Screen name="lesson/[id]" options={{ headerShown: true }} />
-      <Stack.Screen name="passage/[id]" options={{ headerShown: true }} />
-      <Stack.Screen name="word/[id]" options={{ headerShown: true }} />
-    </Stack>
+    <>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="register" options={{ headerShown: false }} />
+        <Stack.Screen name="verify-email" options={{ headerShown: false }} />
+        <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
+        <Stack.Screen name="reset-password" options={{ headerShown: false }} />
+        <Stack.Screen name="flashcards" options={{ headerShown: true }} />
+        <Stack.Screen name="stats" options={{ headerShown: true }} />
+        <Stack.Screen name="lesson/[id]" options={{ headerShown: true }} />
+        <Stack.Screen name="passage/[id]" options={{ headerShown: true }} />
+        <Stack.Screen name="word/[id]" options={{ headerShown: true }} />
+      </Stack>
+      <OfflineBanner />
+    </>
   );
 }
 
