@@ -67,7 +67,7 @@ Tables (all exported from `index.ts`):
 - `subscription_events` — append-only provider webhook log (Phase 8)
 - `customer_mapping` — internal user_id ↔ Stripe / RevenueCat customer ids (Phase 8)
 
-## Subscriptions (Phase 8 — foundation, Phase 9 — Stripe web)
+## Subscriptions (Phase 8 — foundation, Phase 9 — Stripe web, Phase 10 — RevenueCat mobile)
 
 - Spec referenced Supabase; this project uses Clerk + Drizzle/Postgres, so the Supabase tables/RLS were implemented as Drizzle tables with API-server enforcement instead. Same architectural goals.
 - Shared package: `@workspace/subscription` (`lib/subscription/`) — contains `PlanId`, `EntitlementKey`, `SubscriptionStatus`, `UserSubscription`, `UserEntitlements` types plus the Model A / Model B plan config and `entitlementsForPlan()`.
@@ -93,6 +93,18 @@ Tables (all exported from `index.ts`):
 - Webhook (`src/routes/stripeWebhook.ts`) mounted at exact path `/api/stripe/webhook` with `express.raw({type:"application/json"})` BEFORE `express.json()` in `app.ts`. Other `/api` routes still parse JSON normally.
 - Web UI: `src/lib/api.ts` `api.stripe.*`; pages `PricingPage` (public, replaces old static `/pricing`), `BillingSuccessPage` (polls `/api/subscription` directly — not stale `isPremium` closure), `BillingCancelledPage`, `ManageSubscriptionPage`. Components `PremiumBadge`, `LockedFeature`. Routes wired in `App.tsx`.
 - Required secrets (none set yet — app runs without them): `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_PREMIUM_MONTHLY`, `STRIPE_PRICE_PREMIUM_YEARLY`, `VITE_STRIPE_PUBLISHABLE_KEY`. Setup walkthrough in `docs/stripe-setup.md`.
+
+### Phase 10 — RevenueCat mobile subscriptions
+
+- Mobile-only; web keeps Stripe. Apple forbids Stripe Checkout inside the iOS app for digital content.
+- SDK: `react-native-purchases` installed in `@workspace/mobile`. Works in Expo Go via Preview API Mode — no native build needed in dev.
+- Service: `artifacts/mobile/lib/revenuecat.ts` — lazy-loaded SDK, `initRevenueCat / identifyUser / logoutUser / getCurrentOffering / purchasePackage / restorePurchases / getCustomerInfo`. Every entry point is a safe no-op when keys aren't configured (free access keeps working).
+- Config: `artifacts/mobile/lib/revenuecatConfig.ts` reads `EXPO_PUBLIC_RC_IOS_API_KEY`, `EXPO_PUBLIC_RC_ANDROID_API_KEY`, `EXPO_PUBLIC_RC_ENTITLEMENT_ID` (default `premium`), `EXPO_PUBLIC_RC_PRODUCT_MONTHLY/_YEARLY` (placeholders `murcielago_premium_(monthly|yearly)_v1`).
+- Identity: RC `app_user_id === Clerk userId`. Set during `useSubscription` boot via `identifyUser(data.entitlements.userId)`.
+- UI: paywall at `artifacts/mobile/app/paywall.tsx` (modal route, registered in `_layout.tsx`). Components `PremiumBadge`, `LockedFeature` (deep-links to `/paywall`).
+- Server: `artifacts/api-server/src/routes/revenuecatWebhook.ts` mounted at `/api/revenuecat/webhook`. Auth by shared secret in `REVENUECAT_WEBHOOK_AUTH` (fail-closed — 503 if unset). Sync layer `src/lib/revenuecatSync.ts` writes into the same `user_subscriptions`, `user_entitlements`, `subscription_events`, `customer_mapping` tables Stripe uses; uses the same `plan:%` wipe-and-reinsert pattern, so users with both web and mobile subs always converge to the highest tier.
+- Server env vars (optional): `RC_PRODUCT_MONTHLY`, `RC_PRODUCT_YEARLY` for deterministic product → plan mapping. Without them the webhook falls back to a `/premium|pro/i` regex on the product id.
+- Manual dashboard setup (Apple IAP products, Google subscription products, RC project + entitlement + offering + webhook + product id mapping) is documented in `artifacts/mobile/README.md` → "Subscriptions (Phase 10 — RevenueCat / Mobile IAP)".
 
 ## Auth
 

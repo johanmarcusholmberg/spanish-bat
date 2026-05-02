@@ -18,8 +18,20 @@ Copy `.env.example` to `.env` and fill in the values:
 |---|---|---|
 | `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` | Yes | Clerk publishable key from [Clerk Dashboard](https://dashboard.clerk.com) |
 | `EXPO_PUBLIC_API_BASE_URL` | Yes | Full URL to the API backend (e.g. `https://domain.repl.co/api`) |
+| `EXPO_PUBLIC_RC_IOS_API_KEY` | For iOS purchases | RevenueCat **public** Apple SDK key from RC dashboard → Project settings → API keys |
+| `EXPO_PUBLIC_RC_ANDROID_API_KEY` | For Android purchases | RevenueCat **public** Android SDK key |
+| `EXPO_PUBLIC_RC_ENTITLEMENT_ID` | Recommended | RevenueCat entitlement identifier (default `premium`) |
+| `EXPO_PUBLIC_RC_PRODUCT_MONTHLY` | Recommended | Apple/Google product id for monthly Premium (placeholder until store products exist) |
+| `EXPO_PUBLIC_RC_PRODUCT_YEARLY` | Recommended | Apple/Google product id for yearly Premium (placeholder until store products exist) |
 
-Both variables are automatically injected by Replit's workflow in development — no manual setup needed.
+Both Clerk variables are automatically injected by Replit's workflow in development — no manual setup needed. RevenueCat keys must be set manually in Replit Secrets before in-app purchases work; without them the paywall shows a friendly "in-app purchases aren't enabled in this build" message and free access continues unchanged.
+
+The API server also reads two RevenueCat env vars (server-side, no `EXPO_PUBLIC_` prefix):
+
+| Variable | Required | Description |
+|---|---|---|
+| `REVENUECAT_WEBHOOK_AUTH` | For webhook | Shared secret you paste into RC dashboard → Project → Integrations → Webhooks → Authorization header. Without it, `/api/revenuecat/webhook` returns 503 (fail-closed). |
+| `RC_PRODUCT_MONTHLY` / `RC_PRODUCT_YEARLY` | Optional | Same product ids as the mobile vars — used by the webhook to map `product_id` → internal `planId`. If unset, the sync falls back to a name heuristic (`premium|pro` → premium). |
 
 Loaded via `react-native-dotenv` (Babel plugin) — values can also be placed in a `.env` file at the project root for local non-Replit development.
 
@@ -385,6 +397,65 @@ These are flagged with `TODO(api)` in source and currently use seed data in `lib
 - ✅ Native tab bar with liquid glass on iOS 26+ (falls back to BlurView)
 - ✅ EAS-compatible `eas.json` stub
 - ✅ Environment variable documentation
+
+## Subscriptions (Phase 10 — RevenueCat / Mobile IAP)
+
+The mobile app uses **RevenueCat** to mediate Apple In-App Purchase and Google Play Billing. Stripe is web-only — Apple's policy forbids using Stripe Checkout inside the iOS app for digital subscriptions.
+
+### What's wired up in code
+
+- **SDK**: `react-native-purchases` (works in Expo Go via Preview API Mode — no native build needed for development).
+- **Service**: `lib/revenuecat.ts` — `initRevenueCat`, `identifyUser`, `getCurrentOffering`, `purchasePackage`, `restorePurchases`, `getCustomerInfo`.
+- **Config**: `lib/revenuecatConfig.ts` reads the `EXPO_PUBLIC_RC_*` env vars listed above. Defaults are placeholder product ids so the code typechecks and runs without a real RC project.
+- **Hook**: `hooks/useSubscription.ts` initialises RC on auth load, identifies the customer with the Clerk user id, then fetches the canonical entitlement view from `GET /api/subscription`. The API view is the source of truth for gating; RC is the source of truth for *purchasing*.
+- **Paywall**: `app/paywall.tsx` (modal route). Renders the current RC offering with monthly + yearly choices, a "Restore purchases" button, and a "Premium feature aren't enabled" fallback when RC isn't configured.
+- **Components**: `components/PremiumBadge.tsx`, `components/LockedFeature.tsx` (drop into any screen — `LockedFeature` deep-links to `/paywall`).
+- **Server webhook**: `POST /api/revenuecat/webhook` (in `@workspace/api-server`) authenticated by the shared secret in `REVENUECAT_WEBHOOK_AUTH`. Maps RC events → the existing `user_subscriptions`, `user_entitlements`, `subscription_events`, `customer_mapping` tables. Same plan-source semantics as Stripe (deletes all `plan:%` rows, re-inserts on active premium), so a user with both web and mobile subs always converges to the highest tier.
+
+### Manual setup checklist
+
+Do these in order before shipping a build that processes real purchases:
+
+1. **Apple — App Store Connect → My Apps → \[your app\] → In-App Purchases**
+   - Create an **Auto-Renewable Subscription Group** (e.g. "Murciélingo Premium").
+   - Create two products in the group:
+     - Monthly — product id `murcielago_premium_monthly_v1` (or whatever you set `EXPO_PUBLIC_RC_PRODUCT_MONTHLY` to).
+     - Yearly — product id `murcielago_premium_yearly_v1`.
+   - Apple requires localised name + description + a screenshot per product before review.
+
+2. **Google — Play Console → Monetize → Products → Subscriptions**
+   - Create the same two products with matching ids. Use a single base plan per product (monthly / yearly auto-renew).
+   - Activate both products.
+
+3. **RevenueCat — [app.revenuecat.com](https://app.revenuecat.com)**
+   - Create a project (e.g. "Murciélingo").
+   - Add an iOS app — paste your App Store Connect shared secret + bundle id (`app.murcielago.mobile`).
+   - Add an Android app — upload the Play service account JSON + package name (`app.murcielago.mobile`).
+   - **Products**: import the four store products you just created (RC has a "Pull from store" button per app).
+   - **Entitlement**: create one entitlement called `premium` and attach all four products to it.
+   - **Offering**: create a default offering `default` with two packages — `$rc_monthly` and `$rc_annual` — pointing at the corresponding products. Mark this offering as Current.
+   - **API keys**: Project settings → API keys → copy the **public** iOS and Android SDK keys into the `EXPO_PUBLIC_RC_IOS_API_KEY` and `EXPO_PUBLIC_RC_ANDROID_API_KEY` secrets in Replit.
+
+4. **RevenueCat → Supabase/Backend webhook**
+   - In RC: Project → Integrations → Webhooks → Add webhook.
+   - URL: `https://<your-api-domain>/api/revenuecat/webhook`.
+   - Authorization header: any random string. Save the same string as `REVENUECAT_WEBHOOK_AUTH` in Replit Secrets.
+   - Send a Test event from the dashboard. The endpoint should return `{ received: true, ok: true }` and a row should appear in `subscription_events` with `provider="revenuecat"`.
+   - Spec note: the original Phase 10 brief mentions a Supabase Edge Function. This project uses Express + Drizzle/Postgres instead, so the same architectural goal is implemented as the Express webhook above; entitlements still flow into the shared `user_entitlements` table.
+
+5. **Product id mapping (server)**
+   - Set `RC_PRODUCT_MONTHLY` and `RC_PRODUCT_YEARLY` in Replit Secrets to the same ids you used in step 1 + 2. This makes the webhook map RC events → the internal `planId="premium"` deterministically. If you skip this, the webhook falls back to a `/premium|pro/i` regex on the product id, which is fine for the placeholder ids but worth fixing before launch.
+
+6. **Sanity check the flow**
+   - Build with `eas build --profile preview`, install on a device, sign in.
+   - Open the paywall. The two packages should render with prices from the store.
+   - Buy one with a sandbox account. RC fires `INITIAL_PURCHASE` → our webhook → `user_subscriptions` row + `user_entitlements` rows added → next pull-to-refresh on the app sees `isPremium: true`.
+
+### Fallbacks
+
+- No RC keys configured → SDK functions no-op, paywall shows "in-app purchases aren't enabled in this build", `useSubscription` still returns the API view (free access).
+- RC unreachable mid-session → `getCurrentOffering()` returns null, paywall shows "no plans available".
+- Webhook missing `REVENUECAT_WEBHOOK_AUTH` → endpoint returns 503; existing entitlements aren't touched.
 
 ## Running Locally (outside Replit)
 

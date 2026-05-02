@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
+import { getCustomerInfo, isRevenueCatConfigured } from "@/lib/revenuecat";
 import type {
   EntitlementKey,
   PlanId,
@@ -52,6 +53,16 @@ export function useSubscription(): UseSubscriptionResult {
     setLoading(true);
     setError(null);
     try {
+      // Best-effort: refresh local RC customer info so the next render has
+      // the most current entitlement state, then fetch the canonical view
+      // from the API server (which is fed by the RC webhook).
+      if (isRevenueCatConfigured()) {
+        try {
+          await getCustomerInfo();
+        } catch {
+          // ignore — server-side state is the source of truth.
+        }
+      }
       const resp = (await api.subscription.get()) as SubscriptionPayload;
       setData(resp);
     } catch (e) {
@@ -64,6 +75,12 @@ export function useSubscription(): UseSubscriptionResult {
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  // Note: RevenueCat identification lives in AuthContext (it has direct
+  // access to the Clerk userId BEFORE the API subscription payload is
+  // available). Doing it here would race the paywall and risk creating
+  // an anonymous RC customer that then purchases and writes corrupt
+  // app_user_ids into our subscription tables.
 
   return useMemo(
     () => ({

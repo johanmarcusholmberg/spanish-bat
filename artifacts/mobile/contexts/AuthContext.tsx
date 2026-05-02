@@ -4,6 +4,7 @@ import * as WebBrowser from "expo-web-browser";
 import { Platform } from "react-native";
 import { setAuthTokenGetter, api } from "@/lib/api";
 import { clearAllUserData } from "@/lib/storage";
+import { identifyUser as rcIdentify, initRevenueCat, logoutUser as rcLogout } from "@/lib/revenuecat";
 
 export type Level = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 
@@ -20,6 +21,7 @@ interface AuthContextType {
   isLoggedIn: boolean;
   isAdmin: boolean;
   user: UserProfile | null;
+  userId: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<string | null>;
   register: (email: string, password: string, displayName: string) => Promise<string | null>;
@@ -37,6 +39,7 @@ const AuthContext = createContext<AuthContextType>({
   isLoggedIn: false,
   isAdmin: false,
   user: null,
+  userId: null,
   loading: true,
   login: async () => null,
   register: async () => null,
@@ -87,9 +90,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!isLoaded) return;
     if (session && clerkUser) {
       loadProfile();
+      // Identify the RevenueCat customer with the Clerk userId BEFORE any
+      // purchase / restore / offerings call can run. Critical: the
+      // server-side RC webhook trusts `app_user_id` as the internal
+      // userId, so it must always be the Clerk id (never anonymous).
+      void rcIdentify(clerkUser.id);
     } else {
       setProfile(null);
       setIsAdmin(false);
+      // Make sure RC is reachable for an anonymous paywall view (e.g.
+      // pricing screen before signup) but do not carry over a previous
+      // user's identity. logoutUser() is a no-op when uninitialised /
+      // already anonymous.
+      void initRevenueCat(null);
+      void rcLogout();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, session?.id, clerkUser?.id]);
@@ -287,6 +301,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // see the previous user's recents, dashboard cache, or exercise drafts.
       // Runs even if signOut() throws (network error, token expired, etc.).
       await clearAllUserData();
+      // Drop the RevenueCat identity too — without this a second user on
+      // the same device would inherit the first user's RC customer and
+      // any active entitlements/purchases would be cross-attributed.
+      await rcLogout();
     }
   }
 
@@ -314,6 +332,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoggedIn,
         isAdmin,
         user: profile,
+        userId: clerkUser?.id ?? null,
         loading,
         login,
         register,

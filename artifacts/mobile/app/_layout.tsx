@@ -52,6 +52,7 @@ function RootLayoutNav() {
         <Stack.Screen name="lesson/[id]" options={{ headerShown: true }} />
         <Stack.Screen name="passage/[id]" options={{ headerShown: true }} />
         <Stack.Screen name="word/[id]" options={{ headerShown: true }} />
+        <Stack.Screen name="paywall" options={{ headerShown: true, presentation: "modal" }} />
       </Stack>
       <OfflineBanner />
     </>
