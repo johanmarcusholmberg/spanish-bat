@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { View, StyleSheet, RefreshControl, ScrollView, Platform } from "react-native";
+import { View, StyleSheet, RefreshControl, ScrollView, Platform, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
@@ -23,6 +23,7 @@ import {
 import TodaysPracticeCard from "@/components/TodaysPracticeCard";
 import EchoSteps from "@/components/EchoSteps";
 import LevelReadinessCard from "@/components/LevelReadinessCard";
+import { useResumableSession } from "@/hooks/useResumableSession";
 
 const PASSED_KEY = (userId: string, level: string) =>
   `murci.passedLevelCheck.${userId}.${level}`;
@@ -58,6 +59,8 @@ export default function TodayScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [recents, setRecents] = useState<RecentLesson[]>([]);
   const [hasPassedLevelCheck, setHasPassedLevelCheck] = useState(false);
+  const { activeSession, hasResumable, refresh: refreshResumable, clear: clearResumable } =
+    useResumableSession();
 
   const load = useCallback(async () => {
     setError(null);
@@ -116,10 +119,11 @@ export default function TodayScreen() {
           if (active) setRecents(items.slice(0, 3));
         })
         .catch(() => {});
+      void refreshResumable();
       return () => {
         active = false;
       };
-    }, [])
+    }, [refreshResumable])
   );
 
   const onRefresh = () => {
@@ -192,7 +196,43 @@ export default function TodayScreen() {
         <EchoSteps />
       </View>
 
-      {/* 3. Today's recommended practice */}
+      {/* 3. Continue today's practice (resume) */}
+      {hasResumable && activeSession && (
+        <Card
+          variant="primary"
+          onPress={() => {
+            router.push({
+              pathname: "/practice/session",
+              params: { mode: activeSession.mode },
+            } as never);
+          }}
+          style={{ marginBottom: 14 }}
+        >
+          <Typography variant="caption" muted style={{ letterSpacing: 1 }}>
+            {lang === "sv" ? "FORTSÄTT DAGENS ÖVNING" : "CONTINUE TODAY'S PRACTICE"}
+          </Typography>
+          <Typography variant="h3" style={{ marginTop: 4 }}>
+            {activeSession.label ?? `Practice — ${activeSession.mode}`}
+          </Typography>
+          <Typography variant="caption" muted style={{ marginTop: 4 }}>
+            {lang === "sv"
+              ? `Steg ${activeSession.stepIndex + 1} av ${activeSession.totalSteps}`
+              : `Step ${activeSession.stepIndex + 1} of ${activeSession.totalSteps}`}
+          </Typography>
+          <View style={{ flexDirection: "row", marginTop: 10, gap: 16, alignItems: "center" }}>
+            <Typography variant="caption" style={{ color: colors.primary, fontWeight: "600" }}>
+              {lang === "sv" ? "Återuppta" : "Resume"}
+            </Typography>
+            <Pressable onPress={() => void clearResumable()} hitSlop={8}>
+              <Typography variant="caption" muted>
+                {lang === "sv" ? "Börja om" : "Start fresh"}
+              </Typography>
+            </Pressable>
+          </View>
+        </Card>
+      )}
+
+      {/* 4. Today's recommended practice */}
       <TodaysPracticeCard readinessState={readiness.state} />
 
       {/* 4. Continue where you left off */}

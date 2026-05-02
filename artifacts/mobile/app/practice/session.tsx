@@ -37,6 +37,15 @@ import {
 } from "@/lib/savedPracticeItems";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
 import { api } from "@/lib/api";
+import { learningFeedbackService } from "@/lib/learningFeedbackService";
+import {
+  sessionStorageService,
+  type ActiveSessionState,
+} from "@/lib/sessionStorageService";
+import {
+  cacheTodaySession,
+  setOfflineFallbackSession,
+} from "@/lib/learningCacheService";
 
 export default function PracticeSessionScreen() {
   const colors = useColors();
@@ -84,8 +93,9 @@ export default function PracticeSessionScreen() {
   const [revealed, setRevealed] = useState(false);
   const [correct, setCorrect] = useState(0);
   const [done, setDone] = useState(false);
+  const activeSessionRef = React.useRef<ActiveSessionState | null>(null);
 
-  const start = (mode: PracticeMode) => {
+  const start = (mode: PracticeMode, resumeFrom?: ActiveSessionState | null) => {
     const built = buildPracticeSession<MobilePracticePayload>({
       mode,
       level: userLevel,
@@ -93,11 +103,37 @@ export default function PracticeSessionScreen() {
       stats,
     });
     setSession(built);
-    setShowIntro(true);
-    setIndex(0);
+    if (resumeFrom && resumeFrom.mode === mode && resumeFrom.totalSteps === built.items.length) {
+      setShowIntro(false);
+      setIndex(Math.min(resumeFrom.stepIndex, built.items.length - 1));
+      setCorrect(resumeFrom.results.filter((r) => r.correct).length);
+      activeSessionRef.current = resumeFrom;
+    } else {
+      setShowIntro(true);
+      setIndex(0);
+      setCorrect(0);
+      const fresh = sessionStorageService.newSession({
+        sessionId: `${mode}-${Date.now()}`,
+        mode,
+        level: userLevel,
+        totalSteps: built.items.length,
+        label: `Practice — ${mode}`,
+      });
+      activeSessionRef.current = fresh;
+      void sessionStorageService.saveSessionProgress(fresh);
+      // Cache for offline foundation — best effort.
+      void cacheTodaySession({
+        mode,
+        level: userLevel,
+        itemIds: built.items.map((i) => i.id),
+      }).catch(() => {});
+      void setOfflineFallbackSession({
+        itemIds: built.items.slice(0, 5).map((i) => i.id),
+        capturedAt: Date.now(),
+      }).catch(() => {});
+    }
     setPicked(null);
     setRevealed(false);
-    setCorrect(0);
     setDone(false);
     void enrichFromAI(mode);
   };
@@ -410,16 +446,49 @@ export default function PracticeSessionScreen() {
     if (picked == null) return;
     const ok = picked === p.answer;
     if (ok) setCorrect((c) => c + 1);
-    recordAttempt({
-      itemId: current.id,
-      skill: current.skill,
-      subskill: current.category,
-      level: current.level,
-      correct: ok,
-    });
-    const persistedId = persistedIdFromLocalId(current.id);
-    if (persistedId) {
-      void api.practiceItems.usage(persistedId, ok).catch(() => {});
+    // De-dupe weak-spot/SRS updates on resume by tracking applied item ids.
+    const active = activeSessionRef.current;
+    const alreadyApplied = active?.appliedItemIds.includes(current.id) ?? false;
+    if (!alreadyApplied) {
+      recordAttempt({
+        itemId: current.id,
+        skill: current.skill,
+        subskill: current.category,
+        level: current.level,
+        correct: ok,
+      });
+      const persistedId = persistedIdFromLocalId(current.id);
+      if (persistedId) {
+        void api.practiceItems.usage(persistedId, ok).catch(() => {});
+      }
+    }
+    if (active) {
+      const next: ActiveSessionState = {
+        ...active,
+        stepIndex: index,
+        results: [
+          ...active.results.filter((r) => r.itemId !== current.id),
+          {
+            itemId: current.id,
+            picked,
+            correct: ok,
+            skill: current.skill,
+            subskill: current.category,
+            level: current.level,
+            recordedAt: Date.now(),
+          },
+        ],
+        appliedItemIds: alreadyApplied
+          ? active.appliedItemIds
+          : [...active.appliedItemIds, current.id],
+      };
+      activeSessionRef.current = next;
+      void sessionStorageService.saveSessionProgress(next);
+    }
+    if (ok) {
+      learningFeedbackService.feedbackCorrect();
+    } else {
+      learningFeedbackService.feedbackIncorrect();
     }
     setRevealed(true);
   };
@@ -434,11 +503,21 @@ export default function PracticeSessionScreen() {
   const next = () => {
     if (index + 1 >= session.items.length) {
       setDone(true);
+      learningFeedbackService.feedbackSessionComplete();
+      void sessionStorageService.clearCompletedSession();
+      activeSessionRef.current = null;
       return;
     }
-    setIndex((i) => i + 1);
+    const newIndex = index + 1;
+    setIndex(newIndex);
     setPicked(null);
     setRevealed(false);
+    const active = activeSessionRef.current;
+    if (active) {
+      const updated: ActiveSessionState = { ...active, stepIndex: newIndex };
+      activeSessionRef.current = updated;
+      void sessionStorageService.saveSessionProgress(updated);
+    }
   };
 
   return (
