@@ -120,9 +120,41 @@ export const api = {
           explanation?: string;
           difficulty: number;
           source: "ai";
+          id?: string;
         }>;
         degraded?: boolean;
       }>,
+  },
+  practiceItems: {
+    list: (level?: string) =>
+      fetchApi(`/practice-items${level ? `?level=${encodeURIComponent(level)}` : ""}`) as Promise<{
+        items: Array<{
+          id: string;
+          level: string;
+          skill: string;
+          subskill: string;
+          prompt: string;
+          expectedAnswer: string;
+          acceptedAnswers: string[] | null;
+          explanation: string | null;
+          difficulty: number;
+          source: string;
+          languageOfPrompt: string;
+          usageCount: number;
+          successCount: number;
+          reportCount: number;
+        }>;
+      }>,
+    report: (id: string, reason: string, note?: string) =>
+      fetchApi(`/practice-items/${id}/report`, {
+        method: "POST",
+        body: JSON.stringify({ reason, note }),
+      }),
+    usage: (id: string, correct: boolean) =>
+      fetchApi(`/practice-items/${id}/usage`, {
+        method: "POST",
+        body: JSON.stringify({ correct }),
+      }),
   },
   subscription: {
     get: () => fetchApi("/subscription"),

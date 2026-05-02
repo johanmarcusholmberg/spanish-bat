@@ -26,8 +26,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   buildAllPracticeItems,
   aiItemsToPracticeItems,
+  type MobilePracticeItem,
   type MobilePracticePayload,
 } from "@/lib/practiceItems";
+import {
+  savedItemsToPracticeItems,
+  persistedIdFromLocalId,
+} from "@/lib/savedPracticeItems";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
 import { api } from "@/lib/api";
 
@@ -43,8 +48,30 @@ export default function PracticeSessionScreen() {
     | "C1"
     | "C2";
 
-  const allItems = useMemo(() => buildAllPracticeItems(), []);
+  const localItems = useMemo(() => buildAllPracticeItems(), []);
+  const [savedItems, setSavedItems] = useState<MobilePracticeItem[]>([]);
+  const [reported, setReported] = useState<Record<string, string>>({});
+  const allItems = useMemo(() => {
+    const ids = new Set(localItems.map((i) => i.id));
+    return [...localItems, ...savedItems.filter((i) => !ids.has(i.id))];
+  }, [localItems, savedItems]);
   const { stats, recordAttempt } = usePracticeStats();
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const resp = await api.practiceItems.list();
+        if (cancelled) return;
+        setSavedItems(savedItemsToPracticeItems(resp.items, "en"));
+      } catch {
+        // Best-effort.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const [session, setSession] = useState<PracticeSession<MobilePracticePayload> | null>(
     null,
   );
@@ -198,7 +225,19 @@ export default function PracticeSessionScreen() {
       level: current.level,
       correct: ok,
     });
+    const persistedId = persistedIdFromLocalId(current.id);
+    if (persistedId) {
+      void api.practiceItems.usage(persistedId, ok).catch(() => {});
+    }
     setRevealed(true);
+  };
+
+  const reportItem = (reason: string) => {
+    const persistedId = persistedIdFromLocalId(current.id);
+    setReported((r) => ({ ...r, [current.id]: reason }));
+    if (persistedId) {
+      void api.practiceItems.report(persistedId, reason).catch(() => {});
+    }
   };
   const next = () => {
     if (index + 1 >= session.items.length) {
@@ -289,6 +328,36 @@ export default function PracticeSessionScreen() {
           </Typography>
         ) : null}
 
+        {revealed ? (
+          reported[current.id] ? (
+            <Typography variant="caption" muted style={{ marginTop: 12 }}>
+              Thanks for the feedback!
+            </Typography>
+          ) : (
+            <View style={{ marginTop: 12 }}>
+              <Typography variant="caption" muted>
+                Something wrong?
+              </Typography>
+              <View style={styles.reportRow}>
+                {[
+                  { value: "confusing", label: "Confusing" },
+                  { value: "wrong_answer", label: "Wrong answer" },
+                  { value: "too_hard", label: "Too hard" },
+                  { value: "too_easy", label: "Too easy" },
+                ].map((r) => (
+                  <Pressable
+                    key={r.value}
+                    onPress={() => reportItem(r.value)}
+                    style={[styles.reportChip, { borderColor: colors.border }]}
+                  >
+                    <Typography variant="caption">{r.label}</Typography>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          )
+        ) : null}
+
         {!revealed ? (
           <Pressable
             onPress={submit}
@@ -343,5 +412,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     marginTop: 12,
+  },
+  reportRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginTop: 6,
+  },
+  reportChip: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    borderWidth: 1,
   },
 });

@@ -20,6 +20,10 @@ import {
   type PracticePayload,
   type LocalPracticeItem,
 } from "@/lib/practiceItems";
+import {
+  savedItemsToPracticeItems,
+  persistedIdFromLocalId,
+} from "@/lib/savedPracticeItems";
 import { api } from "@/lib/api";
 import { checkMultiAnswer } from "@/lib/answerUtils";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
@@ -48,7 +52,34 @@ const PracticeSessionPage = () => {
   const [finished, setFinished] = useState(false);
 
   const userLevel = (user?.level || "A1") as Level;
-  const allItems = useMemo<LocalPracticeItem[]>(() => buildAllPracticeItems(), []);
+  const localItems = useMemo<LocalPracticeItem[]>(() => buildAllPracticeItems(), []);
+  const [savedItems, setSavedItems] = useState<LocalPracticeItem[]>([]);
+  const [reported, setReported] = useState<Record<string, string>>({});
+  const allItems = useMemo<LocalPracticeItem[]>(() => {
+    const ids = new Set(localItems.map((i) => i.id));
+    return [...localItems, ...savedItems.filter((i) => !ids.has(i.id))];
+  }, [localItems, savedItems]);
+
+  // One-shot fetch of approved practice items from the shared library.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const resp = await api.practiceItems.list();
+        if (cancelled) return;
+        const converted = savedItemsToPracticeItems(
+          resp.items,
+          language === "sv" ? "sv" : "en",
+        );
+        setSavedItems(converted);
+      } catch {
+        // Best-effort — local content alone is fine.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [language]);
   const {
     stats: trackedStats,
     recordAttempt,
@@ -174,7 +205,30 @@ const PracticeSessionPage = () => {
       level: current.level,
       correct: ok,
     });
+    // Record usage for persisted items so success rate is tracked centrally.
+    const persistedId = persistedIdFromLocalId(current.id);
+    if (persistedId) {
+      void api.practiceItems.usage(persistedId, ok).catch(() => {});
+    }
     setRevealed(true);
+  };
+
+  const handleReport = (reason: string) => {
+    if (!current) return;
+    const persistedId = persistedIdFromLocalId(current.id);
+    if (!persistedId) {
+      // Local items don't have a server-side id yet; record locally only.
+      setReported((r) => ({ ...r, [current.id]: reason }));
+      return;
+    }
+    setReported((r) => ({ ...r, [current.id]: reason }));
+    void api.practiceItems.report(persistedId, reason).catch(() => {
+      setReported((r) => {
+        const copy = { ...r };
+        delete copy[current.id];
+        return copy;
+      });
+    });
   };
 
   const handleNext = () => {
@@ -433,6 +487,42 @@ const PracticeSessionPage = () => {
                 </p>
               )}
             </>
+          )}
+
+          {revealed && (
+            <div className="mt-4 pt-3 border-t border-border">
+              {reported[current.id] ? (
+                <p className="text-xs text-muted-foreground">
+                  {language === "sv"
+                    ? "Tack för din feedback!"
+                    : "Thanks for the feedback!"}
+                </p>
+              ) : (
+                <details className="text-xs text-muted-foreground">
+                  <summary className="cursor-pointer hover:text-foreground select-none">
+                    {language === "sv"
+                      ? "Något fel med frågan?"
+                      : "Something wrong?"}
+                  </summary>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {[
+                      { value: "confusing", sv: "Förvirrande", en: "Confusing" },
+                      { value: "wrong_answer", sv: "Fel svar", en: "Wrong answer" },
+                      { value: "too_hard", sv: "För svår", en: "Too hard" },
+                      { value: "too_easy", sv: "För lätt", en: "Too easy" },
+                    ].map((r) => (
+                      <button
+                        key={r.value}
+                        onClick={() => handleReport(r.value)}
+                        className="px-2 py-1 rounded border border-border hover:border-primary/50 text-xs"
+                      >
+                        {language === "sv" ? r.sv : r.en}
+                      </button>
+                    ))}
+                  </div>
+                </details>
+              )}
+            </div>
           )}
 
           <div className="flex justify-end mt-6">

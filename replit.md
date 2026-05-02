@@ -169,4 +169,21 @@ Persistence + UI:
   - Dashboard `test_recommended` block now reads "You look ready for the {next} check." and routes "Take level check" to `/level-check`. "Keep practicing" and "Practice weak spots" remain.
 - The level-check flow is intentionally non-blocking: the user can always exit, decline the recommendation, or jump straight to weak-spot practice instead. Pass state is only set after a successful evaluation, never on click.
 
+## Phase 18 — Persisted Practice Items Library
+
+AI-generated practice is no longer thrown away after one session. Approved generic items are saved to a shared library and reused.
+
+- **DB schema** `lib/db/src/schema/practiceItems.ts`:
+  - `practice_items` — id, level, skill, subskill, prompt, expectedAnswer, acceptedAnswers (jsonb), explanation, difficulty (real), source (curated|template|ai), createdAt, approved, usageCount, successCount, reportCount, languageOfPrompt, tags (jsonb), promptNorm (UNIQUE), flagged. Indexes on (approved, flagged) and (level, skill).
+  - `practice_item_reports` — id, itemId, userId, reason (confusing|wrong_answer|too_hard|too_easy), note, createdAt.
+- **PII filter** `lib/practice-ai/src/personalFilter.ts`: `looksPersonal(...texts)` — regex heuristics for emails, phones, URLs, "my name is / me llamo / jag heter" identity patterns. Re-exported from `@workspace/practice-ai`.
+- **AI persistence** `artifacts/api-server/src/routes/practiceAi.ts`: after `validateAIPracticeItems`, generic non-personal items are upserted via `persistApprovedAIItems`. Dedup keyed on normalised prompt; existing rows return their id so the client can link future feedback. The response now includes the persisted `id` per item.
+- **Routes** `artifacts/api-server/src/routes/practiceItems.ts`:
+  - `GET /api/practice-items?level=A1&limit=200` — approved + non-flagged items.
+  - `POST /api/practice-items/:id/report` — body `{reason, note?}`. Dedupes per (user,item,reason); auto-flags items at `reportCount ≥ 3`.
+  - `POST /api/practice-items/:id/usage` — body `{correct}`. Atomic SQL increments on usageCount/successCount.
+- **Reuse** Web (`PracticeSessionPage.tsx`) and mobile (`app/practice/session.tsx`) both call `api.practiceItems.list()` once and merge the converted items into `buildAllPracticeItems()` before `buildPracticeSession`, so the engine selects across curated + template + saved-AI candidates uniformly.
+- **Client adapters** `artifacts/{murcielago,mobile}/lib/savedPracticeItems.ts` — convert DB rows to `LocalPracticeItem` / `MobilePracticeItem`. Mobile synthesises MCQ distractors from sibling answers + a fallback list. Local ids prefixed `saved-<uuid>` so `persistedIdFromLocalId` can recover the DB id for usage/report calls.
+- **Report UI** Small "Something wrong?" disclosure shown after answering, with chips for the four reasons. Bilingual on web (sv/en). For local-only items the click is a no-op (no DB row to attach feedback to yet).
+
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.

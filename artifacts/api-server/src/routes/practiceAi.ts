@@ -18,10 +18,79 @@ import { requireAuth } from "../middlewares/requireAuth";
 import {
   buildPracticePrompt,
   validateAIPracticeItems,
+  looksPersonal,
+  normalizePromptForDedup,
   type AIPracticeRequest,
 } from "@workspace/practice-ai";
+import { db, practiceItemsTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 
 const router = Router();
+
+/**
+ * Save validated, generic AI items to the shared library so future
+ * sessions can reuse them. Skips items with personal data and items
+ * whose normalised prompt already exists. Returns the persisted ids
+ * (in input order) — null where the item wasn't saved.
+ */
+async function persistApprovedAIItems(
+  items: ReadonlyArray<{
+    level: string;
+    skill: string;
+    subskill: string;
+    prompt: string;
+    expectedAnswer: string;
+    acceptedAnswers?: string[];
+    explanation?: string;
+    difficulty: number;
+  }>,
+  languageOfPrompt: "en" | "sv",
+): Promise<(string | null)[]> {
+  const ids: (string | null)[] = [];
+  for (const it of items) {
+    if (
+      looksPersonal(it.prompt, it.expectedAnswer, it.explanation) ||
+      (it.acceptedAnswers ?? []).some((a) => looksPersonal(a))
+    ) {
+      ids.push(null);
+      continue;
+    }
+    const promptNorm = normalizePromptForDedup(it.prompt);
+    try {
+      const existing = await db
+        .select({ id: practiceItemsTable.id })
+        .from(practiceItemsTable)
+        .where(eq(practiceItemsTable.promptNorm, promptNorm))
+        .limit(1);
+      if (existing.length > 0) {
+        ids.push(existing[0].id);
+        continue;
+      }
+      const id = crypto.randomUUID();
+      await db.insert(practiceItemsTable).values({
+        id,
+        level: it.level,
+        skill: it.skill,
+        subskill: it.subskill || "general",
+        prompt: it.prompt,
+        expectedAnswer: it.expectedAnswer,
+        acceptedAnswers: it.acceptedAnswers ?? null,
+        explanation: it.explanation ?? null,
+        difficulty: it.difficulty,
+        source: "ai",
+        approved: true,
+        languageOfPrompt,
+        tags: [it.subskill || "general"],
+        promptNorm,
+      });
+      ids.push(id);
+    } catch {
+      // Swallow — persistence is best-effort, response still works.
+      ids.push(null);
+    }
+  }
+  return ids;
+}
 
 const VALID_LEVELS = new Set(["A1", "A2", "B1", "B2", "C1", "C2"]);
 
@@ -131,7 +200,22 @@ router.post("/generate-practice-session", requireAuth, async (req, res) => {
     );
   }
 
-  return res.json({ items });
+  // Persist approved generic items to the shared library so the next
+  // user (or session) gets them for free. Best-effort; failures don't
+  // affect the response.
+  let persistedIds: (string | null)[] = [];
+  try {
+    persistedIds = await persistApprovedAIItems(items, interfaceLanguage);
+  } catch (err) {
+    req.log.error({ err }, "Failed to persist AI practice items");
+  }
+
+  const itemsWithIds = items.map((it, i) => ({
+    ...it,
+    id: persistedIds[i] ?? undefined,
+  }));
+
+  return res.json({ items: itemsWithIds });
 });
 
 export default router;

@@ -5,3 +5,4 @@ export * from "./progress";
 export * from "./vocabulary";
 export * from "./contact";
 export * from "./subscriptions";
+export * from "./practiceItems";

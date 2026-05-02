@@ -221,6 +221,8 @@ export interface ValidationResult {
   rejected: { item: unknown; reason: string }[];
 }
 
+export { looksPersonal, normalizePromptForDedup } from "./personalFilter";
+
 export function validateAIPracticeItems(
   raw: unknown,
   opts: ValidationOptions,
