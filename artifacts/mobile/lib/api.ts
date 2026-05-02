@@ -95,4 +95,8 @@ export const api = {
     send: (data: { subject: string; message: string; email: string }) =>
       fetchApi("/contact", { method: "POST", body: JSON.stringify(data) }),
   },
+  subscription: {
+    get: () => fetchApi("/subscription"),
+    getPlans: () => fetchApi("/subscription/plans"),
+  },
 };

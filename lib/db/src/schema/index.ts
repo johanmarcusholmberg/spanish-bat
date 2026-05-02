@@ -4,3 +4,4 @@ export * from "./streaks";
 export * from "./progress";
 export * from "./vocabulary";
 export * from "./contact";
+export * from "./subscriptions";

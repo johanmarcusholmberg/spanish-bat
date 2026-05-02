@@ -7,6 +7,7 @@ import vocabularyRouter from "./vocabulary";
 import contactRouter from "./contact";
 import aiRouter from "./ai";
 import adminRouter from "./admin";
+import subscriptionRouter from "./subscription";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(vocabularyRouter);
 router.use(contactRouter);
 router.use(aiRouter);
 router.use(adminRouter);
+router.use(subscriptionRouter);
 
 export default router;
