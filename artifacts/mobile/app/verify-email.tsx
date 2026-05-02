@@ -1,5 +1,5 @@
 import { useAuth as useClerkAuth } from "@clerk/clerk-expo";
-import { Redirect, useLocalSearchParams } from "expo-router";
+import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import React, { useState, useEffect } from "react";
 import {
@@ -25,6 +25,7 @@ export default function VerifyEmailScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ email?: string }>();
+  const router = useRouter();
   const { verifyEmail, resendVerificationCode } = useAuth();
   const { isSignedIn, isLoaded } = useClerkAuth();
 
@@ -57,6 +58,8 @@ export default function VerifyEmailScreen() {
     setLoading(false);
     if (err) {
       setError(err);
+    } else {
+      router.replace("/(tabs)");
     }
   };
 

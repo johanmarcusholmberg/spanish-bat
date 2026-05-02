@@ -59,6 +59,8 @@ export default function ResetPasswordScreen() {
     setLoading(false);
     if (err) {
       setError(err);
+    } else {
+      router.replace("/(tabs)");
     }
   };
 
