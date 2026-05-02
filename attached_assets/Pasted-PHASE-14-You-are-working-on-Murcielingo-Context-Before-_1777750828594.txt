@@ -1,0 +1,88 @@
+PHASE 14
+You are working on Murcielingo.
+
+Context:
+Before relying on AI-generated content, Murcielingo should support rule-based template generation. This gives the app endless safe practice without unpredictable AI quality or unnecessary API cost.
+
+Important platform requirement:
+This must work for both web and native mobile. Template generation should run locally in shared app logic.
+
+Goal:
+Create a template-based practice generator that can create many variations from safe patterns.
+
+Implement template generators for:
+
+1. Vocabulary translation
+Example:
+Swedish/English prompt: “Translate: bread”
+Spanish answer: “pan”
+
+2. Noun gender
+Example:
+Prompt: “Choose the correct article for mesa”
+Answer: “la”
+
+3. Plural forms
+Example:
+Prompt: “Make this plural: el libro”
+Answer: “los libros”
+
+4. Verb conjugation
+Example:
+Prompt: “Conjugate hablar for yo”
+Answer: “hablo”
+
+5. Sentence building
+Example:
+Prompt: “Build the sentence: I want a coffee”
+Answer: “Quiero un café”
+
+6. Daily phrase variations
+Example:
+Prompt: “How do you ask: Where is the bathroom?”
+Answer: “¿Dónde está el baño?”
+
+7. Scenario prompts
+Example:
+Prompt: “You are in a café. Ask for a coffee with milk.”
+Answer: “Un café con leche, por favor.”
+
+Create a shared PracticeTemplate type:
+- id
+- level
+- skill
+- subskill
+- promptTemplate
+- answerTemplate
+- variables
+- acceptedAnswers
+- explanation
+- difficulty
+
+Create a generator that can:
+- combine templates with variable banks
+- create multiple item variants
+- tag generated items with source: "template"
+- prevent identical duplicates within the same session
+- return generated items in the same format as curated items
+
+Important:
+Template-generated items should feel natural and useful, not robotic. Add enough variable banks for A1/A2 starter practice.
+
+Add examples for:
+- café
+- restaurant
+- greetings
+- directions
+- shopping
+- travel
+- basic small talk
+- daily routines
+
+Deliverables:
+- Shared template types
+- Template generator
+- Variable banks
+- Integration with practiceSessionEngine
+- At least 50 possible generated A1/A2 item variations
+- Works offline/local without AI
