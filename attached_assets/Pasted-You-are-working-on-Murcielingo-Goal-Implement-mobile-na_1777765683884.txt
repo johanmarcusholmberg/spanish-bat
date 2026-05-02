@@ -1,0 +1,472 @@
+You are working on Murcielingo.
+
+Goal:
+Implement mobile-native learning experience polish for Murcielingo.
+
+This prompt assumes the previous learning-flow work has already been implemented or is being implemented:
+- Today / Today’s Practice is the primary post-login experience.
+- Guided mixed practice sessions exist or have a foundation.
+- Practice and Library are secondary/manual areas.
+- Echo is becoming a central learning method.
+- The app should support both web and future native mobile use.
+
+Core product direction:
+Do not turn Murcielingo into a huge course-management system.
+
+The app should feel like:
+
+“A small daily Spanish coach that knows what I need to echo next.”
+
+The user should not think:
+
+“Which module should I open?”
+
+They should think:
+
+“I’ll do today’s practice.”
+
+Main implementation goal:
+Make the learning experience feel more native-mobile-ready, simple, touch-friendly, resumable, and habit-forming without breaking the existing web app.
+
+Important constraints:
+- This work is being done directly in Replit.
+- Do not create branches.
+- Do not open pull requests.
+- Do not configure GitHub automation.
+- Do not commit or push unless I explicitly ask later.
+- Make changes directly in the Replit workspace.
+- After changes are complete, summarize exactly what was changed and what files were touched.
+- Also list follow-up tasks, known limitations, and TODOs.
+
+Do not break existing functionality:
+- Keep existing routes working unless there is a safe replacement.
+- Preserve authentication, progress persistence, level logic, and existing learning modules.
+- Avoid large rewrites unless necessary.
+- Prefer reusable components, hooks, and services.
+- Keep mobile/native readiness in mind, but do not introduce native-only packages unless the current project already supports them safely.
+- If something cannot be fully implemented yet, add a safe placeholder/foundation with clear TODO comments.
+
+Scope of this phase:
+Focus on mobile-native polish and learning habit flow.
+
+This phase should cover:
+1. Bottom navigation foundation
+2. Session-card UI
+3. Resume session
+4. Offline cache foundation
+5. Microphone/audio permissions foundation
+6. Push notification foundation
+7. Haptics-ready feedback
+8. Mobile onboarding update
+
+1. Bottom navigation foundation
+
+Goal:
+Prepare the app for native-style bottom navigation without breaking the current route-based web structure.
+
+Current requirement:
+- If the app is still web-first, do not force a full native navigation rewrite.
+- Add or refactor navigation so the main learning areas map cleanly to future mobile bottom tabs.
+
+Recommended primary navigation areas:
+- Today
+- Practice
+- Library
+- Progress
+- Profile / Settings if needed
+
+Implementation guidance:
+- Today should be the primary/default post-login destination.
+- Practice should contain manual practice modes.
+- Library should contain grammar, vocabulary, reading, saved words, verbs, nouns, adjectives, and reference-style learning content.
+- Progress should contain level progress, streaks, weak areas, learning states, and readiness for level check.
+- Profile/Settings should contain account, subscription, preferences, and language settings.
+
+For web:
+- This may appear as a responsive bottom nav on small screens and existing/top navigation on larger screens.
+- Avoid hover-only behavior.
+- Use large touch targets.
+- Keep labels short.
+- Make the active section visually obvious.
+
+For future native mobile:
+- Keep navigation definitions centralized if possible.
+- Make it easy to later map the same structure to native bottom tabs.
+- Avoid scattering route metadata across many files.
+
+Acceptance criteria:
+- Main areas are clearly organized around Today, Practice, Library, Progress, and Profile/Settings if needed.
+- Small-screen navigation feels touch-friendly.
+- Existing routes still work.
+- The app no longer feels like a long list of disconnected pages.
+
+2. Session-card UI
+
+Goal:
+Make guided practice sessions feel like a native mobile learning flow.
+
+The session experience should feel like:
+One card. One task. One clear action.
+
+Avoid:
+- Dense pages
+- Long forms
+- Too many buttons
+- Desktop-heavy layouts
+- Analytics-style UI during practice
+
+Recommended session-card structure:
+- Progress indicator, for example “3 of 8”
+- Activity label, for example “Echo”, “Build”, “Review”, “Listen”
+- Main prompt/question
+- Audio/play button where relevant
+- One focused interaction
+- Primary continue/check button
+- Optional “I don’t know” or “Skip for now”
+- Gentle feedback after answer
+- Clear next step
+
+Session cards should support:
+- vocabulary recall
+- Echo/listen-and-repeat
+- sentence building
+- grammar correction
+- short reading/dialogue
+- weak item review
+- pronunciation/speaking steps
+
+UX tone:
+- Warm
+- Encouraging
+- Simple
+- Not childish
+- Not technical
+
+Example copy:
+- “Listen and echo this phrase”
+- “Build the sentence”
+- “Try saying it out loud”
+- “Almost — let’s echo it once more”
+- “Nice, this word is getting stronger”
+
+Acceptance criteria:
+- Guided sessions use a card-based layout suitable for mobile.
+- Each step has one primary task.
+- Touch targets are mobile-friendly.
+- The same session logic can support different activity types.
+- The UI reinforces “Echo the language.”
+
+3. Resume session
+
+Goal:
+Users should be able to leave a session and return without losing progress.
+
+Mobile users are often interrupted, so the app must save session state frequently.
+
+Implementation requirements:
+- Save current session id/type.
+- Save current step index.
+- Save completed answers.
+- Save mistakes already recorded.
+- Save weak items already updated.
+- Save session start time and last updated time.
+- Avoid duplicate progress if the session is resumed.
+- Allow user to resume or start fresh.
+- Show “Continue today’s practice” when a resumable session exists.
+
+Persistence:
+- Use the existing persistence layer if one exists.
+- If not, add a clean abstraction that can later work with local storage on web and AsyncStorage/native storage on mobile.
+- Do not hard-code browser-only APIs directly into session logic.
+- Wrap storage access in a reusable service/hook.
+
+Suggested abstractions:
+- sessionStorageService
+- useResumableSession()
+- saveSessionProgress()
+- loadActiveSession()
+- clearCompletedSession()
+
+Acceptance criteria:
+- User can leave and resume a guided session.
+- Resuming does not duplicate completion/progress.
+- Today screen can show an active/resumable session.
+- Storage logic is abstracted for future mobile compatibility.
+
+4. Offline cache foundation
+
+Goal:
+Add a foundation for offline-friendly learning, especially for daily review and weak items.
+
+Do not try to build a complete offline system if that is too large. Start with safe caching architecture.
+
+Offline-friendly areas:
+- Today’s planned session
+- due review items
+- weak words/phrases
+- basic vocabulary metadata
+- user’s current level
+- last known progress summary
+- fallback practice items
+
+Implementation requirements:
+- Add a cache abstraction that can work on web now and native mobile later.
+- Avoid direct dependency on browser-only APIs inside learning logic.
+- Cache enough data for a short review session.
+- Add safe fallback behavior if online data is unavailable.
+- Track whether cached data may be stale.
+- Do not overwrite server/source-of-truth progress incorrectly when offline.
+
+Suggested abstractions:
+- learningCacheService
+- getCachedTodaySession()
+- cacheTodaySession()
+- getCachedWeakItems()
+- cacheWeakItems()
+- getOfflineFallbackSession()
+
+Acceptance criteria:
+- There is a clear caching foundation for daily practice.
+- The app can show useful learning content even if fresh data cannot be loaded.
+- Cache logic is separated from UI.
+- Future native storage support will be straightforward.
+
+5. Microphone/audio permissions foundation
+
+Goal:
+Prepare Murcielingo for strong mobile Echo and pronunciation features.
+
+Echo should become a first-class mobile feature:
+Listen → Repeat → Compare → Try again → Use it
+
+Implementation requirements:
+- Add a microphone/audio capability abstraction.
+- Do not assume browser APIs will work the same in native mobile.
+- If full recording is not currently implemented, create a safe foundation with placeholders.
+- Add permission-aware UI states:
+  - microphone not requested
+  - requesting permission
+  - permission granted
+  - permission denied
+  - recording unavailable
+- Add graceful fallback:
+  - user can continue without recording
+  - user can mark confidence manually
+  - user can still listen and repeat
+
+Suggested abstractions:
+- audioPermissionService
+- useMicrophonePermission()
+- canRecordAudio()
+- requestMicrophonePermission()
+- startRecording()
+- stopRecording()
+- playbackRecording()
+
+UI guidance:
+- Keep permission request contextual.
+- Do not ask for microphone permission on app launch.
+- Ask only when the user enters a speaking/Echo step that needs recording.
+- Explain why the permission is needed in plain language.
+
+Example copy:
+- “Murcielingo uses your microphone so you can echo phrases and hear your progress.”
+- “You can still practice without recording.”
+- “Try saying it out loud, then mark how it felt.”
+
+Acceptance criteria:
+- Speaking/Echo steps are permission-aware.
+- App does not break if microphone access is denied.
+- Audio/recording logic is abstracted for future native implementation.
+- Echo can work with or without recording.
+
+6. Push notification foundation
+
+Goal:
+Prepare for mobile habit-building notifications without making the app annoying.
+
+Do not fully implement production push notifications unless the project already has the required infrastructure. Create a clean foundation and user preference model.
+
+Notification types to support later:
+- Daily practice reminder
+- Weak-word reminder
+- Streak reminder
+- Level-readiness reminder
+- Weekly progress summary
+
+Implementation requirements:
+- Add notification preference model.
+- Add UI for notification preferences if settings/profile exists.
+- Add service/interface for scheduling notifications.
+- Use safe placeholders if real native push infrastructure is not available.
+- Do not spam users.
+- Notifications should be opt-in.
+- Notification copy should be warm and learning-focused.
+
+Suggested abstractions:
+- notificationPreferenceService
+- notificationScheduler
+- requestNotificationPermission()
+- scheduleDailyPracticeReminder()
+- scheduleWeakWordReminder()
+- cancelNotifications()
+
+Example copy:
+- “Your Spanish is ready for a quick echo.”
+- “3 words are ready for review.”
+- “Keep your streak alive with a 5-minute session.”
+- “You’re close to your next level check.”
+
+Acceptance criteria:
+- Notification preferences exist or have a clear foundation.
+- Scheduling logic is abstracted.
+- No hard dependency on native push packages unless already available.
+- User can opt in/out when real notifications are enabled later.
+
+7. Haptics-ready feedback
+
+Goal:
+Prepare the feedback system for native haptics without requiring haptics to work on web.
+
+Haptics should support subtle mobile feedback:
+- correct answer
+- incorrect answer
+- session complete
+- streak maintained
+- word moved to strong/mastered
+- level readiness achieved
+
+Implementation requirements:
+- Add a feedback abstraction.
+- On web, use no-op or visual/audio fallback.
+- On native later, this can map to haptic feedback.
+- Do not scatter haptic calls through UI components.
+- Use semantic feedback events instead.
+
+Suggested abstraction:
+- learningFeedbackService
+
+Suggested methods:
+- feedbackCorrect()
+- feedbackIncorrect()
+- feedbackSessionComplete()
+- feedbackStreakMaintained()
+- feedbackWordStrengthened()
+- feedbackLevelReady()
+
+Acceptance criteria:
+- Feedback is centralized.
+- UI can call semantic feedback events.
+- Web does not break.
+- Native haptics can be added later without rewriting session components.
+
+8. Mobile onboarding update
+
+Goal:
+Update onboarding so users understand the Murcielingo method and are guided into their first practice session.
+
+The onboarding should not end with a generic dashboard.
+
+It should end with:
+“Start your first 3-minute practice.”
+
+Onboarding should explain:
+- Murcielingo helps you learn by echoing the language.
+- You will see, hear, echo, build, and use Spanish.
+- The app adapts to what you almost know.
+- Daily practice is short and focused.
+- You can keep practicing before taking a level check.
+
+Recommended onboarding flow:
+1. Welcome to Murcielingo
+2. Choose or confirm Spanish level
+3. Choose learning goal or daily time
+4. Explain the Echo method:
+   - See it
+   - Hear it
+   - Echo it
+   - Build it
+   - Use it
+5. Optional placement/level check if already implemented
+6. Start first 3-minute guided practice
+
+Copy guidance:
+- Keep it short.
+- Avoid technical terms.
+- Avoid course-management language.
+- Make the user feel that the app knows what to practice next.
+
+Example copy:
+- “Echo the language, one small session at a time.”
+- “We’ll help you practice the words and phrases that are almost there.”
+- “Start with 3 minutes today.”
+- “No need to choose a module — Murcielingo will guide you.”
+
+Acceptance criteria:
+- Onboarding introduces the Echo method clearly.
+- User is guided into a first practice session.
+- Onboarding supports future mobile use.
+- It does not feel like setting up a complex course.
+
+Design principles for this phase:
+- Fewer choices, clearer next step.
+- Short sessions over large lessons.
+- Habit loop over course catalog.
+- Coach-like guidance over analytics dashboard.
+- Mobile-first spacing and touch targets.
+- Web-compatible implementation.
+- Native-ready architecture.
+
+Suggested implementation phases:
+
+Phase 1: Navigation foundation
+- Centralize main navigation areas.
+- Add responsive/mobile-friendly navigation.
+- Map existing routes into Today, Practice, Library, Progress, Profile/Settings.
+
+Phase 2: Session-card UI
+- Refactor guided session UI into focused cards.
+- Ensure each step has one primary task and one clear action.
+
+Phase 3: Resume session
+- Add resumable session storage abstraction.
+- Show resume option on Today.
+- Prevent duplicate progress on resumed sessions.
+
+Phase 4: Offline cache foundation
+- Add learning cache abstraction.
+- Cache Today session and weak items.
+- Add fallback session behavior.
+
+Phase 5: Audio/microphone foundation
+- Add permission-aware audio abstraction.
+- Add UI states for Echo/speaking steps.
+- Ensure fallback if recording is unavailable.
+
+Phase 6: Notifications and haptics foundation
+- Add notification preferences and placeholder scheduler.
+- Add centralized learning feedback service for future haptics.
+
+Phase 7: Onboarding update
+- Update onboarding copy and flow around the Echo method.
+- End onboarding with first 3-minute practice.
+
+Final acceptance criteria:
+- Murcielingo feels more like a mobile learning habit app.
+- Today’s Practice remains the main experience.
+- Users are guided instead of forced to choose from many modules.
+- Mobile-style navigation is prepared or implemented safely.
+- Guided sessions are card-based and touch-friendly.
+- Sessions can be resumed.
+- Offline learning has a clear foundation.
+- Microphone/audio features are permission-aware and future-native-ready.
+- Push notifications and haptics have safe abstractions.
+- Onboarding explains the Echo method and starts the first practice.
+- Existing web functionality remains intact.
+- The app still feels light, warm, and simple.
+
+After implementation:
+- Summarize exactly what changed.
+- List all files touched.
+- List any known limitations.
+- List recommended next steps.
