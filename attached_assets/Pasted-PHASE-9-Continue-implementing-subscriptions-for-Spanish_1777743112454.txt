@@ -1,0 +1,69 @@
+PHASE 9
+Continue implementing subscriptions for Spanish Bat.
+
+Phase 2 objective:
+Add web subscription flow using Stripe Billing / Stripe Checkout for the existing Vite React web app.
+
+Important constraints:
+- Web uses Stripe.
+- Do not implement Stripe Checkout inside the native iOS app.
+- Keep mobile payments separate.
+- Do not hardcode Stripe secrets.
+- Use Supabase Edge Functions or server-side API routes where appropriate.
+- Do not commit or push without my approval.
+
+Tasks:
+1. Inspect the existing web app structure.
+2. Add environment variables for:
+   - STRIPE_SECRET_KEY
+   - STRIPE_WEBHOOK_SECRET
+   - STRIPE_PRICE_PREMIUM_MONTHLY
+   - STRIPE_PRICE_PREMIUM_YEARLY
+   - PUBLIC_STRIPE_PUBLISHABLE_KEY if needed
+3. Create server-side checkout session creation:
+   - authenticated user only
+   - monthly/yearly price selection
+   - success URL
+   - cancel URL
+   - metadata with Supabase user ID
+4. Create Stripe customer mapping:
+   - Supabase user ID
+   - Stripe customer ID
+5. Create Stripe webhook handler for:
+   - checkout.session.completed
+   - customer.subscription.created
+   - customer.subscription.updated
+   - customer.subscription.deleted
+   - invoice.payment_succeeded
+   - invoice.payment_failed
+6. On webhook events, update Supabase:
+   - user_subscriptions
+   - user_entitlements
+   - subscription_events
+7. Add web UI:
+   - Pricing page
+   - Upgrade button
+   - Premium badge
+   - Manage subscription button using Stripe customer portal
+   - Locked feature state for Free users
+8. Add graceful handling:
+   - loading subscription state
+   - payment success
+   - payment cancellation
+   - expired subscription
+9. Update README with Stripe setup steps.
+
+Acceptance criteria:
+- Free users see locked premium features.
+- Premium users see premium access.
+- Web users can start Stripe Checkout.
+- Stripe webhook updates entitlement state.
+- Stripe customer portal is available for subscription management.
+- Existing app still works without Stripe env vars in development, using clear warnings/placeholders.
+- Mobile app is not affected.
+
+Stop and summarize:
+- Stripe flow implemented
+- Webhook events supported
+- Manual Stripe dashboard setup required
+- Remaining risks
