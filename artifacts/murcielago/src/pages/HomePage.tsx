@@ -25,6 +25,7 @@ import {
   Flame,
 } from "lucide-react";
 import logo from "@/assets/murcielago-logo.png";
+import LanguageToggle from "@/components/LanguageToggle";
 
 const LOGIN_ROUTE = "/login";
 const REGISTER_ROUTE = "/register";
@@ -197,9 +198,9 @@ const HomePage = () => {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-sand/90 backdrop-blur border-b border-border">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-6 py-3">
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2 flex-shrink-0">
             <img src={logo} alt="Murcielingo" className="h-9 w-9" />
-            <span className="font-heading font-bold text-xl text-foreground">Murcielingo</span>
+            <span className="font-heading font-bold text-xl text-foreground hidden xs:inline sm:inline">Murcielingo</span>
           </Link>
           <nav className="hidden md:flex items-center gap-7 font-body text-foreground/80">
             <a href="#app-preview" onClick={handlePreviewClick} className="hover:text-peach-dark transition-colors">Preview</a>
@@ -208,10 +209,11 @@ const HomePage = () => {
             <a href="#mobile-app" className="hover:text-peach-dark transition-colors">Mobile app</a>
           </nav>
           <div className="flex items-center gap-2">
+            <LanguageToggle size="sm" showIcon={false} />
             <Button asChild variant="outline" className="rounded-full border-peach text-peach-dark hover:bg-peach/10 font-body">
               <Link to={LOGIN_ROUTE}>Log in</Link>
             </Button>
-            <Button asChild className="rounded-full bg-peach hover:bg-peach-dark text-primary-foreground font-body">
+            <Button asChild className="rounded-full bg-peach hover:bg-peach-dark text-primary-foreground font-body hidden sm:inline-flex">
               <Link to={REGISTER_ROUTE}>Start learning</Link>
             </Button>
           </div>

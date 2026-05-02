@@ -9,8 +9,10 @@ import { Typography } from "@/components/Typography";
 import { AppButton } from "@/components/AppButton";
 import { AppTextInput } from "@/components/AppTextInput";
 import { Card } from "@/components/Card";
+import { LanguagePicker } from "@/components/LanguagePicker";
 import { useColors } from "@/hooks/useColors";
 import { useAuth, Level } from "@/contexts/AuthContext";
+import { setPreferredLanguage } from "@/lib/languagePreference";
 import { api } from "@/lib/api";
 import { legalLinks } from "@/lib/legal";
 
@@ -135,6 +137,7 @@ export default function ProfileScreen() {
     if (lang === user?.learningFrom) return;
     try {
       await updateProfile({ learningFrom: lang });
+      await setPreferredLanguage(lang);
     } catch {
       Alert.alert("Failed to save", "Please try again.");
     }
@@ -249,37 +252,12 @@ export default function ProfileScreen() {
         <Typography variant="label" muted style={{ marginBottom: 10 }}>
           LEARNING FROM
         </Typography>
-        <View style={styles.langRow}>
-          {([
-            { code: "sv" as const, label: "🇸🇪 Swedish" },
-            { code: "en" as const, label: "🇬🇧 English" },
-          ]).map((opt) => {
-            const active = user?.learningFrom === opt.code;
-            return (
-              <Pressable
-                key={opt.code}
-                onPress={() => setLanguage(opt.code)}
-                style={[
-                  styles.langCard,
-                  {
-                    backgroundColor: active ? colors.primary + "15" : colors.card,
-                    borderColor: active ? colors.primary : colors.border,
-                  },
-                ]}
-              >
-                <Typography
-                  variant="label"
-                  style={{ color: active ? colors.primary : colors.foreground }}
-                >
-                  {opt.label}
-                </Typography>
-                {active ? (
-                  <Feather name="check" size={16} color={colors.primary} />
-                ) : null}
-              </Pressable>
-            );
-          })}
-        </View>
+        <LanguagePicker
+          variant="card"
+          value={user?.learningFrom ?? "sv"}
+          onChange={setLanguage}
+          testID="profile-language-picker"
+        />
       </Card>
 
       {/* Stats link */}

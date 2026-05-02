@@ -3,11 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { Eye, EyeOff, Loader2, Globe, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import logo from "@/assets/murcielago-logo.png";
+import LanguageToggle from "@/components/LanguageToggle";
 
 const LoginPage = () => {
-  const { t, language, setLanguage } = useLanguage();
+  const { t, language } = useLanguage();
   const { login, signInWithGoogle, signInWithApple, isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -48,25 +49,7 @@ const LoginPage = () => {
           <img src={logo} alt="Murcielingo" className="h-8 w-8" />
           <span className="font-heading font-bold text-lg text-foreground">Murcielingo</span>
         </Link>
-        <div className="inline-flex items-center gap-1 bg-card border border-border rounded-full px-2 py-1 shadow-sm">
-          <Globe className="h-3.5 w-3.5 text-muted-foreground ml-1" />
-          <button
-            onClick={() => setLanguage("sv")}
-            className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition ${
-              language === "sv" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            SV
-          </button>
-          <button
-            onClick={() => setLanguage("en")}
-            className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition ${
-              language === "en" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            EN
-          </button>
-        </div>
+        <LanguageToggle size="sm" />
       </header>
 
       <div className="flex-1 flex justify-center px-4 pt-8 sm:pt-12 pb-6">

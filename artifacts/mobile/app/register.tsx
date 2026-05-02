@@ -16,9 +16,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppButton } from "@/components/AppButton";
 import { AppTextInput } from "@/components/AppTextInput";
+import { LanguagePicker, type AppLanguage } from "@/components/LanguagePicker";
 import { Typography } from "@/components/Typography";
 import { useAuth } from "@/contexts/AuthContext";
 import { useColors } from "@/hooks/useColors";
+import { getPreferredLanguage, setPreferredLanguage } from "@/lib/languagePreference";
 
 export default function RegisterScreen() {
   const colors = useColors();
@@ -33,6 +35,16 @@ export default function RegisterScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [language, setLanguage] = useState<AppLanguage>("sv");
+
+  React.useEffect(() => {
+    getPreferredLanguage().then(setLanguage);
+  }, []);
+
+  const handleLanguageChange = (lang: AppLanguage) => {
+    setLanguage(lang);
+    setPreferredLanguage(lang);
+  };
 
   const emailRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
@@ -90,14 +102,22 @@ export default function RegisterScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <TouchableOpacity
-          onPress={() => router.replace("/login")}
-          style={styles.backRow}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-        >
-          <Feather name="arrow-left" size={18} color={colors.mutedForeground} />
-          <Typography variant="caption" muted>Back to sign in</Typography>
-        </TouchableOpacity>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+          <TouchableOpacity
+            onPress={() => router.replace("/login")}
+            style={styles.backRow}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <Feather name="arrow-left" size={18} color={colors.mutedForeground} />
+            <Typography variant="caption" muted>Back to sign in</Typography>
+          </TouchableOpacity>
+          <LanguagePicker
+            variant="segmented"
+            value={language}
+            onChange={handleLanguageChange}
+            testID="register-language-picker"
+          />
+        </View>
 
         <View style={styles.header}>
           <View style={[styles.logoContainer, { backgroundColor: colors.primary }]}>

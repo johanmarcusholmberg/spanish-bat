@@ -16,9 +16,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppButton } from "@/components/AppButton";
 import { AppTextInput } from "@/components/AppTextInput";
+import { LanguagePicker, type AppLanguage } from "@/components/LanguagePicker";
 import { Typography } from "@/components/Typography";
 import { useAuth } from "@/contexts/AuthContext";
 import { useColors } from "@/hooks/useColors";
+import { getPreferredLanguage, setPreferredLanguage } from "@/lib/languagePreference";
 
 export default function LoginScreen() {
   const colors = useColors();
@@ -31,6 +33,16 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [language, setLanguage] = useState<AppLanguage>("sv");
+
+  React.useEffect(() => {
+    getPreferredLanguage().then(setLanguage);
+  }, []);
+
+  const handleLanguageChange = (lang: AppLanguage) => {
+    setLanguage(lang);
+    setPreferredLanguage(lang);
+  };
 
   const passwordRef = useRef<TextInput>(null);
 
@@ -76,6 +88,15 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        <View style={{ alignItems: "flex-end", marginBottom: 8 }}>
+          <LanguagePicker
+            variant="segmented"
+            value={language}
+            onChange={handleLanguageChange}
+            testID="login-language-picker"
+          />
+        </View>
+
         <View style={styles.header}>
           <View style={[styles.logoContainer, { backgroundColor: colors.primary }]}>
             <Feather name="book-open" size={32} color={colors.primaryForeground} />

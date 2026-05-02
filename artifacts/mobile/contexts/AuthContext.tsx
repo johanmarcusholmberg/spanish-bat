@@ -5,6 +5,7 @@ import { Platform } from "react-native";
 import { setAuthTokenGetter, api } from "@/lib/api";
 import { clearAllUserData } from "@/lib/storage";
 import { identifyUser as rcIdentify, initRevenueCat, logoutUser as rcLogout } from "@/lib/revenuecat";
+import { getPreferredLanguage } from "@/lib/languagePreference";
 
 export type Level = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 
@@ -128,11 +129,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           placementTestCompleted: !!(p.placementTestCompleted),
         });
       } else {
+        const preferred = await getPreferredLanguage();
         const newProfile: UserProfile = {
           displayName: defaultName,
           email,
           level: "A1",
-          learningFrom: "sv",
+          learningFrom: preferred,
           onboardingCompleted: false,
           placementTestCompleted: false,
         };
@@ -141,7 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           displayName: defaultName,
           email,
           level: "A1",
-          learningFrom: "sv",
+          learningFrom: preferred,
           onboardingCompleted: false,
           placementTestCompleted: false,
         }).catch(() => {});
@@ -149,11 +151,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAdmin(!!(result.isAdmin));
     } catch {
       const email = clerkUser?.emailAddresses?.[0]?.emailAddress ?? "";
+      const preferred = await getPreferredLanguage();
       setProfile({
         displayName: clerkUser?.firstName ?? email.split("@")[0] ?? "User",
         email,
         level: "A1",
-        learningFrom: "sv",
+        learningFrom: preferred,
         onboardingCompleted: false,
         placementTestCompleted: false,
       });
