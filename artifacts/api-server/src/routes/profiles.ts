@@ -1,13 +1,14 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { profilesTable, userRolesTable } from "@workspace/db";
+import type { Profile } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { requireAuth } from "../middlewares/requireAuth";
 
 const router = Router();
 
 router.get("/profile", requireAuth, async (req, res) => {
-  const userId = (req as any).userId;
+  const userId = req.userId!;
   try {
     const profile = await db.select().from(profilesTable).where(eq(profilesTable.userId, userId)).limit(1);
     const role = await db.select().from(userRolesTable).where(eq(userRolesTable.userId, userId)).limit(1);
@@ -22,7 +23,7 @@ router.get("/profile", requireAuth, async (req, res) => {
 });
 
 router.post("/profile", requireAuth, async (req, res) => {
-  const userId = (req as any).userId;
+  const userId = req.userId!;
   const { displayName, email, level, learningFrom, onboardingCompleted, placementTestCompleted, placementTestScore, accountStatus } = req.body;
   try {
     const existing = await db.select().from(profilesTable).where(eq(profilesTable.userId, userId)).limit(1);
@@ -39,7 +40,7 @@ router.post("/profile", requireAuth, async (req, res) => {
         accountStatus: accountStatus || "active",
       });
     } else {
-      const updates: any = {};
+      const updates: Partial<Omit<Profile, "userId" | "createdAt">> = {};
       if (displayName !== undefined) updates.displayName = displayName;
       if (email !== undefined) updates.email = email;
       if (level !== undefined) updates.level = level;

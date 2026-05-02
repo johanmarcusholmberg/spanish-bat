@@ -52,9 +52,10 @@ router.post("/conversation", requireAuth, async (req, res): Promise<void> => {
     const langName = learningFrom === "sv" ? "Swedish" : "English";
     const systemPrompt = `You are a friendly Spanish language conversation partner. The user is learning Spanish at CEFR level ${level}. ${scenario ? `Scenario: ${scenario}` : "Have a free conversation."} Respond in Spanish appropriate for level ${level}. If the user writes in ${langName}, gently encourage them to respond in Spanish. Keep responses concise (1-3 sentences). After your response, add a helpful note in ${langName} if needed.`;
 
+    type UserMessage = { role: "user" | "assistant"; content: string };
     const chatMessages = [
       { role: "system" as const, content: systemPrompt },
-      ...messages.map((m: any) => ({ role: m.role as "user" | "assistant", content: m.content })),
+      ...messages.map((m: UserMessage) => ({ role: m.role, content: String(m.content) })),
     ];
 
     const stream = await openai.chat.completions.create({

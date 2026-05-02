@@ -7,7 +7,7 @@ import { requireAuth } from "../middlewares/requireAuth";
 const router = Router();
 
 router.get("/progress", requireAuth, async (req, res) => {
-  const userId = (req as any).userId;
+  const userId = req.userId!;
   try {
     const progress = await db.select().from(userProgressTable).where(eq(userProgressTable.userId, userId));
     const lastActivity = await db.select().from(userLastActivityTable).where(eq(userLastActivityTable.userId, userId)).limit(1);
@@ -22,7 +22,7 @@ router.get("/progress", requireAuth, async (req, res) => {
 });
 
 router.post("/progress", requireAuth, async (req, res) => {
-  const userId = (req as any).userId;
+  const userId = req.userId!;
   const { category, completed, total } = req.body;
   try {
     const existing = await db.select().from(userProgressTable)
@@ -41,7 +41,7 @@ router.post("/progress", requireAuth, async (req, res) => {
 });
 
 router.post("/last-activity", requireAuth, async (req, res) => {
-  const userId = (req as any).userId;
+  const userId = req.userId!;
   const { exerciseType, exercisePath, exerciseLabel } = req.body;
   try {
     const existing = await db.select().from(userLastActivityTable).where(eq(userLastActivityTable.userId, userId)).limit(1);
@@ -58,7 +58,7 @@ router.post("/last-activity", requireAuth, async (req, res) => {
 });
 
 router.get("/grammar-progress", requireAuth, async (req, res) => {
-  const userId = (req as any).userId;
+  const userId = req.userId!;
   try {
     const grammarProgress = await db.select().from(grammarProgressTable).where(eq(grammarProgressTable.userId, userId));
     return res.json({ grammarProgress });
@@ -69,7 +69,7 @@ router.get("/grammar-progress", requireAuth, async (req, res) => {
 });
 
 router.post("/grammar-progress", requireAuth, async (req, res) => {
-  const userId = (req as any).userId;
+  const userId = req.userId!;
   const { lessonId, completed, bestScore, attempts } = req.body;
   try {
     const existing = await db.select().from(grammarProgressTable)

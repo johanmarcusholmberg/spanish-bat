@@ -7,7 +7,7 @@ import { requireAuth } from "../middlewares/requireAuth";
 const router = Router();
 
 router.get("/streaks", requireAuth, async (req, res) => {
-  const userId = (req as any).userId;
+  const userId = req.userId!;
   try {
     const streak = await db.select().from(userStreaksTable).where(eq(userStreaksTable.userId, userId)).limit(1);
     const activity = await db.select().from(activityLogTable).where(eq(activityLogTable.userId, userId));
@@ -22,12 +22,17 @@ router.get("/streaks", requireAuth, async (req, res) => {
 });
 
 router.post("/streaks", requireAuth, async (req, res) => {
-  const userId = (req as any).userId;
+  const userId = req.userId!;
   const { currentStreak, longestStreak, lastActiveDate } = req.body;
   try {
     const existing = await db.select().from(userStreaksTable).where(eq(userStreaksTable.userId, userId)).limit(1);
     if (existing.length === 0) {
-      await db.insert(userStreaksTable).values({ userId, currentStreak: currentStreak || 0, longestStreak: longestStreak || 0, lastActiveDate: lastActiveDate || null });
+      await db.insert(userStreaksTable).values({
+        userId,
+        currentStreak: currentStreak || 0,
+        longestStreak: longestStreak || 0,
+        lastActiveDate: lastActiveDate || null,
+      });
     } else {
       await db.update(userStreaksTable).set({ currentStreak, longestStreak, lastActiveDate }).where(eq(userStreaksTable.userId, userId));
     }
@@ -39,7 +44,7 @@ router.post("/streaks", requireAuth, async (req, res) => {
 });
 
 router.post("/activity-log", requireAuth, async (req, res) => {
-  const userId = (req as any).userId;
+  const userId = req.userId!;
   const { activityDate, count } = req.body;
   try {
     const existing = await db.select().from(activityLogTable)
