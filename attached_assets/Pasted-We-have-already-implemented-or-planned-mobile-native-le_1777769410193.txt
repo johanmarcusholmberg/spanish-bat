@@ -1,0 +1,348 @@
+We have already implemented or planned mobile-native learning polish, adaptive practice, subscription logic, onboarding, homepage updates, and free/paid access rules for Murciélingo.
+
+This work is being done directly inside Replit.
+
+Make the changes directly in the current Replit workspace.
+
+This prompt should NOT rebuild the app, change the architecture unnecessarily, or turn Murciélingo into a large course-management system.
+
+The goal is to connect the previous changes into one clear product experience:
+
+Murciélingo should feel like a small daily Spanish coach that knows what I need to echo next.
+
+The user should not think:
+“Which module should I open?”
+
+They should think:
+“I’ll do today’s practice.”
+
+Implement a focused product/UX polish around:
+
+1. Today’s Echo Practice as the primary home experience
+2. Why this practice?
+3. Echo Memory
+4. End-of-session summary
+5. Level readiness choice
+6. Free vs paid hooks inside the daily loop
+
+Use the existing codebase, components, design system, routes, authentication, subscription logic, learning/practice data structures, and mobile/web compatibility patterns. Do not duplicate systems if existing functionality already exists. Extend and refactor carefully.
+
+Important:
+- Keep the app web-compatible and mobile-native-ready.
+- Do not add heavy course-management concepts.
+- Do not add admin/course builder functionality.
+- Do not add unnecessary tabs or complex dashboards.
+- Keep the UX warm, simple, and focused on daily practice.
+- Preserve current branding, color palette, and “Echo the language” positioning.
+- Make the experience useful for both free and paid users.
+- Use progressive disclosure instead of showing too much at once.
+
+--------------------------------------------------
+1. Home screen: Today’s Echo Practice
+--------------------------------------------------
+
+Update the main logged-in home/learning screen so the primary entry point is a prominent “Today’s Echo Practice” card.
+
+The card should be visually more important than other learning sections.
+
+It should show:
+
+- Title: “Today’s Echo Practice”
+- Estimated time, for example “8–12 min”
+- A short adaptive reason, for example:
+  - “Focused on phrases you hesitated on recently.”
+  - “Today repeats travel phrases and past-tense patterns.”
+  - “A short speaking round is included.”
+- Primary CTA:
+  - “Start today’s practice”
+  - or “Resume today’s practice” if a session is in progress
+- Secondary text:
+  - “Echo the language. Build recall one session at a time.”
+
+The home screen should still allow access to other learning areas, but they should feel secondary.
+
+Avoid showing large raw counters as the main learning motivation. If counters exist, move them lower or make them softer.
+
+Replace overly technical progress language with coach-like language.
+
+Examples:
+Instead of:
+“Progress: 62%”
+Use:
+“You’re getting faster with everyday phrases.”
+
+Instead of:
+“4 exercises remaining”
+Use:
+“A short speaking round is next.”
+
+--------------------------------------------------
+2. Add “Why this practice?”
+--------------------------------------------------
+
+Add a small expandable explanation inside the Today’s Echo Practice card or session intro.
+
+Label:
+“Why this practice?”
+
+When opened, show a short explanation based on available data.
+
+If real adaptive data exists, use it.
+
+If not enough data exists, use safe fallback explanations such as:
+
+- “This session helps Murciélingo learn your current level.”
+- “This session mixes listening, recall, and echo practice to build a stronger habit.”
+- “You’ll repeat useful phrases in slightly different ways so they become easier to remember.”
+
+The explanation should be human and warm, not technical.
+
+Do not expose internal scoring, raw IDs, database details, or algorithmic jargon.
+
+--------------------------------------------------
+3. Echo Memory
+--------------------------------------------------
+
+Create or refine the concept of “Echo Memory”.
+
+Echo Memory should represent what Murciélingo remembers from the user’s practice history.
+
+It should track or prepare for tracking:
+
+- phrases the user struggled with
+- slow answers
+- skipped speaking items
+- repeated mistakes
+- recently improved phrases
+- topics the user practices often
+
+If the full backend structure already exists, connect to it.
+
+If not, create a lightweight frontend/service-layer foundation that can later be backed by persistent storage.
+
+Important:
+- Do not overbuild this.
+- Do not create a complex analytics dashboard.
+- Do not expose lots of raw metrics to the user.
+
+User-facing Echo Memory should appear as a compact section or small card, for example:
+
+Title:
+“Echo Memory”
+
+Text examples:
+- “Murciélingo is remembering the phrases you need to repeat.”
+- “3 phrases are ready for review.”
+- “You improved your recall on restaurant phrases.”
+
+The purpose is to make the product feel personal and adaptive.
+
+For free users:
+- Show a limited Echo Memory preview.
+- Example: “Echo Memory preview: Murciélingo can remember your weak phrases.”
+- Paid upgrade hook: “Unlock full Echo Memory to keep adapting your sessions.”
+
+For paid users:
+- Show active Echo Memory details in simple language.
+- Allow Echo Memory items to feed into Today’s Echo Practice.
+
+--------------------------------------------------
+4. End-of-session summary
+--------------------------------------------------
+
+Improve the end-of-session screen.
+
+After a practice session, show a compact coach-like summary:
+
+- “Today you practiced”
+- “Getting stronger”
+- “Repeat soon”
+- “Recommended next step”
+
+Example layout:
+
+Title:
+“Nice work — today’s echo practice is done.”
+
+Summary:
+- “You practiced 12 everyday phrases.”
+- “Restaurant phrases felt stronger.”
+- “Past-tense recall needs another repeat.”
+- “Tomorrow’s session will bring back 3 phrases.”
+
+Primary CTA:
+“Done”
+
+Optional secondary CTA:
+“Continue for 3 more minutes”
+
+The optional continuation should be lightweight. It can start a short review/bonus practice if such functionality exists. If not, wire it as a placeholder-safe route or disabled state with clear copy.
+
+Avoid making the summary feel like a school report. It should feel encouraging and practical.
+
+--------------------------------------------------
+5. Level readiness and continuing practice
+--------------------------------------------------
+
+When the system detects that the user has completed enough practice at a level, avoid the feeling that the app is “out of content”.
+
+Instead, show a choice:
+
+Title:
+“You may be ready for a level check.”
+
+Options:
+1. “Take level check”
+2. “Keep practising this level”
+
+If a level check system exists, connect the first option to it.
+
+If not, add a safe placeholder that clearly says:
+“Level checks are coming soon.”
+
+The second option should continue generating/recommending review or variation practice at the current level.
+
+The app should never say:
+“You have completed all practices.”
+
+Use:
+“You’re ready for a level check — or you can keep strengthening this level.”
+
+--------------------------------------------------
+6. Free vs paid hooks inside the daily loop
+--------------------------------------------------
+
+Update the daily practice experience so the free/paid difference is visible but not annoying.
+
+Free users should be able to:
+- see Today’s Echo Practice
+- complete a limited daily practice
+- see a limited Echo Memory preview
+- see end-of-session summary
+- understand what paid unlocks
+
+Paid users should get:
+- more/unlimited daily echo practice
+- full Echo Memory
+- more adaptive review
+- extra AI-generated practice variations if available
+- stronger resume/session continuity
+- advanced level checks if available
+- offline/mobile enhancements if implemented in previous prompts
+
+Do not lock the entire product behind a paywall.
+Do not interrupt every action with upgrade prompts.
+Place upgrade prompts at natural moments:
+
+- after free daily practice is completed
+- when user tries extra practice
+- when user opens full Echo Memory
+- when user wants more adaptive variations
+- when user wants deeper progress/review
+
+Copy examples:
+- “You’ve completed today’s free echo practice.”
+- “Upgrade to keep practising with adaptive sessions.”
+- “Unlock full Echo Memory so Murciélingo can remember what you need next.”
+
+--------------------------------------------------
+7. Data and implementation expectations
+--------------------------------------------------
+
+Use existing models, hooks, services, and routes where possible.
+
+If adding new abstractions, keep them small and understandable.
+
+Suggested abstractions if useful:
+
+- todayPracticeService
+- echoMemoryService
+- useTodayPractice
+- useEchoMemory
+- PracticeSummary component
+- WhyThisPractice component
+- TodayEchoPracticeCard component
+- EchoMemoryPreview component
+
+These are suggestions, not mandatory names.
+
+The implementation should support:
+
+- web
+- mobile-native app conversion
+- offline cache foundations if already present
+- authenticated users
+- free vs paid subscription states
+- safe fallback states when data is missing
+
+Add defensive handling for:
+
+- new users with no practice history
+- users with incomplete sessions
+- users with no subscription data loaded yet
+- users offline or with cached data only
+- users who have completed a session for the day
+- users ready for a level check
+
+--------------------------------------------------
+8. UX copy direction
+--------------------------------------------------
+
+Use warm, simple, coach-like language.
+
+The app should sound like:
+
+- “A short speaking round is next.”
+- “Murciélingo will bring this phrase back tomorrow.”
+- “You’re getting quicker with everyday Spanish.”
+- “Today’s session focuses on what needs another echo.”
+
+Avoid:
+
+- “Module complete”
+- “Exercise quota reached”
+- “Insufficient attempts”
+- “Skill object updated”
+- “Practice inventory exhausted”
+- “Algorithm selected this item”
+
+--------------------------------------------------
+9. Acceptance criteria
+--------------------------------------------------
+
+The implementation is complete when:
+
+- The main learning/home screen clearly prioritizes Today’s Echo Practice.
+- A user can start or resume today’s session from the primary card.
+- “Why this practice?” exists with adaptive or fallback explanations.
+- Echo Memory exists as a user-facing concept without becoming a complex dashboard.
+- End-of-session summary is warmer and more useful.
+- Level readiness gives the user a choice instead of ending practice.
+- Free users see useful value and clear upgrade moments.
+- Paid users get a stronger adaptive daily loop.
+- Existing learning/practice functionality is preserved.
+- The UI works on both desktop web and mobile-sized screens.
+- No heavy course-management functionality has been added.
+- No unnecessary new navigation complexity has been added.
+- The app still feels like a small daily Spanish coach.
+
+--------------------------------------------------
+10. After implementation
+--------------------------------------------------
+
+After making the changes, provide a concise Replit-focused summary of:
+
+- what files/components were changed
+- what new components/services/hooks were added
+- how Today’s Echo Practice works
+- how Echo Memory works
+- how free vs paid behavior works
+- what should be manually tested in the Replit preview
+- any limitations or follow-up work needed
+
+Run available checks inside Replit if possible, such as:
+
+- install/build validation if available
+- TypeScript/type checks if configured
+- lint checks if configured
+- app preview/runtime check if available
