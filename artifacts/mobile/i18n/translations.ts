@@ -76,6 +76,33 @@ export const translations = {
     signIn: { sv: "Logga in", en: "Sign in" },
   },
 
+  // First-session welcome / onboarding
+  welcome: {
+    title: { sv: "Välkommen till Murcielingo", en: "Welcome to Murcielingo" },
+    tagline: {
+      sv: "Eka språket, en liten övning i taget.",
+      en: "Echo the language, one small session at a time.",
+    },
+    methodEyebrow: { sv: "ECHO-METODEN", en: "THE ECHO METHOD" },
+    methodBody: {
+      sv: "Du ser det, hör det, ekar det, bygger med det och använder det. Vi hjälper dig öva orden och fraserna som nästan sitter.",
+      en: "You see it, hear it, echo it, build with it, and use it. We'll help you practice the words and phrases that are almost there.",
+    },
+    shortSessionsLabel: { sv: "Korta dagliga sessioner", en: "Short daily sessions" },
+    shortSessionsBody: { sv: "Börja med 3 minuter idag.", en: "Start with 3 minutes today." },
+    guideLabel: { sv: "Vi vägleder dig", en: "We'll guide you" },
+    guideBody: {
+      sv: "Du behöver inte välja en modul — Murcielingo vet vad du behöver eka härnäst.",
+      en: "No need to choose a module — Murcielingo knows what to echo next.",
+    },
+    startCta: {
+      sv: "Starta din första 3-minutersövning",
+      en: "Start your first 3-minute practice",
+    },
+    skipCta: { sv: "Hoppa över för nu", en: "Skip for now" },
+    todaysPractice: { sv: "Dagens övning", en: "Today's practice" },
+  },
+
   // Profile / settings
   profile: {
     learningFrom: { sv: "Jag lär mig från", en: "Learning from" },

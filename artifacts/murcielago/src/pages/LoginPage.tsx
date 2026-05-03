@@ -18,7 +18,9 @@ type Mode =
   | "reset-verify";
 
 const LoginPage = () => {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
+  const interp = (key: string, params: Record<string, string>) =>
+    Object.entries(params).reduce((s, [k, v]) => s.replace(`{${k}}`, v), t(key));
   const {
     loginWithPassword,
     verifySecondFactorCode,
@@ -53,11 +55,11 @@ const LoginPage = () => {
   const handlePasswordSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !email.includes("@")) {
-      errToast(language === "sv" ? "Ange en giltig e-postadress" : "Please enter a valid email address");
+      errToast(t("loginInvalidEmail"));
       return;
     }
     if (!password) {
-      errToast(language === "sv" ? "Ange ditt lösenord" : "Please enter your password");
+      errToast(t("loginEnterPassword"));
       return;
     }
     setLoading(true);
@@ -71,14 +73,10 @@ const LoginPage = () => {
       setCode("");
       if (result.needsTotp) {
         setMode("totp-pending");
-        okToast(
-          language === "sv"
-            ? "Öppna din authenticator-app för att hämta koden."
-            : "Open your authenticator app to get the code.",
-        );
+        okToast(t("loginOpenAuthenticator"));
       } else {
         setMode("mfa-pending");
-        okToast(language === "sv" ? "Vi har skickat en kod till din e-post." : "We've sent a code to your email.");
+        okToast(t("loginCodeSentEmail"));
       }
     }
   };
@@ -86,7 +84,7 @@ const LoginPage = () => {
   const handleVerifyMfa = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!code.trim()) {
-      errToast(language === "sv" ? "Ange koden från e-posten" : "Please enter the code from your email");
+      errToast(t("loginEnterCode"));
       return;
     }
     setLoading(true);
@@ -110,7 +108,7 @@ const LoginPage = () => {
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !email.includes("@")) {
-      errToast(language === "sv" ? "Ange en giltig e-postadress" : "Please enter a valid email address");
+      errToast(t("loginInvalidEmail"));
       return;
     }
     setLoading(true);
@@ -127,7 +125,7 @@ const LoginPage = () => {
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!code.trim()) {
-      errToast(language === "sv" ? "Ange koden från e-posten" : "Please enter the code from your email");
+      errToast(t("loginEnterCode"));
       return;
     }
     setLoading(true);
@@ -141,14 +139,14 @@ const LoginPage = () => {
     const err = await resendLoginCode();
     setResending(false);
     if (err) errToast(err);
-    else okToast(language === "sv" ? "En ny kod är på väg." : "A new code is on its way.");
+    else okToast(t("loginNewCodeOnWay"));
   };
 
   // Forgot password
   const handleSendReset = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !email.includes("@")) {
-      errToast(language === "sv" ? "Ange en giltig e-postadress" : "Please enter a valid email address");
+      errToast(t("loginInvalidEmail"));
       return;
     }
     setLoading(true);
@@ -161,17 +159,17 @@ const LoginPage = () => {
     setMode("reset-verify");
     setCode("");
     setNewPassword("");
-    okToast(language === "sv" ? "Återställningskod skickad till din e-post." : "We've sent a reset code to your email.");
+    okToast(t("loginResetCodeSent"));
   };
 
   const handleVerifyReset = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!code.trim()) {
-      errToast(language === "sv" ? "Ange koden från e-posten" : "Please enter the code from your email");
+      errToast(t("loginEnterCode"));
       return;
     }
     if (!newPassword || newPassword.length < 8) {
-      errToast(language === "sv" ? "Välj ett lösenord på minst 8 tecken" : "Choose a password with at least 8 characters");
+      errToast(t("loginPasswordTooShort"));
       return;
     }
     setLoading(true);
@@ -181,7 +179,7 @@ const LoginPage = () => {
       errToast(err);
       return;
     }
-    okToast(language === "sv" ? "Lösenordet är uppdaterat." : "Your password has been updated.");
+    okToast(t("loginPasswordUpdated"));
   };
 
   const handleGoogle = async () => {
@@ -196,25 +194,21 @@ const LoginPage = () => {
   const subtitle = (() => {
     switch (mode) {
       case "password":
-        return language === "sv" ? "Logga in med ditt lösenord." : "Sign in with your password.";
+        return t("loginSubtitlePassword");
       case "code":
-        return language === "sv" ? "Vi skickar en kod till din e-post." : "We'll email you a one-time code.";
+        return t("loginSubtitleCode");
       case "code-pending":
-        return language === "sv" ? `Kod skickad till ${email}` : `Code sent to ${email}`;
+        return interp("loginCodeSentTo", { email });
       case "mfa-pending":
-        return language === "sv" ? `Tvåfaktorskod skickad till ${email}` : `Two-factor code sent to ${email}`;
+        return interp("loginMfaSentTo", { email });
       case "totp-pending":
-        return language === "sv"
-          ? "Ange den 6-siffriga koden från din authenticator-app."
-          : "Enter the 6-digit code from your authenticator app.";
+        return t("loginTotpSubtitle");
       case "backup-code":
-        return language === "sv"
-          ? "Ange en av dina återställningskoder."
-          : "Enter one of your backup codes.";
+        return t("loginBackupSubtitle");
       case "reset-request":
-        return language === "sv" ? "Vi skickar en kod för att återställa lösenordet." : "We'll email you a reset code.";
+        return t("loginResetRequestSubtitle");
       case "reset-verify":
-        return language === "sv" ? `Återställningskod skickad till ${email}` : `Reset code sent to ${email}`;
+        return interp("loginResetCodeSentTo", { email });
     }
   })();
 
@@ -258,14 +252,14 @@ const LoginPage = () => {
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-xs font-medium text-foreground">
-                      {language === "sv" ? "Lösenord" : "Password"}
+                      {t("loginPasswordLabel")}
                     </label>
                     <button
                       type="button"
                       onClick={() => setMode("reset-request")}
                       className="text-xs text-peach-dark hover:underline"
                     >
-                      {language === "sv" ? "Glömt lösenord?" : "Forgot password?"}
+                      {t("forgotPassword")}
                     </button>
                   </div>
                   <div className="relative">
@@ -287,7 +281,7 @@ const LoginPage = () => {
                   className="w-full py-2.5 rounded-full bg-peach hover:bg-peach-dark text-primary-foreground font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {language === "sv" ? "Logga in" : "Sign in"}
+                  {t("loginSubmit")}
                 </button>
 
                 <button
@@ -295,7 +289,7 @@ const LoginPage = () => {
                   onClick={() => setMode("code")}
                   className="w-full text-xs text-muted-foreground hover:text-foreground transition"
                 >
-                  {language === "sv" ? "Logga in med en kod istället" : "Sign in with a code instead"}
+                  {t("loginUseCodeInstead")}
                 </button>
 
                 <div className="relative my-4">
@@ -345,7 +339,7 @@ const LoginPage = () => {
                   className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />
-                  {language === "sv" ? "Använd lösenord" : "Use password"}
+                  {t("loginUsePassword")}
                 </button>
                 <div>
                   <label className="block text-xs font-medium text-foreground mb-1">{t("email")}</label>
@@ -368,7 +362,7 @@ const LoginPage = () => {
                   className="w-full py-2.5 rounded-full bg-peach hover:bg-peach-dark text-primary-foreground font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {language === "sv" ? "Skicka kod" : "Send code"}
+                  {t("loginSendCode")}
                 </button>
               </form>
             )}
@@ -384,14 +378,12 @@ const LoginPage = () => {
                   className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />
-                  {language === "sv" ? "Tillbaka" : "Back"}
+                  {t("loginBack")}
                 </button>
 
                 <div>
                   <label className="block text-xs font-medium text-foreground mb-1">
-                    {mode === "backup-code"
-                      ? language === "sv" ? "Återställningskod" : "Backup code"
-                      : language === "sv" ? "Authenticator-kod" : "Authenticator code"}
+                    {mode === "backup-code" ? t("loginBackupCode") : t("loginAuthenticatorCode")}
                   </label>
                   <div className="relative">
                     <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -414,7 +406,7 @@ const LoginPage = () => {
                   className="w-full py-2.5 rounded-full bg-peach hover:bg-peach-dark text-primary-foreground font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {language === "sv" ? "Verifiera" : "Verify"}
+                  {t("loginVerify")}
                 </button>
 
                 <button
@@ -425,9 +417,7 @@ const LoginPage = () => {
                   }}
                   className="w-full text-xs text-muted-foreground hover:text-foreground transition"
                 >
-                  {mode === "backup-code"
-                    ? language === "sv" ? "Använd authenticator-kod istället" : "Use authenticator code instead"
-                    : language === "sv" ? "Använd en återställningskod istället" : "Use a backup code instead"}
+                  {mode === "backup-code" ? t("loginUseAuthenticatorInstead") : t("loginUseBackupInstead")}
                 </button>
               </form>
             )}
@@ -443,12 +433,12 @@ const LoginPage = () => {
                   className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />
-                  {language === "sv" ? "Tillbaka" : "Back"}
+                  {t("loginBack")}
                 </button>
 
                 <div>
                   <label className="block text-xs font-medium text-foreground mb-1">
-                    {language === "sv" ? "Verifieringskod" : "Verification code"}
+                    {t("loginVerificationCode")}
                   </label>
                   <div className="relative">
                     <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -471,7 +461,7 @@ const LoginPage = () => {
                   className="w-full py-2.5 rounded-full bg-peach hover:bg-peach-dark text-primary-foreground font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {language === "sv" ? "Logga in" : "Sign in"}
+                  {t("loginSubmit")}
                 </button>
 
                 {mode === "code-pending" && (
@@ -481,9 +471,7 @@ const LoginPage = () => {
                     disabled={resending}
                     className="w-full text-xs text-muted-foreground hover:text-foreground transition disabled:opacity-50"
                   >
-                    {resending
-                      ? language === "sv" ? "Skickar…" : "Sending…"
-                      : language === "sv" ? "Skicka koden igen" : "Resend code"}
+                    {resending ? t("loginSending") : t("loginResend")}
                   </button>
                 )}
               </form>
@@ -497,7 +485,7 @@ const LoginPage = () => {
                   className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />
-                  {language === "sv" ? "Tillbaka till inloggning" : "Back to sign in"}
+                  {t("loginBackToSignIn")}
                 </button>
                 <div>
                   <label className="block text-xs font-medium text-foreground mb-1">{t("email")}</label>
@@ -520,7 +508,7 @@ const LoginPage = () => {
                   className="w-full py-2.5 rounded-full bg-peach hover:bg-peach-dark text-primary-foreground font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {language === "sv" ? "Skicka återställningskod" : "Send reset code"}
+                  {t("loginSendResetCode")}
                 </button>
               </form>
             )}
@@ -533,12 +521,12 @@ const LoginPage = () => {
                   className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />
-                  {language === "sv" ? "Ändra e-post" : "Change email"}
+                  {t("loginChangeEmail")}
                 </button>
 
                 <div>
                   <label className="block text-xs font-medium text-foreground mb-1">
-                    {language === "sv" ? "Verifieringskod" : "Verification code"}
+                    {t("loginVerificationCode")}
                   </label>
                   <div className="relative">
                     <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -557,7 +545,7 @@ const LoginPage = () => {
 
                 <div>
                   <label className="block text-xs font-medium text-foreground mb-1">
-                    {language === "sv" ? "Nytt lösenord" : "New password"}
+                    {t("loginNewPasswordLabel")}
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -579,14 +567,14 @@ const LoginPage = () => {
                   className="w-full py-2.5 rounded-full bg-peach hover:bg-peach-dark text-primary-foreground font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {language === "sv" ? "Återställ och logga in" : "Reset & sign in"}
+                  {t("loginResetAndSignIn")}
                 </button>
               </form>
             )}
           </div>
 
           <p className="text-center text-sm text-muted-foreground mt-4">
-            {language === "sv" ? "Har du inget konto?" : "Don't have an account?"}{" "}
+            {t("loginNoAccount")}{" "}
             <Link to="/register" className="text-peach-dark hover:underline font-medium">
               {t("register")}
             </Link>

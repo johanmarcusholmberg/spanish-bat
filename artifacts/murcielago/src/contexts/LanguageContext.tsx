@@ -392,6 +392,236 @@ const translations: Translations = {
   language: { sv: "Språk", en: "Language" },
   placementTestTitle: { sv: "Placeringstest", en: "Placement Test" },
   placementTestDesc: { sv: "Testa din spanskanivå igen", en: "Retake the Spanish level test" },
+
+  // ===== Public homepage =====
+  homeNavPreview: { sv: "Förhandsvisning", en: "Preview" },
+  homeNavHowItWorks: { sv: "Så funkar det", en: "How it works" },
+  homeNavPractice: { sv: "Övningar", en: "Practice" },
+  homeNavMobile: { sv: "Mobilapp", en: "Mobile app" },
+  homeCtaLogin: { sv: "Logga in", en: "Log in" },
+  homeCtaStart: { sv: "Börja lära dig", en: "Start learning" },
+  homeCtaPreview: { sv: "Förhandsvisa appen", en: "Preview the app" },
+
+  // Hero
+  homeHeroHeadline: { sv: "Låt språket eka", en: "Echo the language" },
+  homeHeroSubhead: {
+    sv: "Spansk övning som kommer tillbaka till dig.",
+    en: "Spanish practice that comes back to you.",
+  },
+  homeHeroBody: {
+    sv: "Lär dig spanska genom korta, varierade övningar — så att ord, ljud och meningar börjar dyka upp av sig själva.",
+    en: "Learn Spanish through short, varied practice that helps words, sounds, and sentence patterns come back naturally.",
+  },
+
+  // Hero preview card
+  homeHeroPreviewBadge: { sv: "Echo-övning", en: "Echo practice" },
+  homeHeroPreviewLesson: { sv: "Lektion 1 · Hälsningar", en: "Lesson 1 · Greetings" },
+  homeHeroPreviewListenAndRepeat: { sv: "Lyssna och upprepa", en: "Listen and repeat" },
+  homeHeroPreviewPhraseTranslation: { sv: "Vad heter du?", en: "What's your name?" },
+  homeHeroPreviewListen: { sv: "Lyssna", en: "Listen" },
+  homeHeroPreviewRepeat: { sv: "Upprepa", en: "Repeat" },
+  homeHeroPreviewProgress: { sv: "Lite framsteg, varje dag.", en: "A little progress, every day." },
+
+  // Learning loop
+  homeLoopHeadline: {
+    sv: "Spanskan börjar fastna när du möter den fler än en gång.",
+    en: "Spanish starts to stick when you meet it more than once.",
+  },
+  homeLoopHearLabel: { sv: "Hör det", en: "Hear it" },
+  homeLoopHearDesc: { sv: "Möt nyttig spanska i små bitar.", en: "Meet useful Spanish in small pieces." },
+  homeLoopRepeatLabel: { sv: "Upprepa det", en: "Repeat it" },
+  homeLoopRepeatDesc: { sv: "Eka ljud, ord och fraser.", en: "Echo sounds, words, and phrases." },
+  homeLoopBuildLabel: { sv: "Bygg det", en: "Build it" },
+  homeLoopBuildDesc: { sv: "Skapa meningar steg för steg.", en: "Create sentences step by step." },
+  homeLoopUseLabel: { sv: "Använd det", en: "Use it" },
+  homeLoopUseDesc: {
+    sv: "Öva i sammanhang genom läsning och samtal.",
+    en: "Practice in context through reading and conversation.",
+  },
+  homeLoopRememberLabel: { sv: "Minns det", en: "Remember it" },
+  homeLoopRememberDesc: {
+    sv: "Återkalla språket tills det börjar komma naturligt.",
+    en: "Recall language until it starts to come back naturally.",
+  },
+
+  // App preview section
+  homePreviewGoodMorning: { sv: "God morgon", en: "Good morning" },
+  homePreviewBadge: { sv: "Förhandsvisning", en: "Preview" },
+  homePreviewHeadline: { sv: "Se hur övningen känns", en: "See what practice feels like" },
+  homePreviewListen: { sv: "Lyssna", en: "Listen" },
+  homePreviewBuild: { sv: "Bygg", en: "Build" },
+  homePreviewConversation: { sv: "Samtal", en: "Conversation" },
+  homePreviewRemember: { sv: "Minns", en: "Remember" },
+  homePreviewArrange: { sv: "Sätt orden i ordning:", en: "Arrange the words:" },
+  homePreviewConfirm: { sv: "Bekräfta", en: "Confirm" },
+  homePreviewYourReply: { sv: "Ditt svar…", en: "Your reply…" },
+  homePreviewPracticeToday: { sv: "Öva idag", en: "Practice today" },
+  homePreviewFewMinutes: { sv: "Några minuter räcker.", en: "A few minutes is enough." },
+  homePreviewKeepGoing: { sv: "Fortsätt", en: "Keep going" },
+
+  // Practice variety
+  homeVarietyHeadline: {
+    sv: "Övning ska inte kännas som en checklista.",
+    en: "Practice should not feel like a checklist.",
+  },
+  homeVarietyBody: {
+    sv: "Murcielingo ger dig olika sätt att möta samma språk igen: lyssna, upprepa, välja, bygga, läsa, tala och minnas. När en övning är klar finns det alltid ett annat användbart sätt att fortsätta.",
+    en: "Murcielingo gives you different ways to meet the same language again: listen, repeat, choose, build, read, speak, and recall. So when one practice is done, another useful way to keep learning can begin.",
+  },
+
+  // Practice modes
+  homeModeEchoName: { sv: "Echo-övning", en: "Echo Practice" },
+  homeModeEchoDesc: {
+    sv: "Lyssna, upprepa och minns spanska tills det börjar fastna.",
+    en: "Listen, repeat, and recall Spanish until it starts to stick.",
+  },
+  homeModeSentenceName: { sv: "Meningsbyggare", en: "Sentence Builder" },
+  homeModeSentenceDesc: {
+    sv: "Bygg användbara meningar steg för steg.",
+    en: "Build useful sentences step by step.",
+  },
+  homeModeFlashName: { sv: "Flashcards", en: "Flashcards" },
+  homeModeFlashDesc: {
+    sv: "Möt viktiga ord igen vid rätt tillfälle.",
+    en: "Meet important words again at the right moment.",
+  },
+  homeModeVocabName: { sv: "Ordförråd", en: "Vocabulary" },
+  homeModeVocabDesc: {
+    sv: "Öva ord i sammanhang, inte bara som listor.",
+    en: "Practice words in context, not just as lists.",
+  },
+  homeModeGrammarName: { sv: "Grammatik", en: "Grammar" },
+  homeModeGrammarDesc: {
+    sv: "Förstå mönster genom enkla exempel.",
+    en: "Understand patterns through simple examples.",
+  },
+  homeModeReadingName: { sv: "Läsning", en: "Reading" },
+  homeModeReadingDesc: {
+    sv: "Läs korta spanska texter med stöd.",
+    en: "Read short Spanish texts with support.",
+  },
+  homeModeConvName: { sv: "Konversation", en: "Conversation" },
+  homeModeConvDesc: {
+    sv: "Öva vardagsspanska i små dialoger.",
+    en: "Practice everyday Spanish in small dialogues.",
+  },
+  homeModePronName: { sv: "Uttal", en: "Pronunciation" },
+  homeModePronDesc: {
+    sv: "Träna ljud, rytm och självförtroende.",
+    en: "Train sounds, rhythm, and confidence.",
+  },
+
+  // Mobile section
+  homeMobileBadge: { sv: "Mobil", en: "Mobile" },
+  homeMobileHeadline: { sv: "Öva var du vill", en: "Practice anywhere" },
+  homeMobileBody: {
+    sv: "Murcielingo förbereds för mobilen, så att din spanska övning kan följa med dig genom dagen.",
+    en: "Murcielingo is being prepared for mobile, so your Spanish practice can follow you through the day.",
+  },
+  homeMobileComingSoon: { sv: "Kommer snart till", en: "Coming soon to" },
+  homeMobileToday: { sv: "Idag", en: "Today" },
+  homeMobilePracticePhrase: { sv: "Övningsfras", en: "Practice phrase" },
+  homeMobileStart: { sv: "Starta", en: "Start" },
+
+  // Trust
+  homeTrustDaily: { sv: "Byggd för korta dagliga övningar", en: "Built for short daily practice" },
+  homeTrustBeginners: {
+    sv: "Designad för nybörjare och återvändande inlärare",
+    en: "Designed for beginners and returning learners",
+  },
+  homeTrustSkills: {
+    sv: "Öva läsning, tal, hörförståelse och minne",
+    en: "Practice reading, speaking, listening, and recall",
+  },
+  homeTrustConfidence: {
+    sv: "Ett mjukare sätt att bygga självförtroende på spanska",
+    en: "A softer way to build Spanish confidence",
+  },
+
+  // Final CTA
+  homeFinalHeadline: { sv: "Redo att låta spanskan eka tillbaka?", en: "Ready to let Spanish echo back?" },
+  homeFinalBody: {
+    sv: "Börja med några minuters övning och bygg därifrån.",
+    en: "Start with a few minutes of practice and build from there.",
+  },
+  homeFooterContact: { sv: "Kontakt", en: "Contact" },
+
+  // ===== Login / Register polish =====
+  loginSubtitlePassword: { sv: "Logga in med ditt lösenord.", en: "Sign in with your password." },
+  loginSubtitleCode: { sv: "Vi skickar en engångskod till din e-post.", en: "We'll email you a one-time code." },
+  loginCodeSentTo: { sv: "Kod skickad till {email}", en: "Code sent to {email}" },
+  loginMfaSentTo: { sv: "Tvåfaktorskod skickad till {email}", en: "Two-factor code sent to {email}" },
+  loginTotpSubtitle: {
+    sv: "Ange den 6-siffriga koden från din authenticator-app.",
+    en: "Enter the 6-digit code from your authenticator app.",
+  },
+  loginBackupSubtitle: {
+    sv: "Ange en av dina återställningskoder.",
+    en: "Enter one of your backup codes.",
+  },
+  loginResetRequestSubtitle: {
+    sv: "Vi skickar en kod för att återställa lösenordet.",
+    en: "We'll email you a reset code.",
+  },
+  loginResetCodeSentTo: { sv: "Återställningskod skickad till {email}", en: "Reset code sent to {email}" },
+  loginInvalidEmail: { sv: "Ange en giltig e-postadress", en: "Please enter a valid email address" },
+  loginEnterPassword: { sv: "Ange ditt lösenord", en: "Please enter your password" },
+  loginEnterCode: { sv: "Ange koden från e-posten", en: "Please enter the code from your email" },
+  loginOpenAuthenticator: {
+    sv: "Öppna din authenticator-app för att hämta koden.",
+    en: "Open your authenticator app to get the code.",
+  },
+  loginCodeSentEmail: { sv: "Vi har skickat en kod till din e-post.", en: "We've sent a code to your email." },
+  loginNewCodeOnWay: { sv: "En ny kod är på väg.", en: "A new code is on its way." },
+  loginResetCodeSent: {
+    sv: "Återställningskod skickad till din e-post.",
+    en: "We've sent a reset code to your email.",
+  },
+  loginPasswordTooShort: {
+    sv: "Välj ett lösenord på minst 8 tecken",
+    en: "Choose a password with at least 8 characters",
+  },
+  loginPasswordUpdated: { sv: "Lösenordet är uppdaterat.", en: "Your password has been updated." },
+  loginPasswordLabel: { sv: "Lösenord", en: "Password" },
+  loginSubmit: { sv: "Logga in", en: "Sign in" },
+  loginUseCodeInstead: { sv: "Logga in med en kod istället", en: "Sign in with a code instead" },
+  loginUsePassword: { sv: "Använd lösenord", en: "Use password" },
+  loginSendCode: { sv: "Skicka kod", en: "Send code" },
+  loginBack: { sv: "Tillbaka", en: "Back" },
+  loginBackToSignIn: { sv: "Tillbaka till inloggning", en: "Back to sign in" },
+  loginVerify: { sv: "Verifiera", en: "Verify" },
+  loginVerificationCode: { sv: "Verifieringskod", en: "Verification code" },
+  loginAuthenticatorCode: { sv: "Authenticator-kod", en: "Authenticator code" },
+  loginBackupCode: { sv: "Återställningskod", en: "Backup code" },
+  loginUseAuthenticatorInstead: {
+    sv: "Använd authenticator-kod istället",
+    en: "Use authenticator code instead",
+  },
+  loginUseBackupInstead: {
+    sv: "Använd en återställningskod istället",
+    en: "Use a backup code instead",
+  },
+  loginResend: { sv: "Skicka koden igen", en: "Resend code" },
+  loginSending: { sv: "Skickar…", en: "Sending…" },
+  loginSendResetCode: { sv: "Skicka återställningskod", en: "Send reset code" },
+  loginChangeEmail: { sv: "Ändra e-post", en: "Change email" },
+  loginNewPasswordLabel: { sv: "Nytt lösenord", en: "New password" },
+  loginResetAndSignIn: { sv: "Återställ och logga in", en: "Reset & sign in" },
+  loginNoAccount: { sv: "Har du inget konto?", en: "Don't have an account?" },
+
+  registerSubtitle: { sv: "Det tar bara en minut.", en: "It only takes a minute." },
+  registerCodeSentTo: { sv: "Kod skickad till {email}", en: "Code sent to {email}" },
+  registerEnterName: { sv: "Ange ditt namn", en: "Please enter your name" },
+  registerYourName: { sv: "Ditt namn", en: "Your name" },
+  registerNamePlaceholder: { sv: "Vad ska vi kalla dig?", en: "What should we call you?" },
+  registerOptional: { sv: "Valfritt", en: "Optional" },
+  registerPasswordPlaceholder: {
+    sv: "Lämna tomt för kod-inloggning",
+    en: "Leave empty for code sign-in",
+  },
+  registerSendCode: { sv: "Skicka kod", en: "Send code" },
+  registerEditDetails: { sv: "Ändra uppgifter", en: "Edit details" },
+  registerCreate: { sv: "Skapa konto", en: "Create account" },
 };
 
 interface LanguageContextType {

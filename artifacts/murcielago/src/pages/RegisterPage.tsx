@@ -8,7 +8,7 @@ import { ArrowLeft, Loader2, Lock, Mail, KeyRound, User } from "lucide-react";
 import logo from "@/assets/murcielago-logo.png";
 
 const RegisterPage = () => {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { sendRegisterCode, resendRegisterCode, verifyRegisterCode, signInWithGoogle, signInWithApple, isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState<"details" | "code">("details");
@@ -26,24 +26,15 @@ const RegisterPage = () => {
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (displayName.trim().length < 2) {
-      toast({
-        title: language === "sv" ? "Ange ditt namn" : "Please enter your name",
-        variant: "soft",
-      });
+      toast({ title: t("registerEnterName"), variant: "soft" });
       return;
     }
     if (!email.trim() || !email.includes("@")) {
-      toast({
-        title: language === "sv" ? "Ange en giltig e-postadress" : "Please enter a valid email address",
-        variant: "soft",
-      });
+      toast({ title: t("loginInvalidEmail"), variant: "soft" });
       return;
     }
     if (password && password.length < 8) {
-      toast({
-        title: language === "sv" ? "Välj ett lösenord på minst 8 tecken" : "Choose a password with at least 8 characters",
-        variant: "soft",
-      });
+      toast({ title: t("loginPasswordTooShort"), variant: "soft" });
       return;
     }
     setLoading(true);
@@ -59,10 +50,7 @@ const RegisterPage = () => {
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!code.trim()) {
-      toast({
-        title: language === "sv" ? "Ange koden från e-posten" : "Please enter the code from your email",
-        variant: "soft",
-      });
+      toast({ title: t("loginEnterCode"), variant: "soft" });
       return;
     }
     setLoading(true);
@@ -76,10 +64,7 @@ const RegisterPage = () => {
     const err = await resendRegisterCode();
     setResending(false);
     if (err) toast({ title: err, variant: "soft" });
-    else
-      toast({
-        title: language === "sv" ? "En ny kod är på väg." : "A new code is on its way.",
-      });
+    else toast({ title: t("loginNewCodeOnWay") });
   };
 
   return (
@@ -107,12 +92,8 @@ const RegisterPage = () => {
             <h1 className="text-xl sm:text-2xl font-heading font-bold text-foreground">{t("createAccount")}</h1>
             <p className="text-sm text-muted-foreground mt-1">
               {step === "details"
-                ? language === "sv"
-                  ? "Det tar bara en minut."
-                  : "It only takes a minute."
-                : language === "sv"
-                ? `Kod skickad till ${email}`
-                : `Code sent to ${email}`}
+                ? t("registerSubtitle")
+                : t("registerCodeSentTo").replace("{email}", email)}
             </p>
           </div>
 
@@ -121,7 +102,7 @@ const RegisterPage = () => {
               <form onSubmit={handleSendCode} className="space-y-3">
                 <div>
                   <label className="block text-xs font-medium text-foreground mb-1">
-                    {language === "sv" ? "Ditt namn" : "Your name"}
+                    {t("registerYourName")}
                   </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -130,7 +111,7 @@ const RegisterPage = () => {
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       className="w-full pl-9 pr-3 py-2 rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition text-sm"
-                      placeholder={language === "sv" ? "Vad ska vi kalla dig?" : "What should we call you?"}
+                      placeholder={t("registerNamePlaceholder")}
                       autoComplete="name"
                       autoFocus
                     />
@@ -154,9 +135,9 @@ const RegisterPage = () => {
 
                 <div>
                   <label className="flex items-center justify-between text-xs font-medium text-foreground mb-1">
-                    <span>{language === "sv" ? "Lösenord" : "Password"}</span>
+                    <span>{t("loginPasswordLabel")}</span>
                     <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                      {language === "sv" ? "Valfritt" : "Optional"}
+                      {t("registerOptional")}
                     </span>
                   </label>
                   <div className="relative">
@@ -166,7 +147,7 @@ const RegisterPage = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full pl-9 pr-3 py-2 rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition text-sm"
-                      placeholder={language === "sv" ? "Lämna tomt för kod-inloggning" : "Leave empty for code sign-in"}
+                      placeholder={t("registerPasswordPlaceholder")}
                       autoComplete="new-password"
                       minLength={8}
                     />
@@ -179,7 +160,7 @@ const RegisterPage = () => {
                   className="w-full py-2.5 rounded-full bg-peach hover:bg-peach-dark text-primary-foreground font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {language === "sv" ? "Skicka kod" : "Send code"}
+                  {t("registerSendCode")}
                 </button>
 
                 <div className="relative my-4">
@@ -228,12 +209,12 @@ const RegisterPage = () => {
                   className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />
-                  {language === "sv" ? "Ändra uppgifter" : "Edit details"}
+                  {t("registerEditDetails")}
                 </button>
 
                 <div>
                   <label className="block text-xs font-medium text-foreground mb-1">
-                    {language === "sv" ? "Verifieringskod" : "Verification code"}
+                    {t("loginVerificationCode")}
                   </label>
                   <div className="relative">
                     <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -256,7 +237,7 @@ const RegisterPage = () => {
                   className="w-full py-2.5 rounded-full bg-peach hover:bg-peach-dark text-primary-foreground font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {language === "sv" ? "Skapa konto" : "Create account"}
+                  {t("registerCreate")}
                 </button>
 
                 <button
@@ -265,13 +246,7 @@ const RegisterPage = () => {
                   disabled={resending}
                   className="w-full text-xs text-muted-foreground hover:text-foreground transition disabled:opacity-50"
                 >
-                  {resending
-                    ? language === "sv"
-                      ? "Skickar…"
-                      : "Sending…"
-                    : language === "sv"
-                    ? "Skicka koden igen"
-                    : "Resend code"}
+                  {resending ? t("loginSending") : t("loginResend")}
                 </button>
               </form>
             )}

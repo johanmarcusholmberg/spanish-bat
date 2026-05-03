@@ -9,7 +9,7 @@ import { Card } from "@/components/Card";
 import { AppButton } from "@/components/AppButton";
 import EchoSteps from "@/components/EchoSteps";
 import { useColors } from "@/hooks/useColors";
-import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 /**
  * Welcome / first-session onboarding.
@@ -22,8 +22,7 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function WelcomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
-  const lang: "en" | "sv" = user?.learningFrom === "sv" ? "sv" : "en";
+  const { t } = useLanguage();
 
   const startPractice = () => {
     router.replace("/practice/session?mode=quick" as never);
@@ -46,25 +45,21 @@ export default function WelcomeScreen() {
         <Feather name="zap" size={28} color={colors.primaryForeground} />
       </View>
       <Typography variant="h1" center style={{ marginTop: 16 }}>
-        {lang === "sv" ? "Välkommen till Murcielingo" : "Welcome to Murcielingo"}
+        {t("welcome.title")}
       </Typography>
       <Typography variant="body" muted center style={{ marginTop: 8, paddingHorizontal: 12 }}>
-        {lang === "sv"
-          ? "Eka språket, en liten övning i taget."
-          : "Echo the language, one small session at a time."}
+        {t("welcome.tagline")}
       </Typography>
 
       <Card padding={20} style={{ marginTop: 24 }}>
         <Typography variant="caption" muted style={styles.eyebrow}>
-          {lang === "sv" ? "ECHO-METODEN" : "THE ECHO METHOD"}
+          {t("welcome.methodEyebrow")}
         </Typography>
         <View style={{ marginTop: 8 }}>
           <EchoSteps />
         </View>
         <Typography variant="body" style={{ marginTop: 14 }}>
-          {lang === "sv"
-            ? "Du ser det, hör det, ekar det, bygger med det och använder det. Vi hjälper dig öva orden och fraserna som nästan sitter."
-            : "You see it, hear it, echo it, build with it, and use it. We'll help you practice the words and phrases that are almost there."}
+          {t("welcome.methodBody")}
         </Typography>
       </Card>
 
@@ -74,13 +69,9 @@ export default function WelcomeScreen() {
             <Feather name="clock" size={18} color={colors.primary} />
           </View>
           <View style={{ flex: 1 }}>
-            <Typography variant="label">
-              {lang === "sv" ? "Korta dagliga sessioner" : "Short daily sessions"}
-            </Typography>
+            <Typography variant="label">{t("welcome.shortSessionsLabel")}</Typography>
             <Typography variant="caption" muted style={{ marginTop: 2 }}>
-              {lang === "sv"
-                ? "Börja med 3 minuter idag."
-                : "Start with 3 minutes today."}
+              {t("welcome.shortSessionsBody")}
             </Typography>
           </View>
         </View>
@@ -89,30 +80,22 @@ export default function WelcomeScreen() {
             <Feather name="compass" size={18} color={colors.primary} />
           </View>
           <View style={{ flex: 1 }}>
-            <Typography variant="label">
-              {lang === "sv" ? "Vi vägleder dig" : "We'll guide you"}
-            </Typography>
+            <Typography variant="label">{t("welcome.guideLabel")}</Typography>
             <Typography variant="caption" muted style={{ marginTop: 2 }}>
-              {lang === "sv"
-                ? "Du behöver inte välja en modul — Murcielingo vet vad du behöver eka härnäst."
-                : "No need to choose a module — Murcielingo knows what to echo next."}
+              {t("welcome.guideBody")}
             </Typography>
           </View>
         </View>
       </Card>
 
       <AppButton
-        title={
-          lang === "sv"
-            ? "Starta din första 3-minutersövning"
-            : "Start your first 3-minute practice"
-        }
+        title={t("welcome.startCta")}
         onPress={startPractice}
         size="lg"
         style={{ marginTop: 24 }}
       />
       <AppButton
-        title={lang === "sv" ? "Hoppa över för nu" : "Skip for now"}
+        title={t("welcome.skipCta")}
         variant="outline"
         size="md"
         onPress={skipToHome}
