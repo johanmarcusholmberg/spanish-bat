@@ -9,7 +9,7 @@ import LanguageToggle from "@/components/LanguageToggle";
 
 const LoginPage = () => {
   const { t, language } = useLanguage();
-  const { sendLoginCode, verifyLoginCode, signInWithGoogle, signInWithApple, isLoggedIn } = useAuth();
+  const { sendLoginCode, resendLoginCode, verifyLoginCode, signInWithGoogle, signInWithApple, isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
@@ -57,7 +57,7 @@ const LoginPage = () => {
 
   const handleResend = async () => {
     setResending(true);
-    const err = await sendLoginCode(email.trim());
+    const err = await resendLoginCode();
     setResending(false);
     if (err) toast({ title: err, variant: "destructive" });
     else

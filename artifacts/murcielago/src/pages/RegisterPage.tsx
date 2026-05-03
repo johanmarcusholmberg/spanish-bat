@@ -9,7 +9,7 @@ import logo from "@/assets/murcielago-logo.png";
 
 const RegisterPage = () => {
   const { t, language } = useLanguage();
-  const { sendRegisterCode, verifyRegisterCode, signInWithGoogle, signInWithApple, isLoggedIn } = useAuth();
+  const { sendRegisterCode, resendRegisterCode, verifyRegisterCode, signInWithGoogle, signInWithApple, isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState<"details" | "code">("details");
   const [displayName, setDisplayName] = useState("");
@@ -65,7 +65,7 @@ const RegisterPage = () => {
 
   const handleResend = async () => {
     setResending(true);
-    const err = await sendRegisterCode(email.trim(), displayName.trim());
+    const err = await resendRegisterCode();
     setResending(false);
     if (err) toast({ title: err, variant: "destructive" });
     else

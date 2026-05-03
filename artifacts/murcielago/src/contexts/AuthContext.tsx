@@ -33,8 +33,10 @@ interface AuthContextType {
   session: SessionLike | null;
   loading: boolean;
   sendLoginCode: (email: string) => Promise<string | null>;
+  resendLoginCode: () => Promise<string | null>;
   verifyLoginCode: (code: string) => Promise<string | null>;
   sendRegisterCode: (email: string, displayName: string) => Promise<string | null>;
+  resendRegisterCode: () => Promise<string | null>;
   verifyRegisterCode: (code: string) => Promise<string | null>;
   logout: () => Promise<void>;
   updateProfile: (profile: Partial<UserProfile>) => Promise<void>;
@@ -49,8 +51,10 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   sendLoginCode: async () => null,
+  resendLoginCode: async () => null,
   verifyLoginCode: async () => null,
   sendRegisterCode: async () => null,
+  resendRegisterCode: async () => null,
   verifyRegisterCode: async () => null,
   logout: async () => {},
   updateProfile: async () => {},
@@ -173,6 +177,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const resendLoginCode = async (): Promise<string | null> => {
+    if (!signIn) return "Sign-in not available";
+    try {
+      // The signIn resource is already initialised from the previous
+      // sendCode call — re-invoking sendCode just dispatches a fresh code
+      // for the same identifier.
+      const { error } = await signIn.emailCode.sendCode({});
+      if (error) return resultErr(error, "Could not resend code");
+      return null;
+    } catch (err) {
+      return clerkErr(err, "Could not resend code");
+    }
+  };
+
   const verifyLoginCode = async (code: string): Promise<string | null> => {
     if (!signIn) return "Sign-in not available";
     try {
@@ -209,6 +227,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return null;
     } catch (err) {
       return clerkErr(err, "Registration failed");
+    }
+  };
+
+  const resendRegisterCode = async (): Promise<string | null> => {
+    if (!signUp) return "Sign-up not available";
+    try {
+      // Don't re-call signUp.create — Clerk rejects creating a second
+      // sign-up while one is already in progress. Just dispatch a new
+      // verification email for the existing in-progress sign-up.
+      const { error } = await signUp.verifications.sendEmailCode();
+      if (error) return resultErr(error, "Could not resend code");
+      return null;
+    } catch (err) {
+      return clerkErr(err, "Could not resend code");
     }
   };
 
@@ -279,8 +311,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         session,
         loading,
         sendLoginCode,
+        resendLoginCode,
         verifyLoginCode,
         sendRegisterCode,
+        resendRegisterCode,
         verifyRegisterCode,
         logout,
         updateProfile,

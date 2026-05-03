@@ -29,7 +29,8 @@ interface AuthContextType {
   verifyLoginCode: (code: string) => Promise<string | null>;
   sendRegisterCode: (email: string, displayName: string) => Promise<string | null>;
   verifyRegisterCode: (code: string) => Promise<string | null>;
-  resendCode: (mode: "login" | "register") => Promise<string | null>;
+  resendLoginCode: () => Promise<string | null>;
+  resendRegisterCode: () => Promise<string | null>;
   signInWithGoogle: () => Promise<string | null>;
   signInWithApple: () => Promise<string | null>;
   logout: () => Promise<void>;
@@ -46,7 +47,8 @@ const AuthContext = createContext<AuthContextType>({
   verifyLoginCode: async () => null,
   sendRegisterCode: async () => null,
   verifyRegisterCode: async () => null,
-  resendCode: async () => null,
+  resendLoginCode: async () => null,
+  resendRegisterCode: async () => null,
   signInWithGoogle: async () => null,
   signInWithApple: async () => null,
   logout: async () => {},
@@ -72,11 +74,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
-  // Remember the most recent passwordless flow inputs so a "resend code"
-  // press can re-prepare the appropriate first-factor / verification.
-  const [lastLoginEmail, setLastLoginEmail] = useState<string | null>(null);
-  const [lastRegisterEmail, setLastRegisterEmail] = useState<string | null>(null);
-  const [lastRegisterName, setLastRegisterName] = useState<string>("");
+  // Track which passwordless flows have been initialised so resend-code
+  // can re-dispatch on the existing in-progress signIn / signUp resource
+  // instead of re-creating it (Clerk rejects calling create twice).
+  const [loginEmailFactorId, setLoginEmailFactorId] = useState<string | null>(null);
+  const [registerCodeReady, setRegisterCodeReady] = useState(false);
 
   const isLoaded = signInLoaded && signUpLoaded && sessionLoaded && userLoaded;
 
@@ -178,11 +180,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const emailFactor = attempt.supportedFirstFactors?.find(
         (f: { strategy: string }) => f.strategy === "email_code",
       ) as { emailAddressId?: string } | undefined;
+      const emailAddressId = emailFactor?.emailAddressId ?? "";
       await signIn.prepareFirstFactor({
         strategy: "email_code",
-        emailAddressId: emailFactor?.emailAddressId ?? "",
+        emailAddressId,
       });
-      setLastLoginEmail(trimmed);
+      setLoginEmailFactorId(emailAddressId);
       return null;
     } catch (err) {
       return clerkErrorMessage(err, "Could not send code");
@@ -220,8 +223,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ...(trimmedName ? { firstName: trimmedName } : {}),
       });
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-      setLastRegisterEmail(trimmedEmail);
-      setLastRegisterName(trimmedName);
+      setRegisterCodeReady(true);
       return null;
     } catch (err) {
       return clerkErrorMessage(err, "Registration failed");
@@ -244,13 +246,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function resendCode(mode: "login" | "register"): Promise<string | null> {
-    if (mode === "login") {
-      if (!lastLoginEmail) return "Please enter your email and try again.";
-      return sendLoginCode(lastLoginEmail);
+  async function resendLoginCode(): Promise<string | null> {
+    if (!signIn) return "Sign-in not available";
+    if (loginEmailFactorId === null) return "Please enter your email and try again.";
+    try {
+      // Re-dispatch the code on the existing in-progress signIn rather
+      // than re-creating it (Clerk treats create as one-shot per flow).
+      await signIn.prepareFirstFactor({
+        strategy: "email_code",
+        emailAddressId: loginEmailFactorId,
+      });
+      return null;
+    } catch (err) {
+      return clerkErrorMessage(err, "Could not resend code");
     }
-    if (!lastRegisterEmail) return "Please enter your details and try again.";
-    return sendRegisterCode(lastRegisterEmail, lastRegisterName);
+  }
+
+  async function resendRegisterCode(): Promise<string | null> {
+    if (!signUp) return "Sign-up not available";
+    if (!registerCodeReady) return "Please enter your details and try again.";
+    try {
+      // Don't call signUp.create again — Clerk rejects creating a second
+      // signUp while one is already in progress. Just re-prepare the
+      // email-address verification on the existing resource.
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      return null;
+    } catch (err) {
+      return clerkErrorMessage(err, "Could not resend code");
+    }
   }
 
   async function startOAuth(strategy: "oauth_google" | "oauth_apple"): Promise<string | null> {
@@ -288,9 +311,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setProfile(null);
       setIsAdmin(false);
-      setLastLoginEmail(null);
-      setLastRegisterEmail(null);
-      setLastRegisterName("");
+      setLoginEmailFactorId(null);
+      setRegisterCodeReady(false);
       await clearAllUserData();
       await rcLogout();
     }
@@ -326,7 +348,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         verifyLoginCode,
         sendRegisterCode,
         verifyRegisterCode,
-        resendCode,
+        resendLoginCode,
+        resendRegisterCode,
         signInWithGoogle,
         signInWithApple,
         logout,

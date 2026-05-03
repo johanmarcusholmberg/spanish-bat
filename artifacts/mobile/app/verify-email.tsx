@@ -26,7 +26,7 @@ export default function VerifyEmailScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ email?: string; mode?: string }>();
   const router = useRouter();
-  const { verifyLoginCode, verifyRegisterCode, resendCode } = useAuth();
+  const { verifyLoginCode, verifyRegisterCode, resendLoginCode, resendRegisterCode } = useAuth();
   const { isSignedIn, isLoaded } = useClerkAuth();
 
   // Default to register so legacy deep links (no `mode` param) keep landing
@@ -77,7 +77,7 @@ export default function VerifyEmailScreen() {
     setError(null);
     setInfo(null);
     setResending(true);
-    const err = await resendCode(mode);
+    const err = mode === "login" ? await resendLoginCode() : await resendRegisterCode();
     setResending(false);
     if (err) {
       setError(err);
