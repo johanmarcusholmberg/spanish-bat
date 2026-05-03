@@ -16,6 +16,7 @@ import {
 import type { Profile } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { requireAuth } from "../middlewares/requireAuth";
+import { bindRolesToClerkUser, getClerkUserEmail, adminTotpCompleted } from "../lib/roles";
 
 const router = Router();
 
@@ -23,11 +24,26 @@ router.get("/profile", requireAuth, async (req, res) => {
   const userId = req.userId!;
   try {
     const profile = await db.select().from(profilesTable).where(eq(profilesTable.userId, userId)).limit(1);
-    const role = await db.select().from(userRolesTable).where(eq(userRolesTable.userId, userId)).limit(1);
-    if (profile.length === 0) {
-      return res.json({ profile: null, isAdmin: false });
+    const email = profile[0]?.email ?? (await getClerkUserEmail(userId));
+    // Bind any pending invite to this Clerk user so OAuth-created users
+    // get their admin role on first sign-in without a manual insert.
+    const { roles } = await bindRolesToClerkUser(userId, email);
+    const isAdmin = roles.includes("admin");
+
+    let adminTotpEnrolled = false;
+    if (isAdmin) {
+      try {
+        const user = await clerkClient.users.getUser(userId);
+        adminTotpEnrolled = adminTotpCompleted(user.publicMetadata) || !!user.totpEnabled;
+      } catch {
+        adminTotpEnrolled = false;
+      }
     }
-    return res.json({ profile: profile[0], isAdmin: role.some(r => r.role === "admin") });
+
+    if (profile.length === 0) {
+      return res.json({ profile: null, isAdmin, adminTotpEnrolled });
+    }
+    return res.json({ profile: profile[0], isAdmin, adminTotpEnrolled });
   } catch (err) {
     req.log.error({ err }, "Failed to fetch profile");
     return res.status(500).json({ error: "Server error" });

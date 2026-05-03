@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import { api } from "@/lib/api";
 import SubscriptionDebugPanel from "@/components/SubscriptionDebugPanel";
-import { Loader2, Shield, Users, TrendingUp, MessageSquare, BarChart3, Mail, Clock, CheckCircle2, AlertCircle, CreditCard, Sparkles } from "lucide-react";
+import { Loader2, Shield, Users, TrendingUp, MessageSquare, BarChart3, Mail, Clock, CheckCircle2, AlertCircle, CreditCard, Sparkles, UserPlus, ScrollText } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -108,7 +108,7 @@ const MetricCard = ({ icon: Icon, label, value, sub }: { icon: React.ElementType
 );
 
 const AdminPage = () => {
-  const { isAdmin, isLoggedIn, loading: authLoading } = useAuth();
+  const { isAdmin, isLoggedIn, adminTotpEnrolled, loading: authLoading } = useAuth();
   const { t } = useLanguage();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
@@ -192,6 +192,7 @@ const AdminPage = () => {
   }
 
   if (!isLoggedIn) return <Navigate to="/" replace />;
+  if (isAdmin && !adminTotpEnrolled) return <Navigate to="/admin/setup-2fa" replace />;
   if (!isAdmin) return (
     <AppLayout>
       <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -612,9 +613,23 @@ const AdminPage = () => {
   return (
     <AppLayout>
       <div className="animate-fade-in space-y-6">
-        <div className="flex items-center gap-3">
-          <Shield className="h-7 w-7 text-primary" />
-          <h1 className="text-2xl font-heading font-bold text-foreground">{t("adminPanel")}</h1>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3">
+            <Shield className="h-7 w-7 text-primary" />
+            <h1 className="text-2xl font-heading font-bold text-foreground">{t("adminPanel")}</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/admin/invites" className="gap-1.5">
+                <UserPlus className="h-4 w-4" /> Invites
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/admin/audit" className="gap-1.5">
+                <ScrollText className="h-4 w-4" /> Audit
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {loading ? (

@@ -29,17 +29,28 @@ interface ClerkError {
 export interface PasswordLoginResult {
   error: string | null;
   needsSecondFactor: boolean;
+  // True when the second factor must be a TOTP/backup code (admin
+  // accounts with required TOTP). When false the email-code branch is
+  // used and the UI prompts for the 6-digit code from the inbox.
+  needsTotp?: boolean;
 }
 
 interface AuthContextType {
   isLoggedIn: boolean;
   isAdmin: boolean;
+  // Phase C: true once the signed-in admin has completed TOTP enrolment
+  // (Clerk public_metadata.adminTotpEnrolled or user.totpEnabled).
+  // Non-admins always read true so callers can gate without branching.
+  adminTotpEnrolled: boolean;
   user: UserProfile | null;
   session: SessionLike | null;
   loading: boolean;
   // Phase B: password sign-in (primary)
   loginWithPassword: (email: string, password: string) => Promise<PasswordLoginResult>;
   verifySecondFactorCode: (code: string) => Promise<string | null>;
+  // Phase C: TOTP / backup-code second factor for admins
+  verifyTotpSecondFactor: (code: string) => Promise<string | null>;
+  verifyBackupCodeSecondFactor: (code: string) => Promise<string | null>;
   // Phase A: email-code sign-in (fallback)
   sendLoginCode: (email: string) => Promise<string | null>;
   resendLoginCode: () => Promise<string | null>;
@@ -60,11 +71,14 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   isLoggedIn: false,
   isAdmin: false,
+  adminTotpEnrolled: true,
   user: null,
   session: null,
   loading: true,
   loginWithPassword: async () => ({ error: null, needsSecondFactor: false }),
   verifySecondFactorCode: async () => null,
+  verifyTotpSecondFactor: async () => null,
+  verifyBackupCodeSecondFactor: async () => null,
   sendLoginCode: async () => null,
   resendLoginCode: async () => null,
   verifyLoginCode: async () => null,
@@ -99,6 +113,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { signUp } = useSignUp();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminTotpEnrolled, setAdminTotpEnrolled] = useState(true);
   const [profileLoading, setProfileLoading] = useState(false);
   // Track which passwordless flows have been initialised so resend
   // calls can re-dispatch on the existing in-progress resource and so
@@ -118,7 +133,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const email = clerkUser.emailAddresses?.[0]?.emailAddress || "";
       const defaultName = clerkUser.firstName || email.split("@")[0] || "";
 
-      const result = await api.profile.get().catch(() => ({ profile: null, isAdmin: false }));
+      const result = await api.profile.get().catch(() => ({ profile: null, isAdmin: false, adminTotpEnrolled: true }));
 
       if (result.profile) {
         setProfile({
@@ -153,6 +168,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           .catch(() => {});
       }
       setIsAdmin(!!result.isAdmin);
+      // Non-admins are treated as "enrolled" so guards never block them.
+      setAdminTotpEnrolled(result.isAdmin ? !!result.adminTotpEnrolled : true);
     } catch {
       const email = clerkUser.emailAddresses?.[0]?.emailAddress || "";
       setProfile({
@@ -175,6 +192,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } else {
       setProfile(null);
       setIsAdmin(false);
+      setAdminTotpEnrolled(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, clerkUser?.id]);
@@ -198,10 +216,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (error) return { error: resultErr(error, "Sign-in failed"), needsSecondFactor: false };
       if (signIn.status === "complete") {
         await signIn.finalize();
+        api.audit.signIn("password").catch(() => {});
         return { error: null, needsSecondFactor: false };
       }
       if (signIn.status === "needs_second_factor") {
-        // Pre-dispatch the email-code 2FA so the user can enter it next.
+        // Detect whether this account has a TOTP factor enrolled. If
+        // it does (admin path) we leave the verification to the user's
+        // authenticator app and skip dispatching an email code. If
+        // not, we pre-dispatch the email-code factor so the prompt is
+        // immediately ready.
+        const factors =
+          (signIn as unknown as { supportedSecondFactors?: { strategy: string }[] })
+            .supportedSecondFactors ?? [];
+        const supportsTotp = factors.some((f) => f.strategy === "totp");
+        setPendingLoginEmail(trimmed);
+        if (supportsTotp) {
+          return { error: null, needsSecondFactor: true, needsTotp: true };
+        }
         const { error: mfaErr } = await signIn.mfa.sendEmailCode();
         if (mfaErr) {
           return {
@@ -209,7 +240,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             needsSecondFactor: true,
           };
         }
-        setPendingLoginEmail(trimmed);
         return { error: null, needsSecondFactor: true };
       }
       return { error: "Sign-in could not be completed.", needsSecondFactor: false };
@@ -227,11 +257,49 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (error) return resultErr(error, "Invalid or expired code");
       if (signIn.status === "complete") {
         await signIn.finalize();
+        api.audit.signIn("password+email-mfa").catch(() => {});
         return null;
       }
       return "Could not complete sign-in. Please try again.";
     } catch (err) {
       return clerkErr(err, "Invalid or expired code");
+    }
+  };
+
+  // Phase C: TOTP / backup-code verification used by admin sign-in.
+  const verifyTotpSecondFactor = async (code: string): Promise<string | null> => {
+    if (!signIn) return "Sign-in not available";
+    try {
+      const trimmed = code.trim();
+      if (!trimmed) return "Enter the 6-digit code from your authenticator app.";
+      const { error } = await signIn.mfa.verifyTOTP({ code: trimmed });
+      if (error) return resultErr(error, "Invalid or expired code");
+      if (signIn.status === "complete") {
+        await signIn.finalize();
+        api.audit.signIn("password+totp").catch(() => {});
+        return null;
+      }
+      return "Could not complete sign-in. Please try again.";
+    } catch (err) {
+      return clerkErr(err, "Invalid or expired code");
+    }
+  };
+
+  const verifyBackupCodeSecondFactor = async (code: string): Promise<string | null> => {
+    if (!signIn) return "Sign-in not available";
+    try {
+      const trimmed = code.trim();
+      if (!trimmed) return "Enter one of your backup codes.";
+      const { error } = await signIn.mfa.verifyBackupCode({ code: trimmed });
+      if (error) return resultErr(error, "Invalid backup code");
+      if (signIn.status === "complete") {
+        await signIn.finalize();
+        api.audit.signIn("password+backup-code").catch(() => {});
+        return null;
+      }
+      return "Could not complete sign-in. Please try again.";
+    } catch (err) {
+      return clerkErr(err, "Invalid backup code");
     }
   };
 
@@ -412,6 +480,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
+    const userId = clerkUser?.id ?? null;
+    const email = clerkUser?.emailAddresses?.[0]?.emailAddress ?? null;
+    api.audit.signOut(userId, email).catch(() => {});
     await signOut();
     setProfile(null);
     setProfileLang?.(null);
@@ -457,11 +528,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       value={{
         isLoggedIn,
         isAdmin,
+        adminTotpEnrolled,
         user: profile,
         session,
         loading,
         loginWithPassword,
         verifySecondFactorCode,
+        verifyTotpSecondFactor,
+        verifyBackupCodeSecondFactor,
         sendLoginCode,
         resendLoginCode,
         verifyLoginCode,

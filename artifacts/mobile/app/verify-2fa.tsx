@@ -20,14 +20,18 @@ import { Typography } from "@/components/Typography";
 import { useAuth } from "@/contexts/AuthContext";
 import { useColors } from "@/hooks/useColors";
 
+type FactorMode = "email" | "totp" | "backup";
+
 export default function Verify2FAScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const params = useLocalSearchParams<{ email?: string }>();
-  const { verifySecondFactorCode } = useAuth();
+  const params = useLocalSearchParams<{ email?: string; mode?: string }>();
+  const { verifySecondFactorCode, verifyTotpSecondFactor, verifyBackupCodeSecondFactor } = useAuth();
   const { isSignedIn, isLoaded } = useClerkAuth();
 
+  const initial: FactorMode = params.mode === "totp" ? "totp" : "email";
+  const [mode, setMode] = useState<FactorMode>(initial);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,12 +42,23 @@ export default function Verify2FAScreen() {
 
   const handleVerify = async () => {
     if (!code.trim()) {
-      setError("Please enter the code from your email.");
+      setError(
+        mode === "email"
+          ? "Please enter the code from your email."
+          : mode === "totp"
+            ? "Enter the 6-digit code from your authenticator app."
+            : "Enter one of your backup codes.",
+      );
       return;
     }
     setError(null);
     setLoading(true);
-    const err = await verifySecondFactorCode(code.trim());
+    const err =
+      mode === "email"
+        ? await verifySecondFactorCode(code.trim())
+        : mode === "totp"
+          ? await verifyTotpSecondFactor(code.trim())
+          : await verifyBackupCodeSecondFactor(code.trim());
     setLoading(false);
     if (err) {
       setError(err);
@@ -51,6 +66,22 @@ export default function Verify2FAScreen() {
       router.replace("/(tabs)");
     }
   };
+
+  const headline =
+    mode === "email"
+      ? "Two-factor verification"
+      : mode === "totp"
+        ? "Authenticator code"
+        : "Backup code";
+
+  const subtitle =
+    mode === "email"
+      ? params.email
+        ? `We sent a 6-digit code to ${params.email} to confirm it's you.`
+        : "We sent a 6-digit code to your email to confirm it's you."
+      : mode === "totp"
+        ? "Open your authenticator app and enter the 6-digit code shown for Murciélingo."
+        : "Enter one of the one-time backup codes you saved when you set up 2FA.";
 
   return (
     <KeyboardAvoidingView
@@ -81,21 +112,20 @@ export default function Verify2FAScreen() {
             <Feather name="shield" size={26} color={colors.primaryForeground} />
           </View>
           <Typography variant="h2" center style={{ marginTop: 12 }}>
-            Two-factor verification
+            {headline}
           </Typography>
           <Typography variant="body" muted center style={{ marginTop: 6, paddingHorizontal: 12 }}>
-            We sent a 6-digit code to
-            {params.email ? <Text style={{ color: colors.foreground }}> {params.email}</Text> : " your email"} to confirm it's you.
+            {subtitle}
           </Typography>
         </View>
 
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <AppTextInput
-            label="Verification code"
+            label={mode === "backup" ? "Backup code" : "Verification code"}
             value={code}
             onChangeText={setCode}
-            placeholder="123456"
-            keyboardType="number-pad"
+            placeholder={mode === "backup" ? "abcd-1234" : "123456"}
+            keyboardType={mode === "backup" ? "default" : "number-pad"}
             autoComplete="one-time-code"
             returnKeyType="done"
             onSubmitEditing={handleVerify}
@@ -103,13 +133,32 @@ export default function Verify2FAScreen() {
             testID="verify-2fa-code"
           />
           <AppButton
-            title={loading ? "Signing in…" : "Sign in"}
+            title={loading ? "Verifying…" : "Verify"}
             onPress={handleVerify}
             loading={loading}
             disabled={loading || !code.trim()}
             size="lg"
             testID="verify-2fa-submit"
           />
+
+          {(mode === "totp" || mode === "backup") && (
+            <TouchableOpacity
+              onPress={() => {
+                setMode(mode === "backup" ? "totp" : "backup");
+                setCode("");
+                setError(null);
+              }}
+              style={styles.toggleRow}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              testID="verify-2fa-toggle"
+            >
+              <Typography variant="caption" muted>
+                {mode === "backup"
+                  ? "Use authenticator code instead"
+                  : "Use a backup code instead"}
+              </Typography>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
       <AuthMessageBanner message={error} />
@@ -129,4 +178,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   card: { borderRadius: 16, padding: 22, borderWidth: 1 },
+  toggleRow: { alignSelf: "center", marginTop: 14 },
 });

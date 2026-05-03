@@ -22,17 +22,23 @@ export interface UserProfile {
 export interface PasswordLoginResult {
   error: string | null;
   needsSecondFactor: boolean;
+  needsTotp?: boolean;
 }
 
 interface AuthContextType {
   isLoggedIn: boolean;
   isAdmin: boolean;
+  // Phase C: true once an admin has completed TOTP enrolment.
+  // Non-admins always read true so callers don't need to branch.
+  adminTotpEnrolled: boolean;
   user: UserProfile | null;
   userId: string | null;
   loading: boolean;
   // Phase B: password sign-in (primary)
   loginWithPassword: (email: string, password: string) => Promise<PasswordLoginResult>;
   verifySecondFactorCode: (code: string) => Promise<string | null>;
+  verifyTotpSecondFactor: (code: string) => Promise<string | null>;
+  verifyBackupCodeSecondFactor: (code: string) => Promise<string | null>;
   // Phase A: email-code sign-in (fallback)
   sendLoginCode: (email: string) => Promise<string | null>;
   verifyLoginCode: (code: string) => Promise<string | null>;
@@ -52,11 +58,14 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   isLoggedIn: false,
   isAdmin: false,
+  adminTotpEnrolled: true,
   user: null,
   userId: null,
   loading: true,
   loginWithPassword: async () => ({ error: null, needsSecondFactor: false }),
   verifySecondFactorCode: async () => null,
+  verifyTotpSecondFactor: async () => null,
+  verifyBackupCodeSecondFactor: async () => null,
   sendLoginCode: async () => null,
   verifyLoginCode: async () => null,
   sendRegisterCode: async () => null,
@@ -89,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminTotpEnrolled, setAdminTotpEnrolled] = useState(true);
   const [profileLoading, setProfileLoading] = useState(false);
   // Track which passwordless flows have been initialised so resend-code
   // can re-dispatch on the existing in-progress signIn / signUp resource
@@ -117,6 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else {
       setProfile(null);
       setIsAdmin(false);
+      setAdminTotpEnrolled(true);
       void initRevenueCat(null);
       void rcLogout();
     }
@@ -130,7 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const email = clerkUser.emailAddresses?.[0]?.emailAddress ?? "";
       const defaultName = clerkUser.firstName ?? email.split("@")[0] ?? "";
 
-      const result = await api.profile.get().catch(() => ({ profile: null, isAdmin: false }));
+      const result = await api.profile.get().catch(() => ({ profile: null, isAdmin: false, adminTotpEnrolled: true }));
 
       if (result.profile) {
         const p = result.profile as Record<string, unknown>;
@@ -163,6 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }).catch(() => {});
       }
       setIsAdmin(!!(result.isAdmin));
+      setAdminTotpEnrolled(result.isAdmin ? !!(result as { adminTotpEnrolled?: boolean }).adminTotpEnrolled : true);
     } catch {
       const email = clerkUser?.emailAddresses?.[0]?.emailAddress ?? "";
       const preferred = await getPreferredLanguage();
@@ -204,7 +216,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error: null, needsSecondFactor: false };
       }
       if (attempt.status === "needs_second_factor") {
-        const emailFactor = attempt.supportedSecondFactors?.find(
+        const factors = attempt.supportedSecondFactors ?? [];
+        const supportsTotp = factors.some((f: { strategy: string }) => f.strategy === "totp");
+        if (supportsTotp) {
+          // Admin path — user pulls the code from their authenticator app,
+          // no email is sent. UI prompts via verifyTotpSecondFactor().
+          return { error: null, needsSecondFactor: true, needsTotp: true };
+        }
+        const emailFactor = factors.find(
           (f: { strategy: string }) => f.strategy === "email_code",
         ) as { emailAddressId?: string } | undefined;
         try {
@@ -237,11 +256,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       if (result.status === "complete") {
         await setActiveSignIn({ session: result.createdSessionId });
+        api.audit.signIn("password+email-mfa").catch(() => {});
         return null;
       }
       return "Could not complete sign-in. Please request a new code.";
     } catch (err) {
       return clerkErrorMessage(err, "Invalid or expired code");
+    }
+  }
+
+  async function verifyTotpSecondFactor(code: string): Promise<string | null> {
+    if (!signIn || !setActiveSignIn) return "Sign-in not available";
+    try {
+      const trimmed = code.trim();
+      if (!trimmed) return "Enter the 6-digit code from your authenticator app.";
+      const result = await signIn.attemptSecondFactor({ strategy: "totp", code: trimmed });
+      if (result.status === "complete") {
+        await setActiveSignIn({ session: result.createdSessionId });
+        api.audit.signIn("password+totp").catch(() => {});
+        return null;
+      }
+      return "Could not complete sign-in. Please try again.";
+    } catch (err) {
+      return clerkErrorMessage(err, "Invalid or expired code");
+    }
+  }
+
+  async function verifyBackupCodeSecondFactor(code: string): Promise<string | null> {
+    if (!signIn || !setActiveSignIn) return "Sign-in not available";
+    try {
+      const trimmed = code.trim();
+      if (!trimmed) return "Enter one of your backup codes.";
+      const result = await signIn.attemptSecondFactor({ strategy: "backup_code", code: trimmed });
+      if (result.status === "complete") {
+        await setActiveSignIn({ session: result.createdSessionId });
+        api.audit.signIn("password+backup-code").catch(() => {});
+        return null;
+      }
+      return "Could not complete sign-in. Please try again.";
+    } catch (err) {
+      return clerkErrorMessage(err, "Invalid backup code");
     }
   }
 
@@ -481,11 +535,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         isLoggedIn,
         isAdmin,
+        adminTotpEnrolled,
         user: profile,
         userId: clerkUser?.id ?? null,
         loading,
         loginWithPassword,
         verifySecondFactorCode,
+        verifyTotpSecondFactor,
+        verifyBackupCodeSecondFactor,
         sendLoginCode,
         verifyLoginCode,
         sendRegisterCode,

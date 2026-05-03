@@ -7,13 +7,23 @@ import { ArrowLeft, Loader2, Lock, Mail, KeyRound } from "lucide-react";
 import logo from "@/assets/murcielago-logo.png";
 import LanguageToggle from "@/components/LanguageToggle";
 
-type Mode = "password" | "code" | "code-pending" | "mfa-pending" | "reset-request" | "reset-verify";
+type Mode =
+  | "password"
+  | "code"
+  | "code-pending"
+  | "mfa-pending"
+  | "totp-pending"
+  | "backup-code"
+  | "reset-request"
+  | "reset-verify";
 
 const LoginPage = () => {
   const { t, language } = useLanguage();
   const {
     loginWithPassword,
     verifySecondFactorCode,
+    verifyTotpSecondFactor,
+    verifyBackupCodeSecondFactor,
     sendLoginCode,
     resendLoginCode,
     verifyLoginCode,
@@ -58,9 +68,18 @@ const LoginPage = () => {
       return;
     }
     if (result.needsSecondFactor) {
-      setMode("mfa-pending");
       setCode("");
-      okToast(language === "sv" ? "Vi har skickat en kod till din e-post." : "We've sent a code to your email.");
+      if (result.needsTotp) {
+        setMode("totp-pending");
+        okToast(
+          language === "sv"
+            ? "Öppna din authenticator-app för att hämta koden."
+            : "Open your authenticator app to get the code.",
+        );
+      } else {
+        setMode("mfa-pending");
+        okToast(language === "sv" ? "Vi har skickat en kod till din e-post." : "We've sent a code to your email.");
+      }
     }
   };
 
@@ -72,6 +91,17 @@ const LoginPage = () => {
     }
     setLoading(true);
     const err = await verifySecondFactorCode(code.trim());
+    setLoading(false);
+    if (err) errToast(err);
+  };
+
+  const handleVerifyTotp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const err =
+      mode === "backup-code"
+        ? await verifyBackupCodeSecondFactor(code.trim())
+        : await verifyTotpSecondFactor(code.trim());
     setLoading(false);
     if (err) errToast(err);
   };
@@ -173,6 +203,14 @@ const LoginPage = () => {
         return language === "sv" ? `Kod skickad till ${email}` : `Code sent to ${email}`;
       case "mfa-pending":
         return language === "sv" ? `Tvåfaktorskod skickad till ${email}` : `Two-factor code sent to ${email}`;
+      case "totp-pending":
+        return language === "sv"
+          ? "Ange den 6-siffriga koden från din authenticator-app."
+          : "Enter the 6-digit code from your authenticator app.";
+      case "backup-code":
+        return language === "sv"
+          ? "Ange en av dina återställningskoder."
+          : "Enter one of your backup codes.";
       case "reset-request":
         return language === "sv" ? "Vi skickar en kod för att återställa lösenordet." : "We'll email you a reset code.";
       case "reset-verify":
@@ -331,6 +369,65 @@ const LoginPage = () => {
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                   {language === "sv" ? "Skicka kod" : "Send code"}
+                </button>
+              </form>
+            )}
+
+            {(mode === "totp-pending" || mode === "backup-code") && (
+              <form onSubmit={handleVerifyTotp} className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("password");
+                    setCode("");
+                  }}
+                  className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  {language === "sv" ? "Tillbaka" : "Back"}
+                </button>
+
+                <div>
+                  <label className="block text-xs font-medium text-foreground mb-1">
+                    {mode === "backup-code"
+                      ? language === "sv" ? "Återställningskod" : "Backup code"
+                      : language === "sv" ? "Authenticator-kod" : "Authenticator code"}
+                  </label>
+                  <div className="relative">
+                    <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="text"
+                      value={code}
+                      onChange={(e) => setCode(e.target.value.replace(/\s/g, ""))}
+                      className="w-full pl-9 pr-3 py-2 rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition text-sm tracking-widest"
+                      placeholder={mode === "backup-code" ? "abcd-1234" : "123456"}
+                      inputMode={mode === "backup-code" ? "text" : "numeric"}
+                      autoComplete="one-time-code"
+                      autoFocus
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading || !code.trim()}
+                  className="w-full py-2.5 rounded-full bg-peach hover:bg-peach-dark text-primary-foreground font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {language === "sv" ? "Verifiera" : "Verify"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode(mode === "backup-code" ? "totp-pending" : "backup-code");
+                    setCode("");
+                  }}
+                  className="w-full text-xs text-muted-foreground hover:text-foreground transition"
+                >
+                  {mode === "backup-code"
+                    ? language === "sv" ? "Använd authenticator-kod istället" : "Use authenticator code instead"
+                    : language === "sv" ? "Använd en återställningskod istället" : "Use a backup code instead"}
                 </button>
               </form>
             )}

@@ -10,6 +10,7 @@ import {
 } from "./middlewares/clerkProxyMiddleware";
 import router from "./routes";
 import stripeWebhookRouter from "./routes/stripeWebhook";
+import clerkWebhookRouter from "./routes/clerkWebhook";
 import { warnIfStripeMissing } from "./lib/stripe";
 import { logger } from "./lib/logger";
 
@@ -46,6 +47,13 @@ app.use(
   "/api/stripe/webhook",
   express.raw({ type: "application/json" }),
   stripeWebhookRouter,
+);
+
+// Clerk webhook also needs the raw body for svix signature verification.
+app.use(
+  "/api/clerk/webhook",
+  express.raw({ type: "application/json" }),
+  clerkWebhookRouter,
 );
 
 app.use(express.json());

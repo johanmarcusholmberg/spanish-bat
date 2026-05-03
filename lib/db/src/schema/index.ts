@@ -1,5 +1,6 @@
 export * from "./profiles";
 export * from "./user_roles";
+export * from "./auditLog";
 export * from "./streaks";
 export * from "./progress";
 export * from "./vocabulary";

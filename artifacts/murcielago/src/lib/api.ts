@@ -218,5 +218,60 @@ export const api = {
       fetchApi(`/admin/messages/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
     getInsights: () => fetchApi("/admin/insights"),
     getSubscriptions: () => fetchApi("/admin/subscriptions"),
+    invites: {
+      list: () =>
+        fetchApi("/admin/invites") as Promise<{
+          invites: Array<{
+            id: number;
+            email: string;
+            role: string;
+            clerk_user_id: string | null;
+            invited_by_email: string | null;
+            invited_at: string | null;
+            accepted_at: string | null;
+            status: "pending" | "accepted" | "active";
+          }>;
+        }>,
+      create: (email: string, role = "admin") =>
+        fetchApi("/admin/invites", {
+          method: "POST",
+          body: JSON.stringify({ email, role }),
+        }) as Promise<{ ok: true; id: number; clerkInvited: boolean; clerkError: string | null }>,
+      remove: (id: number) =>
+        fetchApi(`/admin/invites/${id}`, { method: "DELETE" }) as Promise<{ ok: true }>,
+    },
+    audit: {
+      list: (filters?: { action?: string; email?: string }) => {
+        const qs = new URLSearchParams();
+        if (filters?.action) qs.set("action", filters.action);
+        if (filters?.email) qs.set("email", filters.email);
+        const suffix = qs.toString() ? `?${qs.toString()}` : "";
+        return fetchApi(`/admin/audit${suffix}`) as Promise<{
+          entries: Array<{
+            id: number;
+            user_id: string | null;
+            email: string | null;
+            action: string;
+            target: string | null;
+            ip: string | null;
+            user_agent: string | null;
+            metadata: Record<string, unknown> | null;
+            created_at: string;
+          }>;
+          actions: string[];
+        }>;
+      },
+    },
+  },
+  audit: {
+    signIn: (method: string) =>
+      fetchApi("/audit/sign-in", { method: "POST", body: JSON.stringify({ method }) }) as Promise<{ ok: true }>,
+    signOut: (userId?: string | null, email?: string | null) =>
+      fetchApi("/audit/sign-out", {
+        method: "POST",
+        body: JSON.stringify({ userId, email }),
+      }) as Promise<{ ok: true }>,
+    twoFaEnrolled: () =>
+      fetchApi("/audit/2fa-enrolled", { method: "POST" }) as Promise<{ ok: true }>,
   },
 };

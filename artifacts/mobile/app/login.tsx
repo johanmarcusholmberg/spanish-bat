@@ -71,7 +71,10 @@ export default function LoginScreen() {
       return;
     }
     if (result.needsSecondFactor) {
-      router.push({ pathname: "/verify-2fa", params: { email: email.trim() } });
+      router.push({
+        pathname: "/verify-2fa",
+        params: { email: email.trim(), mode: result.needsTotp ? "totp" : "email" },
+      });
     }
   };
 

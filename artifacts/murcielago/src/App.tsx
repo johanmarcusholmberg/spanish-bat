@@ -34,6 +34,9 @@ import EchoPage from "./pages/EchoPage";
 import StatsPage from "./pages/StatsPage";
 import NotFound from "./pages/NotFound";
 import AdminPage from "./pages/AdminPage";
+import AdminSetup2FAPage from "./pages/AdminSetup2FAPage";
+import AdminInvitesPage from "./pages/AdminInvitesPage";
+import AdminAuditPage from "./pages/AdminAuditPage";
 import ContactPage from "./pages/ContactPage";
 import StaticPage from "./pages/StaticPage";
 import PlacementTestPage from "./pages/PlacementTestPage";
@@ -108,6 +111,9 @@ const AppRoutes = () => (
       <Route path="/placement-test" element={<ProtectedRoute><PlacementTestPage /></ProtectedRoute>} />
       <Route path="/level-check" element={<ProtectedRoute><LevelCheckPage /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+      <Route path="/admin/setup-2fa" element={<ProtectedRoute><AdminSetup2FAPage /></ProtectedRoute>} />
+      <Route path="/admin/invites" element={<ProtectedRoute><AdminInvitesPage /></ProtectedRoute>} />
+      <Route path="/admin/audit" element={<ProtectedRoute><AdminAuditPage /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   </>

@@ -76,7 +76,12 @@ async function fetchApi(
 
 export const api = {
   profile: {
-    get: () => fetchApi("/profile") as Promise<{ profile: Record<string, unknown> | null; isAdmin: boolean }>,
+    get: () =>
+      fetchApi("/profile") as Promise<{
+        profile: Record<string, unknown> | null;
+        isAdmin: boolean;
+        adminTotpEnrolled?: boolean;
+      }>,
     upsert: (data: Record<string, unknown>) =>
       fetchApi("/profile", { method: "POST", body: JSON.stringify(data) }),
     delete: () => fetchApi("/profile", { method: "DELETE" }),
@@ -262,5 +267,16 @@ export const api = {
           }>;
         }>;
       }>,
+  },
+  audit: {
+    signIn: (method: string) =>
+      fetchApi("/audit/sign-in", { method: "POST", body: JSON.stringify({ method }) }) as Promise<{ ok: true }>,
+    signOut: (reason?: string) =>
+      fetchApi("/audit/sign-out", {
+        method: "POST",
+        body: JSON.stringify({ reason: reason ?? "user-initiated" }),
+      }) as Promise<{ ok: true }>,
+    twoFaEnrolled: () =>
+      fetchApi("/audit/2fa-enrolled", { method: "POST" }) as Promise<{ ok: true }>,
   },
 };
