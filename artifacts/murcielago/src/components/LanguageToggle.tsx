@@ -23,6 +23,8 @@ interface LanguageToggleProps {
   onChange?: (code: LanguageCode) => void;
   /** Whether to show the short language code next to the globe icon. */
   showCode?: boolean;
+  /** Extra classes applied to the language code span (globe variant). */
+  codeClassName?: string;
 }
 
 const shortCode = (code: string) => code.toUpperCase();
@@ -34,6 +36,7 @@ const LanguageToggle = ({
   variant = "pill",
   onChange,
   showCode = true,
+  codeClassName = "",
 }: LanguageToggleProps) => {
   const { language, setLanguage, availableLanguages, t } = useLanguage();
 
@@ -54,7 +57,9 @@ const LanguageToggle = ({
           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${className}`}
         >
           <Globe className="h-4 w-4" aria-hidden />
-          {showCode && current ? <span>{shortCode(current.code)}</span> : null}
+          {showCode && current ? (
+            <span className={codeClassName}>{shortCode(current.code)}</span>
+          ) : null}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-[12rem]">
           <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">

@@ -209,7 +209,11 @@ const HomePage = () => {
             <a href="#mobile-app" className="hover:text-peach-dark transition-colors">Mobile app</a>
           </nav>
           <div className="flex items-center gap-2">
-            <LanguageToggle size="sm" showIcon={false} />
+            <LanguageToggle
+              variant="globe"
+              className="mr-1 hover:bg-peach/15"
+              codeClassName="hidden sm:inline"
+            />
             <Button asChild variant="outline" className="rounded-full border-peach text-peach-dark hover:bg-peach/10 font-body">
               <Link to={LOGIN_ROUTE}>Log in</Link>
             </Button>
