@@ -122,7 +122,7 @@ export default function RegisterScreen() {
 
         <View style={styles.header}>
           <Image
-            source={require("../assets/images/bat-transparent.png")}
+            source={require("../assets/images/brand-bat.png")}
             style={styles.logoImage}
             resizeMode="contain"
             accessibilityLabel="Murciélingo bat logo"
