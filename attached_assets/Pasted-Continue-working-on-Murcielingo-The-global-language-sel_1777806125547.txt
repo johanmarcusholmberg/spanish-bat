@@ -1,0 +1,165 @@
+Continue working on Murcielingo.
+
+The global language selector implementation is now solid. The remaining gap is that the mobile app does not yet have a proper app-wide i18n/localization foundation.
+
+GOAL
+Create a native-mobile-ready i18n foundation for the mobile app so language changes can affect all mounted screens consistently, and so hardcoded mobile copy can gradually be migrated to translation keys.
+
+Important:
+- Do not rebuild the app.
+- Do not redesign the app.
+- Do not translate the whole mobile app in one huge pass.
+- Keep the existing language picker and language config.
+- Build on the existing files:
+  - artifacts/mobile/lib/languages.ts
+  - artifacts/mobile/lib/languagePreference.ts
+  - artifacts/mobile/components/LanguagePicker.tsx
+  - artifacts/mobile/app/(tabs)/profile.tsx
+  - artifacts/mobile/app/login.tsx
+  - artifacts/mobile/app/register.tsx
+
+PROBLEM TO SOLVE
+Today mobile language selection is persisted correctly, but mobile does not have a global language context/provider. Some screens use local state and many strings are still hardcoded.
+
+This means:
+- a mounted screen may not update immediately when language changes
+- translation logic is not centralized
+- future languages like Spanish would require scattered changes
+- the web app has a better i18n pattern than mobile
+
+IMPLEMENTATION REQUIREMENTS
+
+1. Add mobile LanguageProvider
+Create a mobile language context/provider, for example:
+
+artifacts/mobile/contexts/LanguageContext.tsx
+
+It should expose:
+- current language code
+- setLanguage(code)
+- available enabled languages
+- t(key, params?) translation helper
+- loading/ready state if needed
+
+It should:
+- initialize from getPreferredLanguage()
+- persist changes through setPreferredLanguage()
+- validate language codes using lib/languages.ts
+- fall back safely to FALLBACK_APP_LANGUAGE
+- update all subscribed mounted screens immediately
+
+2. Register provider globally
+Wrap the mobile app with the LanguageProvider at the appropriate root layout level.
+
+Use the existing Expo Router structure and place the provider as high as possible, likely in:
+- artifacts/mobile/app/_layout.tsx
+or equivalent root layout file.
+
+Do not create separate providers per screen.
+
+3. Keep LanguagePicker as reusable UI
+Update LanguagePicker so it can either:
+- use the LanguageContext directly, or
+- accept controlled props from the context
+
+Preferred:
+- make LanguagePicker use the mobile LanguageContext by default
+- avoid each screen duplicating language state logic
+
+The picker should still render languages from artifacts/mobile/lib/languages.ts.
+
+4. Create translation structure
+Create a clean mobile translation structure, for example:
+
+artifacts/mobile/i18n/translations.ts
+
+Use translation keys, not scattered if/else logic.
+
+Start with Swedish and English only.
+
+Example shape:
+{
+  common: {
+    language: {
+      sv: "Språk",
+      en: "Language"
+    },
+    save: {
+      sv: "Spara",
+      en: "Save"
+    }
+  }
+}
+
+Or another clean structure if it fits the existing codebase better.
+
+It must be easy to add Spanish later without changing UI components.
+
+5. Migrate a small but useful set of mobile strings
+Do not translate the entire app yet.
+
+Migrate only the most visible mobile strings as proof of concept:
+- LanguagePicker title/header
+- Login page headline/subtitle/buttons
+- Register page headline/subtitle/buttons
+- Profile/settings language section
+- Sign out button
+- common loading/error labels if already nearby
+
+Leave other hardcoded strings unchanged for now, but add a clear TODO/migration note.
+
+6. Profile synchronization
+Update the mobile profile/settings language flow so changing language:
+- updates LanguageContext immediately
+- persists to AsyncStorage
+- saves to the user profile/API where currently supported
+- keeps picker state synchronized without remounting
+
+Avoid separate unsynchronized local language states.
+
+7. Native mobile readiness
+The implementation must remain native-safe:
+- no window/localStorage/document
+- use AsyncStorage only inside the persistence utility
+- keep UI components platform-safe
+- support touch interaction
+- no hover-only behavior
+
+8. Tests/checks
+Add or update tests where practical.
+
+At minimum verify:
+- LanguageProvider initializes from stored preference
+- unsupported stored language falls back safely
+- setLanguage updates current language and persists it
+- LanguagePicker renders enabled languages from config
+- disabled languages are not shown
+- translated strings return the right text for sv/en
+- missing translation keys fall back gracefully
+
+Run:
+- mobile typecheck
+- mobile tests
+- any existing relevant app checks
+
+9. Final report
+After implementation, report:
+- files changed
+- how the mobile i18n provider works
+- how a screen should use t()
+- which strings were migrated
+- which strings remain hardcoded
+- how to add Spanish later
+- test/typecheck results
+
+PRODUCT DIRECTION
+This should keep Murcielingo lightweight.
+
+The goal is not to create a massive enterprise localization system.
+
+The goal is:
+- app-wide language state
+- clean translation keys
+- future-safe new languages
+- immediate UI updates when language changes
+- mobile-native compatibility
