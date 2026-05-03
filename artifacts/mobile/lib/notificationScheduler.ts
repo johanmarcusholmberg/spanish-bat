@@ -1,121 +1,183 @@
 /**
  * notificationScheduler
  * ---------------------
- * Wraps the (currently-unimplemented) push/local notification surface behind
- * a stable interface so the rest of the app can talk to "schedule a daily
- * reminder" without caring whether it lands in expo-notifications, OneSignal,
- * or a future backend job.
+ * Provider-agnostic local-notification facade for Murcielingo. Backed by
+ * `expo-notifications` on native; safely no-ops on web.
  *
- * The current implementation is a *safe placeholder*: it logs the intent and
- * records what would have been scheduled. When `expo-notifications` is added
- * to the project, swap the bodies in this file — no caller changes required.
- *
- * Copy guidance for future implementations:
- *  - Daily practice:  "Your Spanish is ready for a quick echo."
- *  - Weak words:      "{N} words are ready for review."
- *  - Streak:          "Keep your streak alive with a 5-minute session."
- *  - Level readiness: "You’re close to your next level check."
- *  - Weekly summary:  "Here's your week in Spanish."
+ * Responsibilities:
+ *  - Request OS permission at the right moment (called from settings UI).
+ *  - Schedule warm, opt-in reminders (daily practice, weak words, streak,
+ *    level readiness, weekly summary). Every category is governed by the
+ *    user's saved preferences in `notificationPreferenceService`.
+ *  - Stay safe to call from anywhere — failures never throw.
  */
+import { Platform } from "react-native";
+import * as Notifications from "expo-notifications";
+
 import { notificationPreferenceService } from "@/lib/notificationPreferenceService";
 
-interface ScheduledNotification {
-  id: string;
-  title: string;
-  body: string;
-  /** Local hour 0-23 when this fires. */
-  hour: number;
-  recurring: "daily" | "weekly" | "once";
+const TAGS = {
+  dailyPractice: "murci.daily-practice",
+  weakWords: "murci.weak-words",
+  streak: "murci.streak",
+  levelReady: "murci.level-ready",
+  weeklySummary: "murci.weekly-summary",
+} as const;
+
+type Tag = (typeof TAGS)[keyof typeof TAGS];
+
+function notificationsAvailable(): boolean {
+  if (Platform.OS === "web") return false;
+  return !!Notifications?.scheduleNotificationAsync;
 }
 
-const scheduled = new Map<string, ScheduledNotification>();
+async function safeCancel(tag: Tag): Promise<void> {
+  if (!notificationsAvailable()) return;
+  try {
+    await Notifications.cancelScheduledNotificationAsync(tag);
+  } catch {
+    /* best effort */
+  }
+}
 
-async function ensureEnabled(): Promise<boolean> {
-  const prefs = await notificationPreferenceService.load();
-  return prefs.enabled;
+async function scheduleDaily(tag: Tag, body: string, hour: number): Promise<void> {
+  if (!notificationsAvailable()) return;
+  await safeCancel(tag);
+  try {
+    await Notifications.scheduleNotificationAsync({
+      identifier: tag,
+      content: { title: "Murcielingo", body },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        hour,
+        minute: 0,
+      },
+    });
+  } catch {
+    /* best effort */
+  }
+}
+
+async function scheduleWeekly(tag: Tag, body: string, hour: number, weekday: number): Promise<void> {
+  if (!notificationsAvailable()) return;
+  await safeCancel(tag);
+  try {
+    await Notifications.scheduleNotificationAsync({
+      identifier: tag,
+      content: { title: "Murcielingo", body },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+        weekday,
+        hour,
+        minute: 0,
+      },
+    });
+  } catch {
+    /* best effort */
+  }
 }
 
 export async function requestNotificationPermission(): Promise<"granted" | "denied" | "unavailable"> {
-  // TODO(native): expo-notifications Notifications.requestPermissionsAsync().
   await notificationPreferenceService.update({ osPermissionRequested: true });
-  return "unavailable";
+  if (!notificationsAvailable()) return "unavailable";
+  try {
+    const settings = await Notifications.getPermissionsAsync();
+    if (settings.granted) return "granted";
+    const req = await Notifications.requestPermissionsAsync();
+    return req.granted ? "granted" : "denied";
+  } catch {
+    return "unavailable";
+  }
 }
 
 export async function scheduleDailyPracticeReminder(opts?: { hour?: number }): Promise<void> {
   const prefs = await notificationPreferenceService.load();
-  if (!prefs.enabled || !prefs.dailyPractice) return;
+  if (!prefs.enabled || !prefs.dailyPractice) {
+    await safeCancel(TAGS.dailyPractice);
+    return;
+  }
   const hour = opts?.hour ?? prefs.preferredHour;
-  scheduled.set("daily-practice", {
-    id: "daily-practice",
-    title: "Murcielingo",
-    body: "Your Spanish is ready for a quick echo.",
-    hour,
-    recurring: "daily",
-  });
-  // TODO(native): replace with Notifications.scheduleNotificationAsync.
+  await scheduleDaily(TAGS.dailyPractice, "Your Spanish is ready for a quick echo.", hour);
 }
 
 export async function scheduleWeakWordReminder(weakCount: number): Promise<void> {
-  if (weakCount <= 0) return;
   const prefs = await notificationPreferenceService.load();
-  if (!prefs.enabled || !prefs.weakWordReminder) return;
-  scheduled.set("weak-words", {
-    id: "weak-words",
-    title: "Murcielingo",
-    body: `${weakCount} word${weakCount === 1 ? "" : "s"} ready for review.`,
-    hour: prefs.preferredHour,
-    recurring: "daily",
-  });
+  if (!prefs.enabled || !prefs.weakWordReminder || weakCount <= 0) {
+    await safeCancel(TAGS.weakWords);
+    return;
+  }
+  const body = `${weakCount} word${weakCount === 1 ? "" : "s"} ready for review.`;
+  await scheduleDaily(TAGS.weakWords, body, prefs.preferredHour);
 }
 
 export async function scheduleStreakReminder(): Promise<void> {
   const prefs = await notificationPreferenceService.load();
-  if (!prefs.enabled || !prefs.streakReminder) return;
-  scheduled.set("streak", {
-    id: "streak",
-    title: "Murcielingo",
-    body: "Keep your streak alive with a 5-minute session.",
-    hour: prefs.preferredHour,
-    recurring: "daily",
-  });
+  if (!prefs.enabled || !prefs.streakReminder) {
+    await safeCancel(TAGS.streak);
+    return;
+  }
+  await scheduleDaily(
+    TAGS.streak,
+    "Keep your streak alive with a 5-minute session.",
+    prefs.preferredHour,
+  );
 }
 
 export async function scheduleLevelReadinessReminder(): Promise<void> {
   const prefs = await notificationPreferenceService.load();
-  if (!prefs.enabled || !prefs.levelReadiness) return;
-  scheduled.set("level-ready", {
-    id: "level-ready",
-    title: "Murcielingo",
-    body: "You're close to your next level check.",
-    hour: prefs.preferredHour,
-    recurring: "once",
-  });
+  if (!prefs.enabled || !prefs.levelReadiness) {
+    await safeCancel(TAGS.levelReady);
+    return;
+  }
+  await scheduleDaily(
+    TAGS.levelReady,
+    "You're close to your next level check.",
+    prefs.preferredHour,
+  );
 }
 
 export async function scheduleWeeklySummary(): Promise<void> {
   const prefs = await notificationPreferenceService.load();
-  if (!prefs.enabled || !prefs.weeklySummary) return;
-  scheduled.set("weekly-summary", {
-    id: "weekly-summary",
-    title: "Murcielingo",
-    body: "Here's your week in Spanish.",
-    hour: prefs.preferredHour,
-    recurring: "weekly",
-  });
+  if (!prefs.enabled || !prefs.weeklySummary) {
+    await safeCancel(TAGS.weeklySummary);
+    return;
+  }
+  // Weekly summary on Sundays at preferred hour. expo-notifications uses 1=Sun.
+  await scheduleWeekly(TAGS.weeklySummary, "Here's your week in Spanish.", prefs.preferredHour, 1);
 }
 
 export async function cancelNotifications(id?: string): Promise<void> {
-  if (id) {
-    scheduled.delete(id);
-  } else {
-    scheduled.clear();
+  if (!notificationsAvailable()) return;
+  try {
+    if (id) {
+      await Notifications.cancelScheduledNotificationAsync(id);
+    } else {
+      await Notifications.cancelAllScheduledNotificationsAsync();
+    }
+  } catch {
+    /* best effort */
   }
-  // TODO(native): Notifications.cancelScheduledNotificationAsync / cancelAllScheduledNotificationsAsync.
 }
 
-/** Inspect what would currently be scheduled — handy for the Profile/Settings UI. */
-export function debugListScheduled(): ScheduledNotification[] {
-  return Array.from(scheduled.values());
+/**
+ * Re-apply every reminder according to current preferences. Call this after
+ * the user toggles preferences in settings, or after a successful sign-in.
+ */
+export async function reconcileScheduledNotifications(weakCount = 0): Promise<void> {
+  await scheduleDailyPracticeReminder();
+  await scheduleWeakWordReminder(weakCount);
+  await scheduleStreakReminder();
+  await scheduleLevelReadinessReminder();
+  await scheduleWeeklySummary();
+}
+
+export async function debugListScheduled(): Promise<unknown[]> {
+  if (!notificationsAvailable()) return [];
+  try {
+    return await Notifications.getAllScheduledNotificationsAsync();
+  } catch {
+    return [];
+  }
 }
 
 export const notificationScheduler = {
@@ -126,6 +188,6 @@ export const notificationScheduler = {
   scheduleLevelReadinessReminder,
   scheduleWeeklySummary,
   cancelNotifications,
+  reconcileScheduledNotifications,
   debugListScheduled,
-  ensureEnabled,
 };

@@ -43,6 +43,10 @@ export const DEFAULT_NOTIFICATION_PREFS: NotificationPreferences = {
   osPermissionRequested: false,
 };
 
+let updateChain: Promise<NotificationPreferences> = Promise.resolve(
+  { ...DEFAULT_NOTIFICATION_PREFS },
+);
+
 export const notificationPreferenceService = {
   async load(): Promise<NotificationPreferences> {
     try {
@@ -63,11 +67,19 @@ export const notificationPreferenceService = {
     }
   },
 
-  async update(patch: Partial<NotificationPreferences>): Promise<NotificationPreferences> {
-    const current = await notificationPreferenceService.load();
-    const next: NotificationPreferences = { ...current, ...patch };
-    await notificationPreferenceService.save(next);
-    return next;
+  /**
+   * Serialized read-modify-write. A shared promise chain prevents lost
+   * updates when the UI dispatches several toggles in quick succession.
+   */
+  update(patch: Partial<NotificationPreferences>): Promise<NotificationPreferences> {
+    const run = async (): Promise<NotificationPreferences> => {
+      const current = await notificationPreferenceService.load();
+      const next: NotificationPreferences = { ...current, ...patch };
+      await notificationPreferenceService.save(next);
+      return next;
+    };
+    updateChain = updateChain.then(run, run);
+    return updateChain;
   },
 
   async reset(): Promise<void> {

@@ -15,6 +15,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { dashboardCache, recentLessons, type RecentLesson } from "@/lib/storage";
 import {
+  cacheLevel,
+  cacheProgressSummary,
+  getCachedLevel,
+  getCachedProgressSummary,
+} from "@/lib/learningCacheService";
+import {
   calculateReadiness,
   progressRowsToInputs,
   type Level,
@@ -78,6 +84,19 @@ export default function TodayScreen() {
       };
       setData(next);
       dashboardCache.set(next).catch(() => {});
+      // Mirror lightweight pieces into the learning cache so other surfaces
+      // (and offline mode) can read them without re-fetching.
+      void cacheLevel(((user?.level as Level) ?? "A1") as string).catch(() => {});
+      void cacheProgressSummary({
+        totalCorrect: 0,
+        totalAttempts: 0,
+        streakDays: next.streak?.currentStreak ?? 0,
+        byCategory: next.progress?.map((p) => ({
+          category: p.category,
+          completed: p.completed,
+          total: p.total,
+        })),
+      }).catch(() => {});
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load dashboard");
     } finally {
@@ -94,6 +113,32 @@ export default function TodayScreen() {
         if (!cancelled && cached) {
           setData(cached);
           setLoading(false);
+          return;
+        }
+        // No fresh dashboard cache — fall back to the learning cache so the
+        // user still sees their level + last known progress while we fetch.
+        if (!cancelled) {
+          void Promise.all([getCachedLevel(), getCachedProgressSummary()]).then(
+            ([cachedLevel, summary]) => {
+              if (cancelled) return;
+              if (summary.data) {
+                setData({
+                  streak: {
+                    currentStreak: summary.data.streakDays,
+                    longestStreak: summary.data.streakDays,
+                    lastActiveDate: "",
+                  },
+                  progress: summary.data.byCategory ?? [],
+                  lastActivity: null,
+                  vocabCount: 0,
+                });
+                setLoading(false);
+              }
+              if (cachedLevel) {
+                /* level already lives on user; this is just so it's primed */
+              }
+            },
+          );
         }
       })
       .catch(() => {});

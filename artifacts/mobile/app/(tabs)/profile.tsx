@@ -15,6 +15,7 @@ import { useAuth, Level } from "@/contexts/AuthContext";
 import { setPreferredLanguage } from "@/lib/languagePreference";
 import { api } from "@/lib/api";
 import { legalLinks } from "@/lib/legal";
+import NotificationPreferences from "@/components/NotificationPreferences";
 
 const LEVELS: Level[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
@@ -260,8 +261,11 @@ export default function ProfileScreen() {
         />
       </Card>
 
+      {/* Notification preferences */}
+      <NotificationPreferences />
+
       {/* Stats link */}
-      <Card onPress={() => router.push("/stats")} style={{ marginBottom: 12 }}>
+      <Card onPress={() => router.push("/stats")} style={{ marginBottom: 12, marginTop: 12 }}>
         <View style={styles.linkRow}>
           <View style={[styles.linkIcon, { backgroundColor: colors.secondary + "40" }]}>
             <Feather name="bar-chart-2" size={18} color={colors.secondaryForeground} />

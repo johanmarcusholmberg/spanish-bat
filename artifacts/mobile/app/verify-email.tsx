@@ -59,7 +59,9 @@ export default function VerifyEmailScreen() {
     if (err) {
       setError(err);
     } else {
-      router.replace("/(tabs)");
+      // Land brand-new accounts on the welcome / first-session intro instead
+      // of dropping them straight onto the dashboard.
+      router.replace("/welcome");
     }
   };
 

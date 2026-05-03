@@ -54,6 +54,8 @@ function RootLayoutNav() {
         <Stack.Screen name="word/[id]" options={{ headerShown: true }} />
         <Stack.Screen name="paywall" options={{ headerShown: true, presentation: "modal" }} />
         <Stack.Screen name="level-check" options={{ headerShown: true, title: "Level check" }} />
+        <Stack.Screen name="welcome" options={{ headerShown: false }} />
+        <Stack.Screen name="learn/echo" options={{ headerShown: true, title: "Echo" }} />
       </Stack>
       <OfflineBanner />
     </>
