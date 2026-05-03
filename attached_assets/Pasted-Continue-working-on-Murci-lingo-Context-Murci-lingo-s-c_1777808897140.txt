@@ -1,0 +1,290 @@
+Continue working on Murciélingo.
+
+Context:
+Murciélingo’s core product idea is “Echo the language” / “Låt språket eka”. Pronunciation practice should therefore feel like one of the most important and polished parts of the app — not a generic voice-recording feature.
+
+I want you to deep dive into the pronunciation practice flow and make sure it works correctly across web and the future native mobile app.
+
+IMPORTANT:
+- Do not redesign the whole app.
+- Do not remove existing learning flows.
+- Build on the current architecture, components, routes, language system, and user-progress logic.
+- Changes should support both web and mobile/native conversion later.
+- Keep the experience friendly, encouraging, and non-technical for the learner.
+- Murciélingo should feel like a small daily Spanish coach that helps the user echo better, not like a testing machine.
+
+GOAL
+
+Improve pronunciation practice so that users can:
+
+1. Hear a Spanish word, phrase, or sentence.
+2. Record themselves saying it.
+3. Get clear feedback on how well they pronounced it.
+4. Receive useful, specific pronunciation suggestions.
+5. Retry immediately.
+6. Save progress in a way that fits the adaptive learning system.
+
+The feature should feel central to the Murciélingo brand.
+
+PART 1 — AUDIT CURRENT PRONUNCIATION FLOW
+
+First inspect the current implementation.
+
+Check:
+- Where pronunciation exercises are defined.
+- Where microphone access is requested.
+- How audio recording starts/stops.
+- Whether recording works reliably on desktop web.
+- Whether the implementation is compatible with mobile/native later.
+- Whether permissions errors are handled clearly.
+- Whether recorded audio is actually processed or only simulated.
+- Whether the user receives meaningful pronunciation feedback.
+- Whether pronunciation results are saved to progress/statistics.
+- Whether UI text is translated through the existing LanguageContext/i18n system.
+- Whether there are hardcoded English or Swedish strings.
+- Whether browser APIs are used in a way that will break in native mobile.
+
+After the audit, implement the fixes directly.
+
+PART 2 — RECORDING RELIABILITY
+
+Improve the recording experience.
+
+Requirements:
+- Add a clear microphone permission check before recording.
+- Show a friendly explanation when microphone access is needed.
+- Handle denied permissions gracefully.
+- Handle unavailable microphone gracefully.
+- Handle unsupported browser/device gracefully.
+- Make start/stop recording state obvious.
+- Prevent double-click bugs where recording starts/stops incorrectly.
+- Add a maximum recording duration to avoid endless recordings.
+- Add clear states:
+  - idle
+  - requesting permission
+  - ready
+  - recording
+  - processing
+  - feedback ready
+  - error
+- Let the user retry easily after each attempt.
+- Make the UI mobile-friendly with large tap targets.
+- Make the implementation future-proof for native mobile by isolating audio recording logic behind a service/hook abstraction instead of spreading raw browser APIs across components.
+
+Suggested structure:
+- Create or refactor a hook/service such as:
+  - useAudioRecorder()
+  - audioRecordingService
+  - pronunciationAssessmentService
+- Keep browser-specific MediaRecorder logic isolated.
+- Add comments/TODOs where native Expo/React Native recording adapters can later plug in.
+
+PART 3 — PRONUNCIATION ASSESSMENT
+
+Make pronunciation feedback feel real and useful.
+
+If there is already a backend or AI assessment flow:
+- Verify that the recorded audio is sent correctly.
+- Verify that the expected Spanish text is sent with the audio.
+- Verify error handling.
+- Verify response parsing.
+- Verify that the feedback shown to the user matches the actual backend response.
+
+If there is not yet a real backend pronunciation assessment:
+- Implement a clean frontend/backend contract for it.
+- Do not fake polished AI feedback as if it were real.
+- Add a clearly structured placeholder assessment service that can later be connected to a real speech/pronunciation API.
+- The placeholder may provide basic feedback only when there is enough available data, but it must be clearly separated from the final production assessment logic.
+
+Design the assessment result shape like this or similar:
+
+{
+  score: number, // 0-100
+  level: "great" | "good" | "needs_practice",
+  transcript?: string,
+  expectedText: string,
+  suggestions: [
+    {
+      type: "sound" | "rhythm" | "stress" | "clarity" | "missing_word" | "extra_word",
+      message: string,
+      target?: string
+    }
+  ],
+  retryRecommended: boolean
+}
+
+Feedback should include:
+- Overall score or simple level.
+- Positive reinforcement.
+- Specific improvement suggestions.
+- A retry prompt.
+- Optional comparison between expected phrase and recognized transcript.
+- No harsh or discouraging language.
+
+Examples of useful feedback:
+- “Good rhythm. Try making the r in ‘pero’ lighter.”
+- “You pronounced most words clearly. Focus on the stress in ‘teléfono’.”
+- “Try to separate ‘de España’ a little more clearly.”
+- “Great echo — your sentence rhythm sounds natural.”
+
+Avoid generic feedback like:
+- “Incorrect.”
+- “Try again.”
+- “Bad pronunciation.”
+
+PART 4 — SPANISH-SPECIFIC PRONUNCIATION GUIDANCE
+
+Add Spanish-specific pronunciation guidance where possible.
+
+The system should be able to give hints for common Spanish pronunciation challenges, for example:
+- rolled/trilled r vs soft r
+- ñ
+- ll/y depending on dialect-neutral guidance
+- j/g sound before e/i
+- silent h
+- stress/accent marks
+- vowel clarity: a, e, i, o, u
+- b/v being similar in Spanish
+- word rhythm and syllable stress
+
+Important:
+- Keep this beginner-friendly.
+- Avoid overly technical linguistic explanations unless the user expands details.
+- Use plain language.
+- Tie suggestions to the current word/phrase when possible.
+- Make this work with CEFR level:
+  - A1/A2: simple hints
+  - B1/B2: more specific rhythm/stress feedback
+  - C1/C2: naturalness, flow, connected speech
+
+PART 5 — UX IMPROVEMENT
+
+Improve the pronunciation exercise UI so it feels branded and central to Murciélingo.
+
+The experience should include:
+- “Listen” action for the native/model audio.
+- “Echo” or “Record your echo” action for the user recording.
+- Recording animation or clear visual state.
+- Playback of the user’s own recording if technically available.
+- Feedback card after processing.
+- Retry button.
+- Continue button.
+- Optional “Save phrase” action if the phrase/word can be added to the user dictionary.
+- Mobile-friendly layout.
+- Friendly copy using the Murciélingo brand language.
+
+Suggested wording:
+- “Listen”
+- “Echo it back”
+- “Recording your echo…”
+- “Let’s tune your pronunciation”
+- “Great echo”
+- “Try one more echo”
+- “Focus sound”
+- “Rhythm tip”
+- “Stress tip”
+
+Make sure all visible strings use the existing i18n/LanguageContext translation system.
+
+PART 6 — PROGRESS AND ADAPTIVE LEARNING
+
+Pronunciation attempts should affect progress intelligently.
+
+Implement or verify:
+- pronunciation attempt is saved
+- score/result is stored
+- retry count is tracked
+- phrase/word difficulty can be adjusted based on performance
+- weak sounds or weak phrase types can be repeated later
+- good performance allows progression
+- poor performance does not block the user forever
+
+Important product direction:
+Murciélingo should never feel like it runs out of practice.
+If a user struggles with pronunciation, the app should generate or select more echo practice around similar sounds/phrases instead of simply marking the exercise as failed.
+
+Add a foundation for tracking pronunciation weaknesses such as:
+- weakSounds
+- weakStressPatterns
+- weakWords
+- lastPronunciationScore
+- pronunciationRetryCount
+
+Use existing progress/statistics storage if available.
+
+PART 7 — MOBILE/NATIVE READINESS
+
+Because Murciélingo will later become a native mobile app, avoid locking the feature into browser-only behavior.
+
+Requirements:
+- Keep audio-recording logic abstracted.
+- Make permission handling compatible with a future native adapter.
+- Add TODO/native adapter notes only where relevant.
+- Avoid direct use of `window`, `navigator`, or `MediaRecorder` inside UI components.
+- UI should be touch-first.
+- Prepare for:
+  - microphone permissions
+  - audio playback
+  - haptic feedback after good attempts
+  - offline-friendly retry behavior
+  - background-safe recording state
+
+Do not implement full native recording unless the current project already has the native/mobile package ready for it. But structure the code so it can be added later without rewriting the feature.
+
+PART 8 — ADMIN/CONFIG FLEXIBILITY IF RELEVANT
+
+If the app has exercise configuration/admin data, add or prepare support for pronunciation-specific metadata:
+
+- targetText
+- modelAudioUrl
+- targetSounds
+- CEFR level
+- expectedStress
+- dialectNote
+- hintText
+- difficulty
+- minimumPassingScore
+- retryLimitBeforeSupportHint
+
+Do not overbuild an admin system if one does not exist. Add only the necessary data shape/foundation.
+
+PART 9 — TESTING
+
+Add or update tests where possible.
+
+Test:
+- recording state transitions
+- microphone denied state
+- unsupported recording state
+- successful recording flow
+- assessment response parsing
+- feedback rendering
+- translation keys exist
+- retry flow
+- progress update after pronunciation attempt
+- no hardcoded strings in the main pronunciation UI
+- mobile-sized layout does not break
+
+Also run:
+- typecheck
+- existing tests
+- lint if available
+
+PART 10 — FINAL REPORT
+
+When done, report back with:
+
+1. What the current pronunciation implementation looked like before.
+2. What was broken, missing, or too generic.
+3. What you changed.
+4. Whether real audio recording now works.
+5. Whether real pronunciation assessment exists or whether a clean placeholder contract was created.
+6. How microphone permission errors are handled.
+7. How pronunciation suggestions are generated/displayed.
+8. How results are saved to progress.
+9. What remains before production-quality pronunciation scoring.
+10. Test results.
+
+Important:
+Do not claim that AI pronunciation scoring is fully implemented unless it actually is.
+If the app only has a placeholder or basic transcript comparison, say so clearly in the report.
