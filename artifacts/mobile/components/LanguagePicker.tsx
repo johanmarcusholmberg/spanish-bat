@@ -11,18 +11,14 @@ import { Feather } from "@expo/vector-icons";
 
 import { Typography } from "@/components/Typography";
 import { useColors } from "@/hooks/useColors";
+import {
+  AppLanguage,
+  getEnabledAppLanguages,
+} from "@/lib/languages";
 
-export type AppLanguage = "sv" | "en";
+export type { AppLanguage };
 
-const OPTIONS: {
-  code: AppLanguage;
-  flag: string;
-  short: string;
-  long: string;
-}[] = [
-  { code: "sv", flag: "🇸🇪", short: "SV", long: "Svenska" },
-  { code: "en", flag: "🇬🇧", short: "EN", long: "English" },
-];
+const OPTIONS = getEnabledAppLanguages();
 
 interface LanguagePickerProps {
   value: AppLanguage;
