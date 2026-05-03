@@ -4,7 +4,14 @@ import { PlayCircle, Lock, Check } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTodayEcho, type TodayEchoFocus } from "@/hooks/useTodayEcho";
 import { Button } from "@/components/ui/button";
-import { EchoRingsMotif } from "@/components/EchoMotifs";
+import {
+  EchoRingsMotif,
+  MicPulseMotif,
+  WaveformMotif,
+  PhraseBubbleMotif,
+  SentenceFlowMotif,
+  PathDotsMotif,
+} from "@/components/EchoMotifs";
 
 const FOCUS_LABEL: Record<TodayEchoFocus, { en: string; sv: string }> = {
   pronunciation: { en: "Pronunciation", sv: "Uttal" },
@@ -14,6 +21,18 @@ const FOCUS_LABEL: Record<TodayEchoFocus, { en: string; sv: string }> = {
   mixed_review: { en: "Mixed review", sv: "Blandad repetition" },
   weak_spots: { en: "Weak spots", sv: "Fokusområden" },
   due_review: { en: "Daily review", sv: "Daglig repetition" },
+};
+
+// Map each focus to its matching motif so the focus pill carries
+// meaning instead of repeating the hero's echo-ring watermark.
+const FOCUS_MOTIF: Record<TodayEchoFocus, React.FC<{ className?: string; tone?: "primary" | "clay" | "ink" }>> = {
+  pronunciation: MicPulseMotif,
+  listening: WaveformMotif,
+  vocabulary: PhraseBubbleMotif,
+  sentences: SentenceFlowMotif,
+  mixed_review: PathDotsMotif,
+  weak_spots: PathDotsMotif,
+  due_review: PhraseBubbleMotif,
 };
 
 /**
@@ -34,6 +53,7 @@ const TodaysEchoHero: React.FC = () => {
   const plan = useTodayEcho();
 
   const focusLabel = FOCUS_LABEL[plan.focus][lang];
+  const FocusMotif = FOCUS_MOTIF[plan.focus] ?? EchoRingsMotif;
   const completedDot =
     plan.state === "completed_today" || plan.state === "free_limit_reached";
   const isActive =
@@ -59,21 +79,18 @@ const TodaysEchoHero: React.FC = () => {
       aria-labelledby="todays-echo-title"
       className="relative overflow-hidden rounded-[1.4rem] border border-primary/20 gradient-ivory shadow-soft"
     >
-      {/* Echo-ring watermark in the top-right corner */}
+      {/* Echo-ring watermark — single soft glow in the top-right corner.
+          The previous version layered a radial gradient AND a large
+          inline EchoRingsMotif on top of each other, which competed
+          with the headline. One coherent watermark is enough. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full"
+        className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full hidden sm:block"
         style={{
           background:
-            "radial-gradient(circle, hsl(var(--primary) / 0.18) 0%, hsl(var(--primary) / 0.06) 40%, transparent 70%)",
+            "radial-gradient(circle, hsl(var(--primary) / 0.16) 0%, hsl(var(--primary) / 0.05) 45%, transparent 72%)",
         }}
       />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute right-3 top-3 opacity-30"
-      >
-        <EchoRingsMotif className="h-32 w-32" />
-      </div>
 
       <div className="relative p-5 sm:p-7">
         {/* Eyebrow + title block */}
@@ -111,7 +128,7 @@ const TodaysEchoHero: React.FC = () => {
         {/* FOCUS ROW — the single, clear thing this session is about. */}
         <div className="flex items-center gap-3">
           <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary/12 ring-1 ring-inset ring-primary/25">
-            <EchoRingsMotif className="h-5 w-5" tone="primary" />
+            <FocusMotif className="h-5 w-5" tone="primary" />
           </span>
           <div className="min-w-0">
             <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">

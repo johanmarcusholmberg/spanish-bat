@@ -1,0 +1,236 @@
+Great work. The pronunciation flow is now much better structured and the honest heuristic placeholder is the right interim step.
+
+Next, I want you to do a focused follow-up pass to make this production-ready in structure without pretending we have real acoustic AI scoring yet.
+
+Important:
+- Keep the current heuristic pronunciation assessment.
+- Do not claim real AI/acoustic pronunciation scoring exists.
+- Do not add a paid third-party API yet unless it is only behind a clean adapter/interface and disabled by default.
+- Do not redesign the whole app.
+- Keep everything compatible with future native mobile conversion.
+- Build on the new useAudioRecorder, pronunciationAssessmentService, and pronunciationStats work.
+
+GOAL
+
+Make the pronunciation feature feel stable, testable, and ready for the next production step:
+1. Better route/access handling during development.
+2. Stronger test coverage.
+3. Cleaner future backend adapter for real pronunciation scoring.
+4. Better adaptive-practice integration foundation.
+5. Clear distinction between heuristic scoring and future acoustic scoring.
+
+PART 1 — MAKE PRONUNCIATION PAGE EASY TO TEST IN DEVELOPMENT
+
+The page is currently behind auth and only the marketing home is shown.
+
+Please make sure there is a safe development/test path for manually testing pronunciation without weakening production security.
+
+Requirements:
+- Do not expose paid/protected pronunciation practice publicly in production.
+- Add a development-only preview route or dev bypass if needed.
+- The route should only work when NODE_ENV/development or the existing dev flag is active.
+- In production, it must redirect/deny access exactly as before.
+- Document the test route in the final report.
+- If a mock user/session is needed in dev, keep it clearly marked as development-only.
+
+PART 2 — FIX TEST ENVIRONMENT ISSUE
+
+Vitest could not run because the Vite config requires PORT.
+
+Please fix the test configuration so automated tests can run without requiring the app runtime environment.
+
+Requirements:
+- Tests should not fail just because PORT is missing.
+- Add a safe default PORT for test mode or isolate test config from runtime server config.
+- Do not break Replit workflows.
+- Do not break normal dev server startup.
+- Confirm that `npm test`, `vitest`, or the existing test command now runs.
+
+PART 3 — ADD TESTS FOR THE NEW PRONUNCIATION LOGIC
+
+Add tests for the new pronunciation foundation.
+
+Test at minimum:
+
+useAudioRecorder:
+- initial state is idle or ready depending on supported environment
+- unsupported browser/device state
+- permission denied state
+- successful permission request state
+- start recording
+- stop recording
+- max duration auto-stop
+- double-click/double-start protection
+- error recovery/reset
+
+pronunciationAssessmentService:
+- exact match gives high score
+- missing word creates missing_word suggestion
+- extra word creates extra_word suggestion
+- close word creates clarity/sound suggestion
+- Spanish-specific hints trigger for:
+  - rr/r
+  - ñ
+  - j/g
+  - silent h
+  - accent/stress
+  - vowel clarity
+  - b/v
+- B1+ gets rhythm/stress guidance where relevant
+- result always includes score, level, expectedText, suggestions, retryRecommended
+- source is clearly marked as heuristic_placeholder
+
+pronunciationStats:
+- records attempts per phrase
+- increments retry count
+- stores weakSounds and weakWords
+- decays weakness counters after strong success
+- handles missing userId safely
+- does not crash if localStorage is unavailable or corrupted
+
+PronunciationPage:
+- renders permission explainer
+- renders unsupported message
+- renders recording state
+- renders feedback card
+- renders retry button
+- renders heuristic disclaimer
+- uses translation keys for visible text
+
+PART 4 — CREATE A REAL BACKEND/API ADAPTER CONTRACT, DISABLED BY DEFAULT
+
+Prepare the codebase for future real pronunciation scoring without implementing or pretending it exists.
+
+Create a provider-style adapter system such as:
+
+- PronunciationAssessmentProvider
+- HeuristicPronunciationProvider
+- RemotePronunciationProvider
+
+The default provider should remain heuristic.
+
+Add environment/config support like:
+
+PRONUNCIATION_ASSESSMENT_PROVIDER=heuristic
+
+Future values may be:
+- azure
+- speechace
+- openai
+- custom
+
+Requirements:
+- Default to heuristic when no env variable is set.
+- If provider is set to a remote provider but required API settings are missing, fail gracefully back to heuristic or show a clear non-production warning.
+- Do not add real API keys.
+- Do not add fake API responses that pretend to be real.
+- Keep the UI independent from which provider is used.
+- Ensure AssessmentResult includes:
+  - provider
+  - source
+  - isAcousticAssessment: boolean
+  - confidence?: number
+- For the current heuristic provider:
+  - provider: "heuristic"
+  - source: "heuristic_placeholder"
+  - isAcousticAssessment: false
+
+PART 5 — PREPARE SERVER-SIDE PERSISTENCE CONTRACT
+
+Pronunciation stats are currently in localStorage. That is acceptable for now, but the architecture should clearly support moving it to the backend.
+
+Add a clean data contract for future persistence.
+
+Suggested type:
+
+PronunciationAttemptRecord {
+  id?: string
+  userId: string
+  phraseId: string
+  expectedText: string
+  transcript?: string
+  score: number
+  level: "great" | "good" | "needs_practice"
+  provider: string
+  source: string
+  isAcousticAssessment: boolean
+  retry: boolean
+  weakSounds: string[]
+  weakWords: string[]
+  createdAt: string
+}
+
+Add a persistence service abstraction:
+
+- PronunciationProgressRepository
+- LocalPronunciationProgressRepository
+- RemotePronunciationProgressRepository placeholder
+
+Requirements:
+- UI should call the repository abstraction, not localStorage directly.
+- Local repository remains the active default.
+- Remote repository should be a clearly marked placeholder/future adapter.
+- Keep migration path simple for later Supabase/API storage.
+
+PART 6 — ADAPTIVE PRACTICE FOUNDATION
+
+Do not build a full adaptive engine yet, but add enough structure so weak pronunciation areas can later influence exercise selection.
+
+Add or prepare a helper like:
+
+getPronunciationPracticeHints(userId)
+
+It should return:
+- weakestSounds
+- weakestWords
+- recommendedPracticeType
+- suggestedDifficultyAdjustment
+- lastScore
+- retryRecommended
+
+Use the local pronunciation stats for now.
+
+In the UI, add a small learner-friendly message after feedback when relevant, for example:
+- “We’ll bring back a few more r-sound echoes later.”
+- “You may see this word again soon.”
+- “Great echo — this phrase can move forward.”
+
+Do not overpromise that the full adaptive picker already uses this unless it actually does.
+
+PART 7 — COPY AND BRAND POLISH
+
+Keep Murciélingo’s pronunciation identity strong.
+
+Review the pronunciation page text and make sure it feels like:
+
+- Echo the language
+- friendly
+- coach-like
+- honest
+- not overly technical
+- not generic SaaS
+- not a harsh test
+
+Make sure Swedish and English translations are natural.
+
+Use examples like:
+- “Echo it back”
+- “Tune your echo”
+- “Your echo is getting clearer”
+- “We’ll practice this sound again”
+- “Pronunciation guidance is currently based on speech recognition and text comparison, not full acoustic scoring.”
+
+PART 8 — FINAL REPORT
+
+When done, report back with:
+
+1. How I can manually test the pronunciation page in development.
+2. Whether production auth/access is still protected.
+3. What changed in the Vitest/test setup.
+4. Which tests were added and whether they pass.
+5. How the provider/adapter system works.
+6. Confirmation that the current provider is heuristic, not real acoustic AI.
+7. How pronunciation progress persistence is now structured.
+8. How weak sounds/words can later feed adaptive practice.
+9. Any remaining limitations before production-quality pronunciation scoring.
+10. Typecheck/test results.

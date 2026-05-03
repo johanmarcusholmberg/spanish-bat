@@ -449,7 +449,7 @@ const translations: Translations = {
   todaysEchoStart: { sv: "Starta dagens övning", en: "Start today's practice" },
   todaysEchoResume: { sv: "Fortsätt dagens övning", en: "Resume today's practice" },
   todaysEchoUnlock: { sv: "Lås upp full adaptiv träning", en: "Unlock full adaptive practice" },
-  practiceAreasTitle: { sv: "Fortsätt lära dig", en: "Continue learning" },
+  practiceAreasTitle: { sv: "Övningsområden", en: "Practice areas" },
 
   // Language selector
   appLanguage: { sv: "Appspråk", en: "App language" },

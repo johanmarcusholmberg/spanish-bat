@@ -66,23 +66,26 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
           <span className="font-heading font-bold text-foreground text-lg tracking-tight">Murciélingo</span>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Admin entry — surfaced separately from the learner nav and
-              gated by role. Visually muted so it never competes with
-              the daily learner experience. */}
+          {/* Admin entry — discreet icon-only control gated by role.
+              Visually muted so it never competes with the daily learner
+              experience; the label is reserved for screen readers and
+              the hover tooltip. Hidden entirely from non-admin users.
+              TODO: Re-enable authenticator/2FA for admin before production. */}
           {isAdmin && (
             <NavLink
               to="/admin"
+              title={t("adminPanel")}
+              aria-label={t("adminPanel")}
               className={({ isActive }) =>
-                `hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ring-1 ring-inset transition ${
+                `inline-flex items-center justify-center h-8 w-8 rounded-md transition ${
                   isActive
-                    ? "bg-foreground text-background ring-foreground"
-                    : "bg-muted text-muted-foreground ring-border hover:text-foreground hover:ring-foreground/40"
+                    ? "text-foreground bg-muted"
+                    : "text-muted-foreground/70 hover:text-foreground hover:bg-muted"
                 }`
               }
-              aria-label={t("adminPanel")}
             >
-              <Shield className="h-3 w-3" />
-              {t("adminPanel")}
+              <Shield className="h-4 w-4" />
+              <span className="sr-only">{t("adminPanel")}</span>
             </NavLink>
           )}
           <LanguageToggle variant="globe" onChange={handleLanguageChange} />
