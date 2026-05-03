@@ -1,0 +1,359 @@
+Continue working on Murcielingo.
+
+PRIORITY CHANGE
+The most important priority is now the logged-in user experience around "Today’s Echo".
+
+The app should not feel like a generic dashboard or a list of modules. When a user logs in, the main experience should immediately answer:
+
+"What should I practice today?"
+
+The user should think:
+
+"I’ll do today’s practice."
+
+Not:
+
+"Which module should I open?"
+
+Do not use Git, commits, branches, PRs, or deployment steps. Work directly in the current Replit project.
+
+PRIMARY GOAL — Make Today’s Echo the center of the app
+
+Redesign the logged-in homepage/dashboard so the first and most important thing a user sees is:
+
+Today’s Echo
+
+This should become the main entry point into practice.
+
+The Today’s Echo card/section should feel custom, warm, and central to Murcielingo.
+
+It should include:
+
+- A clear title: "Today’s Echo"
+- A short supportive sentence explaining what the user will practice today
+- A primary CTA:
+  - "Start today’s practice" if no session is active
+  - "Resume today’s practice" if a session exists
+- Current CEFR level
+- Main focus area for today, for example:
+  - Pronunciation
+  - Listening
+  - Vocabulary recall
+  - Sentence building
+  - Mixed review
+- Estimated duration, for example 5–10 minutes
+- A small progress indicator if today’s session has started
+- A soft Murcielingo-specific visual motif:
+  - echo rings
+  - sound wave
+  - phrase bubble
+  - subtle bat-wing curve
+  - microphone pulse
+
+Avoid generic icons and generic SaaS dashboard cards.
+
+DESIGN DIRECTION
+
+Today’s Echo should feel like the app’s "home base".
+
+It should be:
+
+- Friendly
+- Calm
+- Mobile-first
+- Language-learning focused
+- Slightly playful, but not childish
+- Clearly connected to the Murcielingo brand
+- Less generic than the current vibe-coded UI
+
+Avoid:
+
+- A grid of unrelated feature cards as the first impression
+- Too many counters
+- Random icons
+- Technical labels
+- Generic headings like "Dashboard overview"
+- Making the user choose from too many modules immediately
+
+SUGGESTED DASHBOARD STRUCTURE
+
+Logged-in dashboard should be reorganized like this:
+
+1. Main hero card:
+   Today’s Echo
+
+2. Below it:
+   "Continue learning" or "Practice areas"
+   Only show a few focused options:
+   - Pronunciation
+   - Vocabulary
+   - Sentence Builder
+   - Listening
+
+3. Progress summary:
+   Keep this secondary.
+   Show:
+   - Current level
+   - Weekly rhythm/streak
+   - Words saved/review due
+   - Recent improvement
+
+4. Upgrade or premium state:
+   Only show when relevant.
+   Do not let upgrade messaging dominate the dashboard.
+
+FREE VS PAID BEHAVIOR FOR TODAY’S ECHO
+
+Today’s Echo should work for both free and paid users, but with different depth.
+
+Free user:
+
+- Can access a limited daily Today’s Echo session
+- Should clearly understand what is free
+- Should see a polished upgrade prompt after the free daily practice limit is reached
+- Should not feel like the app is broken or empty
+
+Paid user:
+
+- Can access the full adaptive Today’s Echo session
+- Should get richer mixed practice
+- Should get adaptive review based on mistakes, saved words, pronunciation, and level
+
+Admin user:
+
+- Should still land in the normal learner dashboard unless they choose Admin
+- Admin link should be available only if role is admin/administrator
+- Admin should not replace Today’s Echo as the main product experience
+
+ACCESS MODEL — KEEP SIMPLE BUT CLEAR
+
+While working on Today’s Echo, also clean up the frontend access handling enough so it does not feel messy.
+
+Create or reuse one clear frontend access/entitlement helper, such as:
+
+- useAccess()
+- useEntitlements()
+- useCurrentUser()
+
+It should expose clear booleans:
+
+- isLoggedIn
+- isAdmin
+- isFreeUser
+- isPaidUser
+- canUseTodayEcho
+- canUseFullTodayEcho
+- canAccessPremiumPractice
+- canAccessAdmin
+
+Do not spread payment/admin checks randomly across many components.
+
+ADMIN PAGE REQUIREMENT
+
+The admin page should only be visible and accessible if the logged-in user has role:
+
+- "admin"
+or
+- "administrator"
+
+During development:
+
+- Pause/disable the authenticator requirement for admin.
+- Do not delete authenticator code permanently.
+- Add TODO comment:
+  "TODO: Re-enable authenticator/2FA for admin before production."
+- Admin must still require logged-in admin role.
+- Non-admin users must not see admin navigation.
+- Non-admin users manually entering the admin URL should see access denied or be redirected to dashboard.
+- Logged-out users manually entering admin URL should be redirected to login.
+
+TODAY’S ECHO CONTENT LOGIC
+
+Use existing learning/practice data if available.
+
+Today’s Echo should select or display a daily practice focus based on available information such as:
+
+- User level
+- Last practiced area
+- Weak areas
+- Saved words
+- Unfinished session
+- Practice history
+- Pronunciation needs
+
+If this logic does not fully exist yet, create a clean frontend-ready structure that can later connect to the adaptive backend.
+
+Do not hardcode everything into the component. Create a small helper/model such as:
+
+- getTodaysEchoPlan()
+- buildTodayEchoSessionPreview()
+- useTodayEcho()
+
+This should return data like:
+
+- title
+- focusArea
+- level
+- estimatedMinutes
+- sessionStatus
+- progress
+- primaryActionLabel
+- isLimitedForFreeUser
+- lockedReason
+- suggestedPracticeTypes
+
+For now, it can use existing local/mock/dev data only if real data is not available, but mark this clearly as temporary.
+
+TODAY’S ECHO UI DETAILS
+
+The Today’s Echo card should include:
+
+- Strong visual hierarchy
+- One obvious primary button
+- Mobile-friendly layout
+- No tiny buttons
+- No hover-only behavior
+- Clear loading state
+- Clear empty state
+- Clear error state
+- Clean locked/limit reached state for free users
+
+Example states:
+
+1. New day / not started:
+   Title: Today’s Echo
+   Text: "A short Spanish session built around what you need to repeat next."
+   CTA: Start today’s practice
+
+2. In progress:
+   Title: Resume Today’s Echo
+   Text: "You’re halfway through today’s practice."
+   CTA: Resume practice
+
+3. Completed:
+   Title: Today’s Echo complete
+   Text: "Nice work. Come back tomorrow for a new echo."
+   CTA: Review saved words / Practice more
+
+4. Free limit reached:
+   Title: Today’s Echo complete
+   Text: "You’ve completed today’s free session."
+   CTA: Unlock full adaptive practice
+
+5. No learning data yet:
+   Title: Start your first Echo
+   Text: "Murcielingo will adapt once you begin practicing."
+   CTA: Begin first practice
+
+COPY STYLE
+
+Use friendly, natural language.
+
+Examples:
+
+- "A short Spanish session built around what you need to repeat next."
+- "Practice pronunciation, listening, and recall in one focused session."
+- "Today’s focus: pronunciation and sentence rhythm."
+- "You’ve completed today’s free echo."
+- "Unlock full adaptive practice to keep going."
+
+Avoid:
+
+- "Module unavailable"
+- "Subscription object missing"
+- "User entitlement invalid"
+- "No records found"
+- "Feature locked"
+
+MOBILE-FIRST REQUIREMENTS
+
+Today’s Echo must work especially well on mobile:
+
+- It should fit naturally near the top of the screen.
+- The primary CTA should be easy to tap.
+- Cards should not be too tall or too dense.
+- Use bottom navigation if the app already has/needs it.
+- Avoid large desktop-only layouts.
+- Avoid hover-only UI.
+- Keep the dashboard scroll simple.
+
+ICON / VISUAL RULES
+
+Audit icons around the dashboard and Today’s Echo.
+
+- Use fewer icons.
+- Remove generic/random icons.
+- Keep consistent style.
+- Prefer Murcielingo-specific visual elements where possible:
+  - sound wave
+  - echo rings
+  - microphone pulse
+  - phrase bubble
+  - level path dots
+
+Do not overuse bat imagery.
+
+TRANSLATIONS
+
+If the app supports Swedish/English, add or update translation keys for Today’s Echo.
+
+Murcielingo should remain unchanged as brand name.
+
+Suggested copy:
+
+English:
+- Today’s Echo
+- Start today’s practice
+- Resume today’s practice
+- Today’s focus
+- Current level
+- Estimated time
+- Unlock full adaptive practice
+
+Swedish:
+- Dagens Echo
+- Starta dagens övning
+- Fortsätt dagens övning
+- Dagens fokus
+- Nuvarande nivå
+- Uppskattad tid
+- Lås upp full adaptiv träning
+
+IMPLEMENTATION CHECKLIST
+
+1. Audit current dashboard/home after login.
+2. Identify current access/payment/admin checks.
+3. Create or clean up one frontend entitlement/access helper.
+4. Make Today’s Echo the main dashboard element.
+5. Create a Today’s Echo data/helper structure instead of hardcoding everything in JSX.
+6. Add Today’s Echo states:
+   - not started
+   - in progress
+   - completed
+   - free limit reached
+   - no data yet
+   - loading/error
+7. Connect CTA to the best existing practice route.
+8. If no route exists, create a safe placeholder route/state that can be expanded later.
+9. Reduce generic dashboard cards and random icons.
+10. Update navigation so Today/Today’s Echo feels like the primary home.
+11. Ensure free users get limited Today’s Echo access.
+12. Ensure paid users get full Today’s Echo access.
+13. Ensure admin users still see normal learner dashboard plus admin access.
+14. Hide admin nav from non-admin users.
+15. Pause admin authenticator requirement during development while keeping admin role protection.
+16. Add TODO to re-enable authenticator/2FA before production.
+17. Test logged-out, free, paid, and admin states.
+18. Run typecheck/tests if available.
+
+EXPECTED RESULT
+
+After this work:
+
+- Today’s Echo is clearly the main user experience after login.
+- The dashboard feels like a personal Spanish coach, not a generic admin dashboard.
+- Free and paid access is easier to understand.
+- Admin access is role-based and hidden from normal users.
+- Admin authenticator is paused only for development.
+- The UI feels more custom to Murcielingo through copy, layout, visual motifs, and fewer generic icons.
+- The app feels closer to a native mobile language-learning product.
