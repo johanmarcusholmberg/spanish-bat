@@ -1,12 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Card } from "./Card";
 import { Typography } from "./Typography";
 import { useColors } from "@/hooks/useColors";
 import { useEchoMemory } from "@/hooks/useEchoMemory";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+
+const INTRO_KEY = "echo_memory_intro_seen";
 
 interface Props {
   lang?: "en" | "sv";
@@ -22,6 +25,29 @@ const EchoMemoryPreview: React.FC<Props> = ({ lang = "en" }) => {
   const colors = useColors();
   const memory = useEchoMemory();
   const { isPremium, loading } = useFeatureAccess();
+
+  // One-time onboarding callout — see web EchoMemoryPreview for rationale.
+  // Persisted in AsyncStorage; never reappears once dismissed.
+  const [showIntro, setShowIntro] = useState(false);
+  useEffect(() => {
+    if (loading || !memory.hasData) return;
+    let cancelled = false;
+    AsyncStorage.getItem(INTRO_KEY)
+      .then((v) => {
+        if (!cancelled && v !== "1") setShowIntro(true);
+      })
+      .catch(() => {
+        /* ignore — better to skip the callout than to crash */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [loading, memory.hasData]);
+  const dismissIntro = () => {
+    setShowIntro(false);
+    AsyncStorage.setItem(INTRO_KEY, "1").catch(() => {});
+  };
+
   if (loading) return null;
 
   const tagline =
@@ -169,6 +195,44 @@ const EchoMemoryPreview: React.FC<Props> = ({ lang = "en" }) => {
             {tagline}
           </Typography>
 
+          {showIntro && (
+            <View
+              testID="echo-memory-intro"
+              accessibilityRole="text"
+              style={[
+                styles.intro,
+                {
+                  backgroundColor: colors.primary + "1A",
+                  borderColor: colors.primary + "55",
+                },
+              ]}
+            >
+              <Feather
+                name="star"
+                size={13}
+                color={colors.primary}
+                style={{ marginTop: 2 }}
+              />
+              <Typography
+                variant="caption"
+                style={{ flex: 1, fontSize: 12, lineHeight: 17 }}
+              >
+                {lang === "sv"
+                  ? "Murci har precis börjat komma ihåg det här åt dig — det här är ditt Eko-minne. Ju mer du övar, desto mer kan jag anpassa."
+                  : "Murci just started remembering this for you — this is your Echo Memory. The more you practice, the more I can tailor."}
+              </Typography>
+              <Pressable
+                onPress={dismissIntro}
+                accessibilityRole="button"
+                accessibilityLabel={lang === "sv" ? "Stäng" : "Dismiss"}
+                hitSlop={8}
+                testID="echo-memory-intro-dismiss"
+              >
+                <Feather name="x" size={14} color={colors.mutedForeground} />
+              </Pressable>
+            </View>
+          )}
+
           {stats.length > 0 && (
             <View style={styles.statsRow}>
               {stats.map((s) => (
@@ -216,7 +280,10 @@ const EchoMemoryPreview: React.FC<Props> = ({ lang = "en" }) => {
           {!isPremium ? (
             <View style={{ marginTop: 10 }}>
               <Pressable
-                onPress={() => router.push("/paywall" as never)}
+                onPress={() => {
+                  if (showIntro) dismissIntro();
+                  router.push("/paywall" as never);
+                }}
                 style={[styles.btnOutline, { borderColor: colors.border }]}
               >
                 <Feather name="lock" size={13} color={colors.foreground} />
@@ -245,7 +312,10 @@ const EchoMemoryPreview: React.FC<Props> = ({ lang = "en" }) => {
             </View>
           ) : (
             <Pressable
-              onPress={primary.onPress}
+              onPress={() => {
+                if (showIntro) dismissIntro();
+                primary.onPress();
+              }}
               style={[
                 styles.btn,
                 { backgroundColor: colors.primary, marginTop: 10 },
@@ -307,6 +377,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     alignSelf: "flex-start",
+  },
+  intro: {
+    marginTop: 10,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
   },
   btnOutline: {
     flexDirection: "row",

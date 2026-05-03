@@ -22,6 +22,7 @@
     "@types/react-dom": "catalog:",
     "@ungap/structured-clone": "^1.3.0",
     "@workspace/api-client-react": "workspace:*",
+    "@workspace/echo-content": "workspace:*",
     "@workspace/learning-coach": "workspace:*",
     "@workspace/level-check": "workspace:*",
     "@workspace/practice": "workspace:*",

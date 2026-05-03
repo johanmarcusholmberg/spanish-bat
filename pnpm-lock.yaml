@@ -299,6 +299,9 @@ importers:
       '@workspace/api-client-react':
         specifier: workspace:*
         version: link:../../lib/api-client-react
+      '@workspace/echo-content':
+        specifier: workspace:*
+        version: link:../../lib/echo-content
       '@workspace/learning-coach':
         specifier: workspace:*
         version: link:../../lib/learning-coach
@@ -865,6 +868,12 @@ importers:
       drizzle-kit:
         specifier: ^0.31.9
         version: 0.31.9
+
+  lib/echo-content:
+    dependencies:
+      '@workspace/practice':
+        specifier: workspace:*
+        version: link:../practice
 
   lib/integrations-openai-ai-react: {}
 

@@ -22,6 +22,9 @@
       "path": "./lib/practice"
     },
     {
+      "path": "./lib/echo-content"
+    },
+    {
       "path": "./lib/level-check"
     }
   ]

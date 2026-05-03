@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Brain, Lock, Sparkles } from "lucide-react";
+import { Brain, Lock, Sparkles, X } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useEchoMemory } from "@/hooks/useEchoMemory";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
@@ -28,6 +28,35 @@ const EchoMemoryPreview: React.FC<{ className?: string }> = ({
   const navigate = useNavigate();
   const { isPremium, loading } = useFeatureAccess();
   const memory = useEchoMemory();
+
+  // ── One-time onboarding callout ─────────────────────────────────────
+  // The first time a learner ever sees Echo Memory with real data on it,
+  // surface a tiny "what is this?" tooltip so the metric pills feel earned
+  // instead of mysterious. Persisted in localStorage; once dismissed (or
+  // auto-dismissed by clicking through to a session) it never returns.
+  const INTRO_KEY = "echo_memory_intro_seen";
+  const [showIntro, setShowIntro] = useState(false);
+  useEffect(() => {
+    if (loading) return;
+    if (!memory.hasData) return;
+    try {
+      if (typeof window !== "undefined" && window.localStorage.getItem(INTRO_KEY) !== "1") {
+        setShowIntro(true);
+      }
+    } catch {
+      /* SSR / private mode — silently skip */
+    }
+  }, [loading, memory.hasData]);
+  const dismissIntro = () => {
+    setShowIntro(false);
+    try {
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(INTRO_KEY, "1");
+      }
+    } catch {
+      /* ignore */
+    }
+  };
 
   if (loading) return null;
 
@@ -159,6 +188,30 @@ const EchoMemoryPreview: React.FC<{ className?: string }> = ({
           </div>
           <p className="text-sm text-muted-foreground mt-1">{tagline}</p>
 
+          {showIntro && (
+            <div
+              className="mt-3 flex items-start gap-2 bg-primary/10 border border-primary/30 rounded-lg p-2.5 text-xs text-foreground/90"
+              data-testid="echo-memory-intro"
+              role="status"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+              <div className="flex-1">
+                {lang === "sv"
+                  ? "Murci har precis börjat komma ihåg det här åt dig — det här är ditt Eko-minne. Ju mer du övar, desto mer kan jag anpassa."
+                  : "Murci just started remembering this for you — this is your Echo Memory. The more you practice, the more I can tailor."}
+              </div>
+              <button
+                type="button"
+                onClick={dismissIntro}
+                aria-label={lang === "sv" ? "Stäng" : "Dismiss"}
+                className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                data-testid="echo-memory-intro-dismiss"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+
           {stats.length > 0 && (
             <div
               className="flex flex-wrap gap-1.5 mt-3"
@@ -197,7 +250,10 @@ const EchoMemoryPreview: React.FC<{ className?: string }> = ({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => navigate("/pricing")}
+                onClick={() => {
+                  if (showIntro) dismissIntro();
+                  navigate("/pricing");
+                }}
                 className="gap-1"
               >
                 <Lock className="h-3.5 w-3.5" />
@@ -216,7 +272,14 @@ const EchoMemoryPreview: React.FC<{ className?: string }> = ({
               </span>
             </div>
           ) : (
-            <Button size="sm" className="mt-3" onClick={primary.onClick}>
+            <Button
+              size="sm"
+              className="mt-3"
+              onClick={() => {
+                if (showIntro) dismissIntro();
+                primary.onClick();
+              }}
+            >
               {primary.label}
             </Button>
           )}
