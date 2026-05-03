@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
 import MurciMascot from "@/components/MurciMascot";
 import { Eye, EyeOff, Check, X, Loader2, KeyRound } from "lucide-react";
 
@@ -14,7 +15,6 @@ const ResetPasswordPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const hasMinLength = password.length >= 8;
@@ -28,11 +28,10 @@ const ResetPasswordPage = () => {
     e.preventDefault();
     if (!isValid) return;
     setLoading(true);
-    setError("");
     const err = await completeResetPassword(code.trim(), password);
     setLoading(false);
     if (err) {
-      setError(err);
+      toast({ title: err, variant: "destructive" });
     } else {
       setSuccess(true);
       setTimeout(() => navigate("/"), 2000);
@@ -129,8 +128,6 @@ const ResetPasswordPage = () => {
                 required
               />
             </div>
-
-            {error && <p className="text-destructive text-sm">{error}</p>}
 
             <button
               type="submit"

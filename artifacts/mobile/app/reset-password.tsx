@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppButton } from "@/components/AppButton";
 import { AppTextInput } from "@/components/AppTextInput";
+import { AuthMessageBanner } from "@/components/AuthMessageBanner";
 import { Typography } from "@/components/Typography";
 import { useAuth } from "@/contexts/AuthContext";
 import { useColors } from "@/hooks/useColors";
@@ -102,26 +103,7 @@ export default function ResetPasswordScreen() {
         </View>
 
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          {error ? (
-            <View
-              style={[
-                styles.errorBox,
-                { backgroundColor: colors.destructive + "20", borderColor: colors.destructive + "40" },
-              ]}
-            >
-              <Feather name="alert-circle" size={16} color={colors.destructive} />
-              <Text
-                style={{
-                  color: colors.destructive,
-                  fontSize: 14,
-                  flex: 1,
-                  fontFamily: "Inter_400Regular",
-                }}
-              >
-                {error}
-              </Text>
-            </View>
-          ) : null}
+          <AuthMessageBanner message={error} />
 
           <AppTextInput
             label="Verification code"
@@ -229,15 +211,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 22,
     borderWidth: 1,
-  },
-  errorBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    marginBottom: 16,
   },
   requirements: {
     gap: 6,

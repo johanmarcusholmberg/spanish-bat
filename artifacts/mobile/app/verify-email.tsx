@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppButton } from "@/components/AppButton";
 import { AppTextInput } from "@/components/AppTextInput";
+import { AuthMessageBanner } from "@/components/AuthMessageBanner";
 import { Typography } from "@/components/Typography";
 import { useAuth } from "@/contexts/AuthContext";
 import { useColors } from "@/hooks/useColors";
@@ -110,47 +111,8 @@ export default function VerifyEmailScreen() {
         </View>
 
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          {error ? (
-            <View
-              style={[
-                styles.errorBox,
-                { backgroundColor: colors.destructive + "20", borderColor: colors.destructive + "40" },
-              ]}
-            >
-              <Feather name="alert-circle" size={16} color={colors.destructive} />
-              <Text
-                style={{
-                  color: colors.destructive,
-                  fontSize: 14,
-                  flex: 1,
-                  fontFamily: "Inter_400Regular",
-                }}
-              >
-                {error}
-              </Text>
-            </View>
-          ) : null}
-
-          {info ? (
-            <View
-              style={[
-                styles.infoBox,
-                { backgroundColor: colors.primary + "18", borderColor: colors.primary + "40" },
-              ]}
-            >
-              <Feather name="check-circle" size={16} color={colors.primary} />
-              <Text
-                style={{
-                  color: colors.foreground,
-                  fontSize: 14,
-                  flex: 1,
-                  fontFamily: "Inter_400Regular",
-                }}
-              >
-                {info}
-              </Text>
-            </View>
-          ) : null}
+          <AuthMessageBanner message={error} />
+          <AuthMessageBanner message={info} variant="info" />
 
           <AppTextInput
             label="Verification code"
@@ -214,24 +176,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 22,
     borderWidth: 1,
-  },
-  errorBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    marginBottom: 16,
-  },
-  infoBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    marginBottom: 16,
   },
   footer: {
     marginTop: 24,
