@@ -1,0 +1,91 @@
+Continue working on Murcielingo.
+
+The global language selector and mobile i18n foundation are now complete. Do not change the language architecture further unless something is clearly broken.
+
+GOAL
+Use the new language foundation to improve the first user experience: public homepage, login/register, and mobile onboarding should feel language-aware and polished.
+
+Do not rebuild the app.
+Do not redesign the full product.
+Do not migrate every hardcoded string in the app.
+Focus only on the first user journey.
+
+SCOPE
+
+1. Public homepage
+Review the public homepage language behavior.
+
+Ensure the selected app language affects the most important homepage copy:
+- hero headline
+- tagline / “Echo the language”
+- short product explanation
+- primary CTA
+- secondary CTA
+- preview/demo labels if present
+- register/login links if present
+
+The homepage should still feel natural, not like a technical translation demo.
+
+2. Login/register consistency
+Verify web and mobile login/register screens use the selected language consistently.
+
+Migrate any remaining highly visible login/register copy that still ignores the selected language.
+
+Do not migrate low-priority validation messages unless they are already nearby and simple.
+
+3. Mobile onboarding
+Use the new mobile t() foundation for the first-time onboarding / welcome flow.
+
+Migrate the key onboarding copy:
+- welcome headline
+- short explanation of Murcielingo
+- level-test explanation
+- skip/start buttons
+- daily practice / “today’s practice” messaging if present
+
+The onboarding should support the product direction:
+Murcielingo should feel like a small daily Spanish coach that knows what I need to echo next.
+
+The user should not think:
+“Which module should I open?”
+
+They should think:
+“I’ll do today’s practice.”
+
+4. Translation quality
+Add Swedish and English translations.
+
+Use natural copy, not literal word-for-word translations.
+
+Keep the brand name Murcielingo unchanged.
+
+Use:
+- English: “Echo the language”
+- Swedish: “Låt språket eka”
+
+5. Architecture rules
+Use the existing i18n systems:
+- web: existing LanguageContext / translation system
+- mobile: artifacts/mobile/contexts/LanguageContext.tsx and artifacts/mobile/i18n/translations.ts
+
+Do not:
+- hardcode language lists
+- create new competing language providers
+- access storage directly from UI components
+- use string checks like language === "Swedish"
+- duplicate translation maps in multiple files
+
+6. Verification
+Run:
+- web typecheck/tests if available
+- mobile typecheck
+- any relevant existing checks
+
+7. Final report
+Report:
+- files changed
+- which homepage strings are now localized
+- which login/register strings were improved
+- which mobile onboarding strings were migrated
+- any important strings still hardcoded
+- check/typecheck/test results
