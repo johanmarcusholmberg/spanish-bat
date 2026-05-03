@@ -9,7 +9,7 @@ import {
   generatePracticeItems,
   type PracticeItem,
 } from "@workspace/practice";
-import { GRAMMAR_LESSONS, type Level } from "@/lib/mockContent";
+import { GRAMMAR_LESSONS, type Level } from "@workspace/learning-content";
 
 export type MobilePracticeSource = "curated" | "template" | "ai";
 

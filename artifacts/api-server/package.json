@@ -16,6 +16,7 @@
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",
     "@workspace/integrations-openai-ai-server": "workspace:*",
+    "@workspace/learning-content": "workspace:*",
     "@workspace/practice": "workspace:*",
     "@workspace/practice-ai": "workspace:*",
     "@workspace/subscription": "workspace:*",

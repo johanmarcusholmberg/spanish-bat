@@ -11,7 +11,8 @@ import { LoadingState } from "@/components/LoadingState";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
-import { GRAMMAR_LESSONS, Level } from "@/lib/mockContent";
+import { loadGrammarLessons } from "@/lib/contentCache";
+import type { GrammarLesson, Level } from "@workspace/learning-content";
 
 const LEVELS: Level[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
@@ -30,6 +31,7 @@ export default function GrammarScreen() {
 
   const [activeLevel, setActiveLevel] = useState<Level>(userLevel);
   const [progress, setProgress] = useState<Record<string, LessonProgress>>({});
+  const [allLessons, setAllLessons] = useState<GrammarLesson[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,9 +40,12 @@ export default function GrammarScreen() {
 
   const load = useCallback(async () => {
     try {
-      const res = await api.progress.getGrammarProgress();
+      const [progressRes, lessonsRes] = await Promise.all([
+        api.progress.getGrammarProgress().catch(() => ({ grammarProgress: [] })),
+        loadGrammarLessons(),
+      ]);
       const map: Record<string, LessonProgress> = {};
-      for (const row of res.grammarProgress ?? []) {
+      for (const row of progressRes.grammarProgress ?? []) {
         map[row.lessonId] = {
           completed: row.completed,
           bestScore: row.bestScore,
@@ -48,8 +53,7 @@ export default function GrammarScreen() {
         };
       }
       setProgress(map);
-    } catch {
-      // ignore — show empty progress on failure
+      setAllLessons(lessonsRes);
     } finally {
       setLoading(false);
     }
@@ -66,8 +70,8 @@ export default function GrammarScreen() {
   );
 
   const lessons = useMemo(
-    () => GRAMMAR_LESSONS.filter((l) => l.level === activeLevel),
-    [activeLevel]
+    () => allLessons.filter((l) => l.level === activeLevel),
+    [allLessons, activeLevel]
   );
 
   const completed = useMemo(

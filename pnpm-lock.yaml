@@ -180,6 +180,9 @@ importers:
       '@workspace/integrations-openai-ai-server':
         specifier: workspace:*
         version: link:../../lib/integrations-openai-ai-server
+      '@workspace/learning-content':
+        specifier: workspace:*
+        version: link:../../lib/learning-content
       '@workspace/practice':
         specifier: workspace:*
         version: link:../../lib/practice
@@ -305,6 +308,9 @@ importers:
       '@workspace/learning-coach':
         specifier: workspace:*
         version: link:../../lib/learning-coach
+      '@workspace/learning-content':
+        specifier: workspace:*
+        version: link:../../lib/learning-content
       '@workspace/level-check':
         specifier: workspace:*
         version: link:../../lib/level-check
@@ -898,6 +904,8 @@ importers:
       '@workspace/practice':
         specifier: workspace:*
         version: link:../practice
+
+  lib/learning-content: {}
 
   lib/level-check:
     dependencies:

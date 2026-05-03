@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { Feather } from "@expo/vector-icons";
@@ -14,7 +14,8 @@ import { RequireAuth } from "@/components/RequireAuth";
 import { AnimatedScore } from "@/components/AnimatedScore";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
-import { READING_PASSAGES } from "@/lib/mockContent";
+import { loadReadingPassages } from "@/lib/contentCache";
+import type { ReadingPassage } from "@workspace/learning-content";
 import { recentLessons } from "@/lib/storage";
 import { encouragementFor } from "@/lib/encouragement";
 
@@ -34,7 +35,24 @@ function PassageDetailScreenInner() {
   const { user } = useAuth();
   const lang = user?.learningFrom ?? "sv";
 
-  const passage = useMemo(() => READING_PASSAGES.find((p) => p.id === id), [id]);
+  const [passage, setPassage] = useState<ReadingPassage | null>(null);
+  const [loadingPassage, setLoadingPassage] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadReadingPassages()
+      .then((all) => {
+        if (cancelled) return;
+        const found = all.find((p) => p.id === id) ?? null;
+        setPassage(found);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingPassage(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   useEffect(() => {
     if (passage) {
@@ -50,6 +68,15 @@ function PassageDetailScreenInner() {
   const [selected, setSelected] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [results, setResults] = useState<boolean[]>([]);
+
+  if (loadingPassage) {
+    return (
+      <>
+        <Stack.Screen options={{ title: "Reading", headerShown: true }} />
+        <View style={{ flex: 1, backgroundColor: colors.background }} />
+      </>
+    );
+  }
 
   if (!passage) {
     return (

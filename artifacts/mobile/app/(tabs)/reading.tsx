@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { View, StyleSheet, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -6,9 +6,11 @@ import { Feather } from "@expo/vector-icons";
 
 import { Typography } from "@/components/Typography";
 import { Card } from "@/components/Card";
+import { LoadingState } from "@/components/LoadingState";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
-import { READING_PASSAGES, Level } from "@/lib/mockContent";
+import { loadReadingPassages } from "@/lib/contentCache";
+import type { ReadingPassage, Level } from "@workspace/learning-content";
 
 const LEVELS: Level[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
@@ -20,10 +22,26 @@ export default function ReadingScreen() {
   const userLevel = (user?.level ?? "A1") as Level;
 
   const [activeLevel, setActiveLevel] = useState<Level>(userLevel);
+  const [allPassages, setAllPassages] = useState<ReadingPassage[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadReadingPassages()
+      .then((p) => {
+        if (!cancelled) setAllPassages(p);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const passages = useMemo(
-    () => READING_PASSAGES.filter((p) => p.level === activeLevel),
-    [activeLevel]
+    () => allPassages.filter((p) => p.level === activeLevel),
+    [allPassages, activeLevel]
   );
 
   const containerStyle = {
@@ -31,6 +49,14 @@ export default function ReadingScreen() {
     backgroundColor: colors.background,
     ...(Platform.OS === "web" ? { paddingTop: 67 } : { paddingTop: insets.top }),
   };
+
+  if (loading) {
+    return (
+      <View style={containerStyle}>
+        <LoadingState fullscreen label="Loading passages…" />
+      </View>
+    );
+  }
 
   return (
     <View style={containerStyle}>

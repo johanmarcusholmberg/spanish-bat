@@ -14,6 +14,7 @@ import stripeRouter from "./stripe";
 import revenuecatWebhookRouter from "./revenuecatWebhook";
 import echoMemoryRouter from "./echoMemory";
 import dailySessionsRouter from "./dailySessions";
+import learningContentRouter from "./learningContent";
 
 const router: IRouter = Router();
 
@@ -32,5 +33,6 @@ router.use(stripeRouter);
 router.use("/revenuecat/webhook", revenuecatWebhookRouter);
 router.use(echoMemoryRouter);
 router.use(dailySessionsRouter);
+router.use(learningContentRouter);
 
 export default router;

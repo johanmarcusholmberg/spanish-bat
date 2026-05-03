@@ -223,4 +223,44 @@ export const api = {
     get: () => fetchApi("/subscription"),
     getPlans: () => fetchApi("/subscription/plans"),
   },
+  content: {
+    getGrammarLessons: (level?: string) =>
+      fetchApi(
+        `/grammar-lessons${level ? `?level=${encodeURIComponent(level)}` : ""}`
+      ) as Promise<{
+        lessons: Array<{
+          id: string;
+          level: string;
+          title: { en: string; sv: string };
+          summary: { en: string; sv: string };
+          explanation: { en: string; sv: string };
+          examples: { es: string; en: string; sv: string }[];
+          questions: Array<{
+            id: string;
+            prompt: { es: string; en: string; sv: string };
+            options: string[];
+            answer: string;
+            explanation?: { en: string; sv: string };
+          }>;
+        }>;
+      }>,
+    getReadingPassages: (level?: string) =>
+      fetchApi(
+        `/reading-passages${level ? `?level=${encodeURIComponent(level)}` : ""}`
+      ) as Promise<{
+        passages: Array<{
+          id: string;
+          level: string;
+          title: { en: string; sv: string };
+          text: string;
+          translation: { en: string; sv: string };
+          questions: Array<{
+            id: string;
+            prompt: { en: string; sv: string };
+            options: string[];
+            answer: string;
+          }>;
+        }>;
+      }>,
+  },
 };

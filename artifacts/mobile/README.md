@@ -127,7 +127,7 @@ Before testing on a real device, confirm these are enabled in the [Clerk Dashboa
 - **Email delivery**: Clerk's dev instance has rate limits — verification and reset emails may take 5–30 seconds to arrive and may land in spam.
 - **Deep links / OAuth redirects**: in Replit's Expo Go preview, the OAuth callback returns to the in-app browser and Clerk completes the flow there; no custom URL scheme is required for development. Standalone EAS builds will need a custom URL scheme registered in `app.json` and matching redirect URIs in the Clerk Dashboard (handled in Phase 5).
 
-### Phase 3 recommendations
+### Auth recommendations
 
 - Surface the registered display name on the Profile screen (it currently falls back to Clerk `firstName` then to the email prefix).
 - Show a "verify your email" banner if a signed-in user has an unverified primary email address.
@@ -323,7 +323,6 @@ Use this checklist when smoke-testing the app in Expo Go before sharing a build 
 - [ ] Light + dark system theme: brand colors stay readable in both.
 
 **Known limitations (intentional for beta)**
-- Grammar lessons + reading passages are seeded from `lib/mockContent.ts` (one lesson per CEFR level, A1–B2 reading). API-backed content is the next phase.
 - Flashcards fall back to an 8-card seed deck when the user has no saved vocabulary.
 - Sentence-builder, conversation, and pronunciation exercises listed in the web app are not yet ported.
 
@@ -340,10 +339,10 @@ Phase 3 ports the web app's core product surfaces to React Native. Every new scr
 | Vocabulary | `/(tabs)/vocabulary` | live: vocabulary | Search + filter (all / learning / learned). Empty state with CTA to Exercises. |
 | Word detail | `/word/[id]` | live: vocabulary | Mark learned/learning, remove from dictionary. |
 | Flashcards (SRS) | `/flashcards` | live: vocabulary + flashcardSrs (mock seeds when empty) | SM-2-style scheduling in `lib/srs.ts`. Persists ratings via `/flashcard-srs`. Falls back to seed cards from `lib/mockContent.ts` when the user has no saved vocab yet. |
-| Grammar | `/(tabs)/grammar` | mock content + live progress | Lessons grouped by CEFR (A1–C2). Per-lesson `bestScore` / `attempts` from `/grammar-progress`. |
-| Lesson detail | `/lesson/[id]` | mock content + live progress | Learn → multiple-choice practice → result. ≥80% saves as completed. |
-| Reading | `/(tabs)/reading` | mock content | Hidden from the tab bar (accessed from Dashboard / Exercises). Passages grouped by level. |
-| Passage detail | `/passage/[id]` | mock content | Spanish text, optional translation, comprehension quiz with scoring. |
+| Grammar | `/(tabs)/grammar` | live `/grammar-lessons` + `/grammar-progress` (offline cache fallback) | Lessons grouped by CEFR (A1–C2), 3 per level. Per-lesson `bestScore` / `attempts` from `/grammar-progress`. |
+| Lesson detail | `/lesson/[id]` | live `/grammar-lessons` (offline cache fallback) + live progress | Learn → multiple-choice practice → result. ≥80% saves as completed. |
+| Reading | `/(tabs)/reading` | live `/reading-passages` (offline cache fallback) | Hidden from the tab bar (accessed from Dashboard / Exercises). 3 passages per level (A1–C2). |
+| Passage detail | `/passage/[id]` | live `/reading-passages` (offline cache fallback) | Spanish text, optional translation, comprehension quiz with scoring. |
 | Stats | `/stats` | live: streaks + progress + vocabulary | 7-day activity grid, category progress bars, vocab mastery circular progress. Reachable from Dashboard + Profile. |
 | Profile | `/(tabs)/profile` | live: profile | Editable display name, level (A1–C2), learning language (sv/en). All persisted via `/profile`. |
 
@@ -363,13 +362,13 @@ Phase 3 ports the web app's core product surfaces to React Native. Every new scr
 | `LoadingState` | Inline or full-screen spinner with optional label. |
 | `ErrorState` | Error display with retry button. |
 
+### Content sources
+
+- **Grammar lessons + reading passages** — canonical content lives in `lib/learning-content/` (a shared workspace package) and is served by the API at `GET /grammar-lessons` and `GET /reading-passages`. The mobile screens fetch via `api.content.*`, cache the response in AsyncStorage (`lib/contentCache.ts`), and fall back to the bundled package as a last resort. Currently 3 lessons per CEFR level (18 total) and 3 passages per level (18 total). Per-lesson **progress** persists via `/grammar-progress`.
+- **Flashcard seed deck** — when the user has zero saved vocabulary, the Flashcards screen serves a small seed deck (8 A1–A2 cards from `lib/mockContent.ts`) so a session is still possible. Real saved vocab fully overrides the seeds; SRS state persists either way for non-seed cards.
+
 ### Remaining gaps (TODO)
 
-These are flagged with `TODO(api)` in source and currently use seed data in `lib/mockContent.ts`:
-
-- **Grammar lessons** — no `/grammar-lessons` endpoint yet. Content is hard-coded for A1, A2, B1, B2, C1, C2 (one lesson per level). Per-lesson **progress** (completed flag, best score, attempts) IS live via `/grammar-progress`.
-- **Reading passages** — no `/reading-passages` endpoint. A1, A2, B1, B2 each have one seeded passage with comprehension questions.
-- **Flashcard seed deck** — when the user has zero saved vocabulary, the Flashcards screen serves a small seed deck (8 A1–A2 cards) so a session is still possible. Real saved vocab fully overrides the seeds; SRS state persists either way for non-seed cards.
 - **Sentence builder, conversation, pronunciation exercises** — listed in the web app, intentionally not in Phase 3 scope.
 
 ## What Has Been Built (Phase 2)

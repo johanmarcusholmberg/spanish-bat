@@ -24,6 +24,7 @@
     "@workspace/api-client-react": "workspace:*",
     "@workspace/echo-content": "workspace:*",
     "@workspace/learning-coach": "workspace:*",
+    "@workspace/learning-content": "workspace:*",
     "@workspace/level-check": "workspace:*",
     "@workspace/practice": "workspace:*",
     "@workspace/readiness": "workspace:*",

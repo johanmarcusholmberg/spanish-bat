@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { Feather } from "@expo/vector-icons";
@@ -15,7 +15,8 @@ import { AnimatedScore } from "@/components/AnimatedScore";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
-import { GRAMMAR_LESSONS } from "@/lib/mockContent";
+import { loadGrammarLessons } from "@/lib/contentCache";
+import type { GrammarLesson } from "@workspace/learning-content";
 import { recentLessons } from "@/lib/storage";
 import { encouragementFor } from "@/lib/encouragement";
 
@@ -35,7 +36,24 @@ function LessonDetailScreenInner() {
   const { user } = useAuth();
   const lang = user?.learningFrom ?? "sv";
 
-  const lesson = useMemo(() => GRAMMAR_LESSONS.find((l) => l.id === id), [id]);
+  const [lesson, setLesson] = useState<GrammarLesson | null>(null);
+  const [loadingLesson, setLoadingLesson] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadGrammarLessons()
+      .then((all) => {
+        if (cancelled) return;
+        const found = all.find((l) => l.id === id) ?? null;
+        setLesson(found);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingLesson(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   useEffect(() => {
     if (lesson) {
@@ -50,6 +68,15 @@ function LessonDetailScreenInner() {
   const [selected, setSelected] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [results, setResults] = useState<boolean[]>([]);
+
+  if (loadingLesson) {
+    return (
+      <>
+        <Stack.Screen options={{ title: "Lesson", headerShown: true }} />
+        <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: "center" }} />
+      </>
+    );
+  }
 
   if (!lesson) {
     return (
