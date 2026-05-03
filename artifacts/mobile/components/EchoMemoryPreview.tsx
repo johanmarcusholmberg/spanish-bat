@@ -12,6 +12,12 @@ interface Props {
   lang?: "en" | "sv";
 }
 
+/**
+ * Echo Memory — mobile preview card.
+ * See the web version (artifacts/murcielago/src/components/EchoMemoryPreview.tsx)
+ * for the polish rationale; this mirrors the same stat strip + smart CTA
+ * + concrete-teaser pattern using the mobile design system.
+ */
 const EchoMemoryPreview: React.FC<Props> = ({ lang = "en" }) => {
   const colors = useColors();
   const memory = useEchoMemory();
@@ -66,10 +72,74 @@ const EchoMemoryPreview: React.FC<Props> = ({ lang = "en" }) => {
     return lines.join(" ");
   })();
 
+  // Smart primary action: never inert when there's data.
+  const primary = (() => {
+    if (!memory.hasData) {
+      return {
+        label: lang === "sv" ? "Starta en 2-min session" : "Start a 2-min session",
+        onPress: () => router.push("/practice" as never),
+      };
+    }
+    if (memory.dueCount > 0) {
+      return {
+        label:
+          lang === "sv"
+            ? `Repetera ${memory.dueCount} nu`
+            : `Review ${memory.dueCount} now`,
+        onPress: () =>
+          router.push("/practice/session?mode=due_review" as never),
+      };
+    }
+    if (memory.weakCount > 0 || memory.topFocus) {
+      return {
+        label: lang === "sv" ? "Öva fokusområden" : "Practice focus areas",
+        onPress: () =>
+          router.push("/practice/session?mode=weak_spots" as never),
+      };
+    }
+    return {
+      label: lang === "sv" ? "Snabb session" : "Quick session",
+      onPress: () => router.push("/practice/session?mode=quick" as never),
+    };
+  })();
+
+  const stats = memory.hasData
+    ? [
+        {
+          label: lang === "sv" ? "Spårade" : "Tracked",
+          value: memory.trackedCount,
+          tone: "default" as const,
+        },
+        {
+          label: lang === "sv" ? "Stärks" : "Improving",
+          value: memory.improvedCount,
+          tone: "good" as const,
+        },
+        {
+          label: lang === "sv" ? "Att repetera" : "Due",
+          value: memory.dueCount,
+          tone: "warn" as const,
+        },
+      ]
+    : [];
+
+  const toneBg = (tone: "default" | "good" | "warn", value: number) => {
+    if (tone === "good") return colors.secondary + "33";
+    if (tone === "warn") return value > 0 ? "#fde68a" : colors.muted;
+    return colors.muted;
+  };
+  const toneFg = (tone: "default" | "good" | "warn", value: number) => {
+    if (tone === "good") return colors.foreground;
+    if (tone === "warn") return value > 0 ? "#78350f" : colors.mutedForeground;
+    return colors.foreground;
+  };
+
   return (
     <Card style={{ marginBottom: 12 }} padding={16}>
       <View style={styles.row}>
-        <View style={[styles.iconBox, { backgroundColor: colors.primary + "22" }]}>
+        <View
+          style={[styles.iconBox, { backgroundColor: colors.primary + "22" }]}
+        >
           <Feather name="cpu" size={20} color={colors.primary} />
         </View>
         <View style={{ flex: 1 }}>
@@ -79,7 +149,10 @@ const EchoMemoryPreview: React.FC<Props> = ({ lang = "en" }) => {
             </Typography>
             {!isPremium && (
               <View
-                style={[styles.badge, { backgroundColor: colors.muted, borderColor: colors.border }]}
+                style={[
+                  styles.badge,
+                  { backgroundColor: colors.muted, borderColor: colors.border },
+                ]}
               >
                 <Typography
                   variant="caption"
@@ -91,37 +164,97 @@ const EchoMemoryPreview: React.FC<Props> = ({ lang = "en" }) => {
               </View>
             )}
           </View>
+
           <Typography variant="caption" muted style={{ marginTop: 4 }}>
             {tagline}
           </Typography>
-          <Typography variant="body" style={{ marginTop: 6, fontSize: 13, lineHeight: 19 }}>
+
+          {stats.length > 0 && (
+            <View style={styles.statsRow}>
+              {stats.map((s) => (
+                <View
+                  key={s.label}
+                  style={[
+                    styles.statPill,
+                    { backgroundColor: toneBg(s.tone, s.value) },
+                  ]}
+                >
+                  <Typography
+                    variant="label"
+                    style={{
+                      fontSize: 12,
+                      fontWeight: "700",
+                      color: toneFg(s.tone, s.value),
+                    }}
+                  >
+                    {s.value}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    style={{
+                      fontSize: 9,
+                      letterSpacing: 0.5,
+                      textTransform: "uppercase",
+                      color: toneFg(s.tone, s.value),
+                      opacity: 0.85,
+                    }}
+                  >
+                    {s.label}
+                  </Typography>
+                </View>
+              ))}
+            </View>
+          )}
+
+          <Typography
+            variant="body"
+            style={{ marginTop: 8, fontSize: 13, lineHeight: 19 }}
+          >
             {detail}
           </Typography>
+
           {!isPremium ? (
-            <Pressable
-              onPress={() => router.push("/paywall" as never)}
-              style={[styles.btnOutline, { borderColor: colors.border, marginTop: 10 }]}
-            >
-              <Feather name="lock" size={13} color={colors.foreground} />
-              <Typography variant="label" style={{ marginLeft: 6, fontSize: 13 }}>
-                {lang === "sv"
-                  ? "Lås upp hela Eko-minnet"
-                  : "Unlock full Echo Memory"}
-              </Typography>
-            </Pressable>
-          ) : (
-            memory.dueCount > 0 && (
+            <View style={{ marginTop: 10 }}>
               <Pressable
-                onPress={() =>
-                  router.push("/practice/session?mode=due_review" as never)
-                }
-                style={[styles.btn, { backgroundColor: colors.primary, marginTop: 10 }]}
+                onPress={() => router.push("/paywall" as never)}
+                style={[styles.btnOutline, { borderColor: colors.border }]}
               >
-                <Typography variant="label" color="#fff">
-                  {lang === "sv" ? "Repetera nu" : "Review now"}
+                <Feather name="lock" size={13} color={colors.foreground} />
+                <Typography
+                  variant="label"
+                  style={{ marginLeft: 6, fontSize: 13 }}
+                >
+                  {lang === "sv"
+                    ? "Lås upp hela Eko-minnet"
+                    : "Unlock full Echo Memory"}
                 </Typography>
               </Pressable>
-            )
+              <Typography
+                variant="caption"
+                muted
+                style={{ marginTop: 6, fontSize: 11 }}
+              >
+                {memory.hasData
+                  ? lang === "sv"
+                    ? `Murci spårar redan ${memory.trackedCount} ord åt dig.`
+                    : `Murci is already tracking ${memory.trackedCount} items for you.`
+                  : lang === "sv"
+                    ? "så Murci kan anpassa sessionerna åt dig."
+                    : "so Murci can keep adapting your sessions."}
+              </Typography>
+            </View>
+          ) : (
+            <Pressable
+              onPress={primary.onPress}
+              style={[
+                styles.btn,
+                { backgroundColor: colors.primary, marginTop: 10 },
+              ]}
+            >
+              <Typography variant="label" color="#fff">
+                {primary.label}
+              </Typography>
+            </Pressable>
           )}
         </View>
       </View>
@@ -151,6 +284,20 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 6,
     borderWidth: 1,
+  },
+  statsRow: {
+    flexDirection: "row",
+    gap: 6,
+    marginTop: 10,
+    flexWrap: "wrap",
+  },
+  statPill: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
   },
   btn: {
     flexDirection: "row",
