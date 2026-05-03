@@ -18,7 +18,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { LanguageProvider } from "@/contexts/LanguageContext";
+import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import { clerkTokenCache } from "@/lib/storage";
 
 SplashScreen.preventAutoHideAsync();
@@ -29,10 +29,24 @@ const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "
 
 function RootLayoutNav() {
   const { isLoaded } = useClerkAuth();
+  // Wait for the persisted app language to hydrate from AsyncStorage before
+  // mounting any language-dependent screens. Without this, screens would
+  // briefly render in FALLBACK_APP_LANGUAGE and then re-render once the
+  // stored preference resolved a tick later (visible flicker on cold start).
+  const { ready: languageReady } = useLanguage();
 
-  if (!isLoaded) {
+  if (!isLoaded || !languageReady) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#D9CFBC" }}>
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#D9CFBC",
+        }}
+        accessibilityRole="progressbar"
+        accessibilityLabel="Loading"
+      >
         <ActivityIndicator size="large" color="#F4926B" />
       </View>
     );

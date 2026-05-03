@@ -1,0 +1,83 @@
+Continue working on Murcielingo mobile.
+
+The mobile i18n foundation is now implemented and working. Please do a small stabilization pass only.
+
+GOAL
+Prevent language first-paint flicker and document the mobile i18n migration pattern.
+
+Do not redesign the app.
+Do not migrate the whole app to translations.
+Do not add a large new test framework unless one already exists.
+Do not change the language architecture unless something is clearly broken.
+
+TASKS
+
+1. Prevent first-paint flicker
+Review the mobile LanguageProvider ready state.
+
+If screens can render before the stored language has loaded from AsyncStorage, add a minimal native-safe guard so the app does not briefly show the fallback language before switching.
+
+Preferred approach:
+- expose ready from useLanguage()
+- at the root layout or high-level app shell, avoid rendering language-dependent screens until ready is true
+- show a minimal neutral loading state if needed
+
+The loading state should:
+- be native-safe
+- not look like an error
+- not add unnecessary branding complexity
+- avoid hardcoded language-specific copy if possible
+
+2. Auth screen behavior
+Check login/register screens specifically.
+
+They should not flash the wrong language before the stored preference is loaded.
+
+If needed, make them respect LanguageProvider.ready.
+
+3. Profile behavior
+Check profile/settings language change behavior.
+
+Changing the language should:
+- update the app immediately
+- persist locally
+- continue saving to the user profile/API as already implemented
+- not create duplicate state
+- not require navigating away and back
+
+4. Add a short migration note
+Add a small developer note in the mobile codebase, for example:
+
+artifacts/mobile/i18n/README.md
+
+Document:
+- how to add a new translation key
+- how to use t("section.key") in a screen
+- how to add a new app language such as Spanish
+- what not to do, especially:
+  - do not hardcode language lists inside components
+  - do not access AsyncStorage directly from UI components
+  - do not create screen-local language state unless there is a strong reason
+
+5. Optional tests only if test setup already exists
+If the mobile workspace already has a test runner configured, add lightweight tests for:
+- translation lookup
+- fallback behavior
+- language config enabled/disabled filtering
+
+If no test runner exists, do not install a new one in this phase. Instead, mention the recommended tests in the final report.
+
+6. Verification
+Run:
+- mobile typecheck
+- available mobile checks
+- any existing tests if configured
+
+7. Final report
+Report:
+- whether first-paint flicker was possible
+- what was changed to prevent it
+- files changed
+- whether login/register/profile now respect ready state
+- whether tests were added or deferred
+- typecheck/check results
