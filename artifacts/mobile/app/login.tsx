@@ -91,7 +91,7 @@ export default function LoginScreen() {
       >
         <View style={{ alignItems: "flex-end", marginBottom: 8 }}>
           <LanguagePicker
-            variant="segmented"
+            variant="minimal"
             value={language}
             onChange={handleLanguageChange}
             testID="login-language-picker"
@@ -100,7 +100,7 @@ export default function LoginScreen() {
 
         <View style={styles.header}>
           <Image
-            source={require("../assets/images/icon.png")}
+            source={require("../assets/images/bat-transparent.png")}
             style={styles.logoImage}
             resizeMode="contain"
             accessibilityLabel="Murciélingo bat logo"

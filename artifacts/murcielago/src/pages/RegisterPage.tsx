@@ -75,7 +75,7 @@ const RegisterPage = () => {
           <img src={logo} alt="Murcielingo" className="h-8 w-8" />
           <span className="font-heading font-bold text-lg text-foreground">Murcielingo</span>
         </Link>
-        <LanguageToggle />
+        <LanguageToggle variant="minimal" />
       </header>
 
       <div className="flex-1 flex justify-center px-4 pt-6 sm:pt-10 pb-6">

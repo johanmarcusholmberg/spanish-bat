@@ -113,7 +113,7 @@ export default function RegisterScreen() {
             <Typography variant="caption" muted>Back to sign in</Typography>
           </TouchableOpacity>
           <LanguagePicker
-            variant="segmented"
+            variant="minimal"
             value={language}
             onChange={handleLanguageChange}
             testID="register-language-picker"
@@ -122,7 +122,7 @@ export default function RegisterScreen() {
 
         <View style={styles.header}>
           <Image
-            source={require("../assets/images/icon.png")}
+            source={require("../assets/images/bat-transparent.png")}
             style={styles.logoImage}
             resizeMode="contain"
             accessibilityLabel="Murciélingo bat logo"

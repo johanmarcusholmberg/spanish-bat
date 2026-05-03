@@ -3,11 +3,13 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Globe } from "lucide-react";
 
 type Size = "sm" | "md";
+type Variant = "pill" | "minimal";
 
 interface LanguageToggleProps {
   size?: Size;
   showIcon?: boolean;
   className?: string;
+  variant?: Variant;
 }
 
 const OPTIONS: { code: "sv" | "en"; flag: string; label: string }[] = [
@@ -15,8 +17,48 @@ const OPTIONS: { code: "sv" | "en"; flag: string; label: string }[] = [
   { code: "en", flag: "🇬🇧", label: "EN" },
 ];
 
-const LanguageToggle = ({ size = "md", showIcon = true, className = "" }: LanguageToggleProps) => {
+const LanguageToggle = ({
+  size = "md",
+  showIcon = true,
+  className = "",
+  variant = "pill",
+}: LanguageToggleProps) => {
   const { language, setLanguage } = useLanguage();
+
+  if (variant === "minimal") {
+    return (
+      <div
+        role="radiogroup"
+        aria-label="Language"
+        className={`inline-flex items-center gap-2 ${className}`}
+      >
+        {OPTIONS.map(({ code, label }, i) => {
+          const active = language === code;
+          return (
+            <React.Fragment key={code}>
+              {i > 0 ? (
+                <span aria-hidden className="h-3 w-px bg-border/60" />
+              ) : null}
+              <button
+                type="button"
+                role="radio"
+                aria-checked={active}
+                aria-label={code === "sv" ? "Svenska" : "English"}
+                onClick={() => setLanguage(code)}
+                className={`text-xs tracking-wide font-${active ? "bold" : "medium"} transition-colors ${
+                  active
+                    ? "text-peach-dark"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {label}
+              </button>
+            </React.Fragment>
+          );
+        })}
+      </div>
+    );
+  }
 
   const isSm = size === "sm";
   const pillPad = isSm ? "px-2 py-0.5 text-xs" : "px-3 py-1.5 text-sm";

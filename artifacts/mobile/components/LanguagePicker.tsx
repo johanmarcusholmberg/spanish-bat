@@ -20,15 +20,16 @@ const OPTIONS: {
 interface LanguagePickerProps {
   value: AppLanguage;
   onChange: (lang: AppLanguage) => void;
-  variant?: "segmented" | "card";
+  variant?: "segmented" | "card" | "minimal";
   style?: ViewStyle;
   testID?: string;
 }
 
 /**
- * Standardized language picker. Used in two visual modes:
- * - `segmented`: compact pill (auth screens, top-right)
+ * Standardized language picker. Used in three visual modes:
+ * - `segmented`: compact pill (settings rows)
  * - `card`:      side-by-side cards (Profile / settings)
+ * - `minimal`:   borderless inline text toggle (auth screens — blends with background)
  */
 export function LanguagePicker({
   value,
@@ -38,6 +39,49 @@ export function LanguagePicker({
   testID,
 }: LanguagePickerProps) {
   const colors = useColors();
+
+  if (variant === "minimal") {
+    return (
+      <View
+        style={[styles.minimalRow, style]}
+        accessibilityRole="radiogroup"
+        testID={testID}
+      >
+        {OPTIONS.map((opt, i) => {
+          const active = value === opt.code;
+          return (
+            <React.Fragment key={opt.code}>
+              {i > 0 ? (
+                <View
+                  style={[styles.minimalDivider, { backgroundColor: colors.border }]}
+                />
+              ) : null}
+              <Pressable
+                onPress={() => onChange(opt.code)}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: active, selected: active }}
+                accessibilityLabel={opt.long}
+                testID={`language-minimal-${opt.code}`}
+                hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
+                style={styles.minimalBtn}
+              >
+                <Typography
+                  variant="caption"
+                  style={{
+                    color: active ? colors.primary : colors.mutedForeground,
+                    fontWeight: active ? "700" : "500",
+                    letterSpacing: 0.4,
+                  }}
+                >
+                  {opt.short}
+                </Typography>
+              </Pressable>
+            </React.Fragment>
+          );
+        })}
+      </View>
+    );
+  }
 
   if (variant === "card") {
     return (
@@ -153,5 +197,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+  },
+  minimalRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  minimalBtn: {
+    paddingVertical: 4,
+    paddingHorizontal: 2,
+  },
+  minimalDivider: {
+    width: 1,
+    height: 12,
+    opacity: 0.5,
   },
 });
