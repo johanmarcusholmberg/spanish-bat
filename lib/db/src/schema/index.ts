@@ -7,3 +7,4 @@ export * from "./contact";
 export * from "./subscriptions";
 export * from "./practiceItems";
 export * from "./echoMemory";
+export * from "./dailySessions";

@@ -6,6 +6,7 @@ import {
   type UserPracticeStats,
 } from "@workspace/practice";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
+import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 
 export interface EchoMemorySummary {
@@ -99,12 +100,15 @@ function snapshotsEqual(a: ServerSnapshot, b: ServerSnapshot): boolean {
 
 export function useEchoMemory(): EchoMemorySummary {
   const { stats, weakSpots } = usePracticeStats();
+  const { session, loading: authLoading } = useAuth();
+  const userId = session?.user?.id ?? null;
   const [server, setServer] = useState<ServerSnapshot | null>(null);
   const lastSentRef = useRef<ServerSnapshot | null>(null);
 
   // One-shot server fetch on mount so cleared local storage / new device
-  // can still surface "you're getting stronger on X".
+  // can still surface "you're getting stronger on X". Skip when not signed in.
   useEffect(() => {
+    if (authLoading || !userId) return;
     let cancelled = false;
     api.echoMemory
       .get()
@@ -127,12 +131,14 @@ export function useEchoMemory(): EchoMemorySummary {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [authLoading, userId]);
 
   const local = useMemo(() => deriveLocal(stats, weakSpots), [stats, weakSpots]);
 
   // Persist whenever local has real data and differs from what we last sent.
+  // Gate on auth so anonymous users don't endlessly retry 401s.
   useEffect(() => {
+    if (authLoading || !userId) return;
     if (local.trackedCount === 0) return;
     if (lastSentRef.current && snapshotsEqual(lastSentRef.current, local)) {
       return;
@@ -149,7 +155,7 @@ export function useEchoMemory(): EchoMemorySummary {
         });
     }, 1500);
     return () => clearTimeout(handle);
-  }, [local]);
+  }, [local, authLoading, userId]);
 
   // Merge: local is authoritative when it has data; otherwise hydrate from server.
   const merged: ServerSnapshot =

@@ -6,6 +6,7 @@ import {
   type UserPracticeStats,
 } from "@workspace/practice";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
+import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 
 export interface EchoMemorySummary {
@@ -92,10 +93,12 @@ function snapshotsEqual(a: ServerSnapshot, b: ServerSnapshot): boolean {
 
 export function useEchoMemory(): EchoMemorySummary {
   const { stats, weakSpots } = usePracticeStats();
+  const { userId, loading: authLoading } = useAuth();
   const [server, setServer] = useState<ServerSnapshot | null>(null);
   const lastSentRef = useRef<ServerSnapshot | null>(null);
 
   useEffect(() => {
+    if (authLoading || !userId) return;
     let cancelled = false;
     api.echoMemory
       .get()
@@ -118,11 +121,12 @@ export function useEchoMemory(): EchoMemorySummary {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [authLoading, userId]);
 
   const local = useMemo(() => deriveLocal(stats, weakSpots), [stats, weakSpots]);
 
   useEffect(() => {
+    if (authLoading || !userId) return;
     if (local.trackedCount === 0) return;
     if (lastSentRef.current && snapshotsEqual(lastSentRef.current, local)) {
       return;
@@ -139,7 +143,7 @@ export function useEchoMemory(): EchoMemorySummary {
         });
     }, 1500);
     return () => clearTimeout(handle);
-  }, [local]);
+  }, [local, authLoading, userId]);
 
   const merged: ServerSnapshot =
     local.trackedCount > 0 ? local : (server ?? local);

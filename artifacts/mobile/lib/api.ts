@@ -122,6 +122,17 @@ export const api = {
         body: JSON.stringify(data),
       }),
   },
+  dailySessions: {
+    get: () =>
+      fetchApi("/daily-sessions") as Promise<{
+        dailySession: { day: string; count: number } | null;
+      }>,
+    record: (data: { tzOffsetMinutes: number; localCount?: number }) =>
+      fetchApi("/daily-sessions/record", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }) as Promise<{ dailySession: { day: string; count: number } }>,
+  },
   practice: {
     generate: (input: {
       userLevel: string;

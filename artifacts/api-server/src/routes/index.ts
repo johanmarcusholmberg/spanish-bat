@@ -13,6 +13,7 @@ import subscriptionRouter from "./subscription";
 import stripeRouter from "./stripe";
 import revenuecatWebhookRouter from "./revenuecatWebhook";
 import echoMemoryRouter from "./echoMemory";
+import dailySessionsRouter from "./dailySessions";
 
 const router: IRouter = Router();
 
@@ -30,5 +31,6 @@ router.use(subscriptionRouter);
 router.use(stripeRouter);
 router.use("/revenuecat/webhook", revenuecatWebhookRouter);
 router.use(echoMemoryRouter);
+router.use(dailySessionsRouter);
 
 export default router;
