@@ -1,0 +1,258 @@
+Continue working on Murcielingo.
+
+IMPORTANT CONTEXT
+The current implementation is structurally better, especially with Today’s Echo as the main focus, but visually it still feels too generic and "vibe-coded".
+
+The main reason is not layout alone — it is the visual language:
+- too many generic icon-pack icons
+- too many standard rounded cards
+- too much template-like dashboard structure
+- the app still does not feel like a distinct Murcielingo product
+
+This task is FRONTEND ONLY and focused on visual/product identity refinement.
+Do not replace the whole app.
+Build on the current structure and redesign the visible UI so it feels more like a custom-built language-learning application.
+
+Do not use Git, commits, branches, PRs, or deployment steps. Work directly in the current Replit project.
+
+PRIMARY GOAL
+Make Murcielingo feel like its own product, not a generic app-builder dashboard.
+
+The new UI should feel:
+- warm
+- calm
+- premium but friendly
+- mobile-first
+- language-learning focused
+- slightly playful, but not childish
+- designed around echo / sound / pronunciation
+- intentionally branded
+
+It should not feel like:
+- a generic SaaS template
+- a dashboard kit
+- a UI assembled from random icon cards
+- a backoffice product
+- a component library demo
+
+GOAL 1 — Reduce generic icon usage drastically
+
+Audit the current icons across:
+- top navigation
+- Today’s Echo
+- Continue learning cards
+- supporting cards/sections
+
+Problem:
+The current icons look like a default icon pack and make the app feel generic.
+
+What to do:
+- use fewer icons overall
+- remove icons where they are not necessary
+- stop relying on one generic icon per feature as the primary identity
+- create a more product-specific visual language
+
+Introduce a small Murcielingo motif system using simple custom visuals, CSS/inline SVG patterns, or curated icon replacements inspired by:
+- echo rings
+- sound waves
+- phrase bubbles
+- microphone pulse
+- path dots / progress route
+- subtle wing-like curve shapes
+
+Do NOT overdo the bat theme.
+Do NOT make it cartoonish.
+The bat should be a subtle accent, not the whole visual language.
+
+Examples:
+- Today can use an echo-ring marker instead of a generic icon
+- Practice can use a waveform motif
+- Pronunciation can use a mic-pulse motif
+- Progress can use a dotted path / route motif
+- Listening can use a wave/signal motif rather than a default icon block
+
+GOAL 2 — Redesign Today’s Echo so it feels like a session experience, not just a big card
+
+The current Today’s Echo section is better than before, but still looks like a generic large hero card.
+
+Redesign it to feel more like Murcielingo’s core learning ritual.
+
+It should still remain the main focus on the page, but should now feel more intentional.
+
+Structure suggestion:
+- small eyebrow label: Today’s Echo
+- strong title
+- short human explanation
+- one clear session-focus row
+- one clear meta row (level, time, session type)
+- one strong CTA
+- optional secondary microcopy:
+  “Built from your level and recent practice”
+  or
+  “A short Spanish session based on what you need to repeat next”
+
+The section should feel:
+- personal
+- session-oriented
+- more alive
+- less empty
+- less like a generic rounded container
+
+Improve internal spacing and hierarchy so it feels designed, not auto-generated.
+
+GOAL 3 — Redesign “Continue learning” cards
+
+The current cards below Today’s Echo still feel extremely generic:
+- icon in a small box
+- title
+- blank area
+
+That pattern should be replaced with custom learning cards.
+
+Each card should include:
+- title
+- one-line description
+- small status or supporting info
+- more distinctive internal layout
+- less empty space
+- less reliance on a generic icon tile
+
+For example:
+
+Pronunciation
+“Practice difficult sounds and improve clarity”
+Status: “Recommended today”
+
+Vocabulary
+“Review saved words and strengthen recall”
+Status: “12 words due”
+
+Sentence Builder
+“Train word order and sentence flow”
+Status: “Continue”
+
+Listening
+“Hear short Spanish clips and build recognition”
+Status: “5 min session”
+
+Each card should have its own subtle visual cue, but still belong to the same design system.
+
+GOAL 4 — Improve navigation so it feels more like a learner app
+
+The current top navigation still feels too desktop/dashboard-like.
+
+Refine the learner navigation so it feels more like a product for daily use.
+
+Important:
+- the learner experience should be centered around Today
+- navigation should feel simpler and more intentional
+- Admin should not visually compete with learner navigation
+
+Requirements:
+- move Admin Panel out of the main primary navigation if possible
+- place Admin access in profile menu or as a separate admin-only secondary entry
+- keep Admin visible only for admin users
+- keep role protection intact
+- during development the authenticator/2FA requirement can remain paused, but admin access must still require admin role
+
+TODO comment:
+“TODO: Re-enable authenticator/2FA for admin before production.”
+
+GOAL 5 — Create a distinct visual identity system for Murcielingo
+
+Introduce a more recognizable UI language.
+
+Use:
+- a tighter color logic
+- more intentional contrast
+- fewer beige blocks that all look the same
+- stronger hierarchy
+- more distinctive section rhythm
+- softer but clearer typography hierarchy
+
+The design system should reflect:
+- Spanish learning
+- daily rhythm
+- echo/repetition
+- confidence-building practice
+
+Do not make it look like analytics software.
+
+Possible design directions:
+- soft sand / warm ivory base
+- coral / clay accent
+- muted terracotta highlight
+- charcoal text for contrast
+- subtle layered backgrounds in Today’s Echo
+- soft dividers instead of heavy card overload
+
+GOAL 6 — Improve product-specific copy
+
+Replace generic UI copy with product-specific language.
+
+Good examples:
+- Today’s Echo
+- Start today’s practice
+- Resume today’s practice
+- Today’s focus
+- Built from your recent practice
+- Practice areas
+- Review saved words
+- Improve pronunciation
+- Keep your streak going
+
+Avoid:
+- Dashboard
+- Modules
+- Overview
+- Statistics dashboard
+- Feature card
+- User metrics
+
+Keep copy simple and human.
+
+GOAL 7 — Maintain access control while polishing UI
+
+While redesigning the frontend:
+- keep free vs paid states understandable
+- keep admin hidden from non-admin users
+- keep role-based admin visibility
+- keep authenticator paused only for development
+- do not expose admin navigation to normal users
+
+GOAL 8 — Mobile-first polish
+
+The redesign should improve mobile feel too:
+- larger tap targets
+- cleaner vertical rhythm
+- fewer tiny icon boxes
+- less empty horizontal layouts
+- cards that feel like session entries, not dashboard widgets
+- navigation that can later map well to native mobile
+
+IMPLEMENTATION CHECKLIST
+
+1. Audit all visible generic icons on the logged-in learner dashboard.
+2. Remove or replace as many non-essential generic icons as possible.
+3. Introduce a small Murcielingo visual motif system.
+4. Redesign Today’s Echo visually, while keeping it the top priority section.
+5. Redesign Continue learning cards with title + description + status.
+6. Reduce blank card areas and generic feature-grid feeling.
+7. Refine typography, spacing, and visual hierarchy.
+8. Move Admin out of the main learner navigation if possible.
+9. Keep admin role-based visibility only.
+10. Keep authenticator paused only for development.
+11. Verify the dashboard now feels like a language-learning product, not a template.
+12. Preserve Swedish/English translation support if already present.
+13. Run typecheck/tests if available.
+
+EXPECTED RESULT
+
+After this task, the logged-in UI should:
+- still center on Today’s Echo
+- feel much less generic
+- use fewer default icon-pack patterns
+- feel like a real Murcielingo product
+- have more distinctive learning cards
+- have clearer learner vs admin separation
+- feel more own-developed and less vibe-coded
