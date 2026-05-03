@@ -36,6 +36,7 @@ import {
   persistedIdFromLocalId,
 } from "@/lib/savedPracticeItems";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
+import { useDailySessionLimit } from "@/hooks/useDailySessionLimit";
 import { api } from "@/lib/api";
 import { learningFeedbackService } from "@/lib/learningFeedbackService";
 import {
@@ -67,6 +68,7 @@ export default function PracticeSessionScreen() {
     return [...localItems, ...savedItems.filter((i) => !ids.has(i.id))];
   }, [localItems, savedItems]);
   const { stats, recordAttempt, weakSpots } = usePracticeStats();
+  const dailyLimit = useDailySessionLimit();
 
   useEffect(() => {
     let cancelled = false;
@@ -112,6 +114,9 @@ export default function PracticeSessionScreen() {
       setShowIntro(true);
       setIndex(0);
       setCorrect(0);
+      // Count this against the daily session limit (Free plan cap).
+      // Premium users still get the counter — it's harmless.
+      void dailyLimit.recordStart();
       const fresh = sessionStorageService.newSession({
         sessionId: `${mode}-${Date.now()}`,
         mode,

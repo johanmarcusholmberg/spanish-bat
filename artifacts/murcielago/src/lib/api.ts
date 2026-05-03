@@ -138,7 +138,10 @@ export const api = {
     }) =>
       fetchApi("/generate-practice-session", {
         method: "POST",
-        body: JSON.stringify(input),
+        body: JSON.stringify({
+          ...input,
+          tzOffsetMinutes: -new Date().getTimezoneOffset(),
+        }),
       }) as Promise<{
         items: Array<{
           level: string;

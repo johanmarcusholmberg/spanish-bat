@@ -24,10 +24,6 @@ function todayKey(now = new Date()): string {
   return `${y}-${m}-${d}`;
 }
 
-function tzOffsetMinutes(now = new Date()): number {
-  return -now.getTimezoneOffset();
-}
-
 /**
  * Reads + records the "Today's Practice" counter, mirroring it to the
  * server so the Free-tier cap survives uninstalls and device switches.
@@ -60,25 +56,15 @@ export function useDailySessionLimit(): UseDailySessionLimitResult {
     void refresh();
   }, [refresh]);
 
+  // Local-only optimistic bump. The authoritative server increment now
+  // happens inside `/generate-practice-session` (called moments later
+  // by the practice flow), so we deliberately do NOT POST to
+  // `/daily-sessions/record` here — that would double-count.
   const recordStart = useCallback(async () => {
     const localCount = await dailySessionCounter.recordSessionStarted();
     setCount(localCount);
-    if (!authLoading && userId) {
-      try {
-        const res = await api.dailySessions.record({
-          tzOffsetMinutes: tzOffsetMinutes(),
-          localCount,
-        });
-        if (res?.dailySession?.count && res.dailySession.count > localCount) {
-          setCount(res.dailySession.count);
-          return res.dailySession.count;
-        }
-      } catch {
-        /* offline — local count stands, will sync on next call */
-      }
-    }
     return localCount;
-  }, [authLoading, userId]);
+  }, []);
 
   return {
     count,

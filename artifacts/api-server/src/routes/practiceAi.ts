@@ -22,8 +22,11 @@ import {
   normalizePromptForDedup,
   type AIPracticeRequest,
 } from "@workspace/practice-ai";
-import { db, practiceItemsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { db, practiceItemsTable, userDailySessionsTable } from "@workspace/db";
+import { eq, sql } from "drizzle-orm";
+import { getFeatureAccess } from "@workspace/subscription";
+import { getCurrentPlan } from "../lib/subscription";
+import { deriveDay, parseTzOffset } from "../lib/dailySessions";
 
 const router = Router();
 
@@ -95,9 +98,61 @@ async function persistApprovedAIItems(
 const VALID_LEVELS = new Set(["A1", "A2", "B1", "B2", "C1", "C2"]);
 
 router.post("/generate-practice-session", requireAuth, async (req, res) => {
+  const userId = req.userId!;
   const body = (req.body ?? {}) as Partial<AIPracticeRequest> & {
     avoidPrompts?: unknown;
+    tzOffsetMinutes?: unknown;
   };
+
+  // Atomic check-and-increment of the daily-session counter. This is
+  // the authoritative enforcement point for the Free-tier cap — direct
+  // API callers can't bypass it because the increment is conditional on
+  // the cap inside a single SQL upsert. Premium plans (Infinity limit)
+  // skip the whole branch.
+  try {
+    const planId = await getCurrentPlan(userId);
+    const limit = getFeatureAccess(planId).dailySessionLimit;
+    if (Number.isFinite(limit)) {
+      const today = deriveDay(parseTzOffset(body.tzOffsetMinutes));
+      const updated = await db
+        .insert(userDailySessionsTable)
+        .values({ userId, day: today, count: 1 })
+        .onConflictDoUpdate({
+          target: userDailySessionsTable.userId,
+          set: {
+            day: sql`EXCLUDED.day`,
+            count: sql`CASE
+                WHEN ${userDailySessionsTable.day} <> EXCLUDED.day THEN 1
+                ELSE ${userDailySessionsTable.count} + 1
+              END`,
+            updatedAt: new Date(),
+          },
+          where: sql`${userDailySessionsTable.day} <> EXCLUDED.day OR ${userDailySessionsTable.count} < ${limit}`,
+        })
+        .returning({
+          day: userDailySessionsTable.day,
+          count: userDailySessionsTable.count,
+        });
+      if (updated.length === 0) {
+        // Conflict matched but WHERE rejected → cap reached today.
+        const current = await db
+          .select()
+          .from(userDailySessionsTable)
+          .where(eq(userDailySessionsTable.userId, userId))
+          .limit(1);
+        return res.status(402).json({
+          error: "Daily practice session limit reached",
+          code: "daily_limit_reached",
+          limit,
+          count: current[0]?.count ?? limit,
+        });
+      }
+    }
+  } catch (err) {
+    // Fail-open on enforcement errors so transient DB issues don't
+    // block paying users; log so we notice if it persists.
+    req.log.error({ err }, "Daily-session cap enforcement failed; allowing");
+  }
 
   const userLevel =
     typeof body.userLevel === "string" && VALID_LEVELS.has(body.userLevel)

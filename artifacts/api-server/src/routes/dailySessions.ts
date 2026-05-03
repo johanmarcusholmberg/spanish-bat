@@ -3,28 +3,9 @@ import { db } from "@workspace/db";
 import { userDailySessionsTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
 import { requireAuth } from "../middlewares/requireAuth";
+import { deriveDay, parseTzOffset } from "../lib/dailySessions";
 
 const router = Router();
-
-/**
- * Compute YYYY-MM-DD for a user given their reported timezone offset
- * (in minutes east of UTC, matching JS `-Date.prototype.getTimezoneOffset()`
- * — i.e. positive for east of UTC). We clamp to ±14h to bound abuse:
- * even at the extremes the user can only "skip" forward by ~28h once.
- */
-function deriveDay(tzOffsetMinutes: number): string {
-  const clamped = Math.max(-14 * 60, Math.min(14 * 60, tzOffsetMinutes));
-  const now = new Date(Date.now() + clamped * 60_000);
-  const y = now.getUTCFullYear();
-  const m = String(now.getUTCMonth() + 1).padStart(2, "0");
-  const d = String(now.getUTCDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
-function parseTzOffset(value: unknown): number {
-  if (typeof value !== "number" || !Number.isFinite(value)) return 0;
-  return Math.trunc(value);
-}
 
 function parseLocalCount(value: unknown): number {
   if (typeof value !== "number" || !Number.isFinite(value)) return 0;
@@ -50,14 +31,15 @@ router.get("/daily-sessions", requireAuth, async (req, res) => {
 });
 
 /**
- * Record that the user started a session today. The client supplies its
- * timezone offset (so the day boundary respects user-local time) and
- * its local counter (used as a floor for offline catch-up). The
- * canonical `day` is derived server-side — the client cannot forge a
- * future day to reset the counter.
+ * Offline catch-up sync. The authoritative session-start increment now
+ * happens inside `/generate-practice-session`; this endpoint only
+ * raises the server count to match a higher local count from a client
+ * that started sessions while offline. It never adds +1 on its own, so
+ * it can't double-count when called alongside `/generate`.
  *
- * The upsert is a single atomic SQL expression so concurrent requests
- * cannot lose increments.
+ * On a new day the server stored row is reset to `max(1, localCount)`
+ * — preserves any offline sessions the client recorded locally before
+ * coming back online.
  */
 router.post("/daily-sessions/record", requireAuth, async (req, res) => {
   const userId = req.userId!;
@@ -77,7 +59,7 @@ router.post("/daily-sessions/record", requireAuth, async (req, res) => {
           day: sql`EXCLUDED.day`,
           count: sql`CASE
               WHEN ${userDailySessionsTable.day} = EXCLUDED.day
-                THEN GREATEST(${userDailySessionsTable.count} + 1, EXCLUDED.count)
+                THEN GREATEST(${userDailySessionsTable.count}, EXCLUDED.count)
               ELSE EXCLUDED.count
             END`,
           updatedAt: new Date(),
