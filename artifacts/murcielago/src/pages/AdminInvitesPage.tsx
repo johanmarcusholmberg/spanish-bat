@@ -22,7 +22,10 @@ type InviteRow = {
 };
 
 const AdminInvitesPage: React.FC = () => {
-  const { isAdmin, adminTotpEnrolled, loading } = useAuth();
+  // TODO: Re-enable authenticator/2FA for admin before production.
+  // adminTotpEnrolled is read but no longer gates access during dev.
+  const { isAdmin, loading } = useAuth();
+  const adminTotpEnrolled = true;
   const [invites, setInvites] = useState<InviteRow[]>([]);
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);

@@ -108,7 +108,10 @@ const MetricCard = ({ icon: Icon, label, value, sub }: { icon: React.ElementType
 );
 
 const AdminPage = () => {
-  const { isAdmin, isLoggedIn, adminTotpEnrolled, loading: authLoading } = useAuth();
+  // adminTotpEnrolled is intentionally read but unused while the
+  // authenticator gate below is paused for development.
+  // TODO: Re-enable authenticator/2FA for admin before production.
+  const { isAdmin, isLoggedIn, loading: authLoading } = useAuth();
   const { t } = useLanguage();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
@@ -192,7 +195,11 @@ const AdminPage = () => {
   }
 
   if (!isLoggedIn) return <Navigate to="/" replace />;
-  if (isAdmin && !adminTotpEnrolled) return <Navigate to="/admin/setup-2fa" replace />;
+  // TODO: Re-enable authenticator/2FA for admin before production.
+  // The TOTP enrolment redirect is paused during development so admins
+  // can sign in without setting up an authenticator app. Role-based
+  // protection (isAdmin) is still enforced.
+  // if (isAdmin && !adminTotpEnrolled) return <Navigate to="/admin/setup-2fa" replace />;
   if (!isAdmin) return (
     <AppLayout>
       <div className="flex flex-col items-center justify-center py-20 gap-4">

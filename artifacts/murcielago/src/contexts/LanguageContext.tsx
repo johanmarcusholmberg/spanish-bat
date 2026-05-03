@@ -386,6 +386,16 @@ const translations: Translations = {
   echoStepBuild: { sv: "Bygg", en: "Build" },
   echoStepUse: { sv: "Använd", en: "Use" },
 
+  // Today's Echo hero
+  todaysEchoEyebrow: { sv: "Dagens Echo", en: "Today's Echo" },
+  todaysEchoFocus: { sv: "Dagens fokus", en: "Today's focus" },
+  todaysEchoLevel: { sv: "Nuvarande nivå", en: "Current level" },
+  todaysEchoMin: { sv: "min", en: "min" },
+  todaysEchoStart: { sv: "Starta dagens övning", en: "Start today's practice" },
+  todaysEchoResume: { sv: "Fortsätt dagens övning", en: "Resume today's practice" },
+  todaysEchoUnlock: { sv: "Lås upp full adaptiv träning", en: "Unlock full adaptive practice" },
+  practiceAreasTitle: { sv: "Fortsätt lära dig", en: "Continue learning" },
+
   // Language selector
   appLanguage: { sv: "Appspråk", en: "App language" },
   chooseLanguage: { sv: "Välj språk", en: "Choose language" },

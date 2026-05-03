@@ -2,15 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth, Level } from "@/contexts/AuthContext";
+import { useAccess } from "@/hooks/useAccess";
 import AppLayout from "@/components/AppLayout";
-import { ContinueCard } from "@/components/ProgressDashboard";
 import { StreakCard } from "@/components/StreakCard";
 import MurciMascot from "@/components/MurciMascot";
 import OnboardingModal from "@/components/OnboardingModal";
-import TodaysPracticeCard from "@/components/TodaysPracticeCard";
+import TodaysEchoHero from "@/components/TodaysEchoHero";
+import PracticeAreasStrip from "@/components/PracticeAreasStrip";
 import LevelReadinessCard from "@/components/LevelReadinessCard";
-import EchoSteps from "@/components/EchoSteps";
-import ResumePracticeCard from "@/components/ResumePracticeCard";
 import EchoMemoryPreview from "@/components/EchoMemoryPreview";
 
 /**
@@ -30,6 +29,7 @@ import EchoMemoryPreview from "@/components/EchoMemoryPreview";
 const DashboardPage = () => {
   const { t, language, setProfileLang } = useLanguage();
   const { user, updateProfile } = useAuth();
+  const access = useAccess();
   const navigate = useNavigate();
 
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -58,38 +58,45 @@ const DashboardPage = () => {
 
   return (
     <AppLayout>
-      <div className="animate-fade-in space-y-5 max-w-3xl mx-auto">
+      <div className="animate-fade-in space-y-6 max-w-3xl mx-auto">
+        {/* Friendly greeting — kept compact so the hero card leads. */}
         <div className="flex items-center gap-3">
           <MurciMascot size="sm" mood="happy" />
           <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-heading font-bold text-foreground truncate">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
               {t("welcomeBack")} {user?.displayName}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {t("todayGreeting")} <span className="opacity-60">· {t("echoTagline")}</span>
+            </p>
+            <p className="text-sm text-foreground/80">
+              {lang === "sv"
+                ? "Här är vad du ska öva idag."
+                : "Here's what to practice today."}
             </p>
           </div>
         </div>
 
-        <EchoSteps className="px-1" />
+        {/* PRIMARY: Today's Echo hero. */}
+        <TodaysEchoHero />
 
-        <ResumePracticeCard />
+        {/* SECONDARY: a small set of focused practice areas. */}
+        <PracticeAreasStrip />
 
-        <TodaysPracticeCard />
+        {/* TERTIARY: progress summary — level readiness + streak. */}
+        <div className="space-y-4">
+          <LevelReadinessCard />
+          <StreakCard />
+          <EchoMemoryPreview />
+        </div>
 
-        <EchoMemoryPreview />
-
-        <ContinueCard />
-
-        <LevelReadinessCard />
-
-        <StreakCard />
-
-        <p className="text-center text-xs text-muted-foreground pt-2">
-          {lang === "sv"
-            ? "Vill du utforska? Öppna Öva eller Bibliotek."
-            : "Want to browse? Open Practice or Library."}
-        </p>
+        {/* Upgrade messaging is intentionally NOT a top-level block;
+            it surfaces inside Today's Echo when free users hit their
+            daily cap, and inside EchoMemoryPreview as a soft teaser. */}
+        {access.isFreeUser && !access.canUseTodayEcho && (
+          <p className="text-center text-xs text-muted-foreground">
+            {lang === "sv"
+              ? "Vill du fortsätta i dag? Lås upp full adaptiv träning."
+              : "Want to keep going today? Unlock full adaptive practice."}
+          </p>
+        )}
       </div>
 
       <OnboardingModal open={showOnboarding} onComplete={handleOnboardingComplete} />
