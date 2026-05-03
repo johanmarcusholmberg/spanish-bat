@@ -44,6 +44,7 @@ import {
 import { api } from "@/lib/api";
 import { checkMultiAnswer } from "@/lib/answerUtils";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
+import { sessionStorageService } from "@/lib/learningCoachStores";
 
 const MODE_ICONS: Record<PracticeMode, React.ElementType> = {
   quick: Sparkles,
@@ -147,6 +148,18 @@ const PracticeSessionPage = () => {
     setCorrectCount(0);
     setFinished(false);
     trackLastActivity("exercises", `/practice/session?mode=${mode}`, t("practice"));
+    // Persist a fresh session envelope so the Dashboard's "Continue today's
+    // practice" card can offer to resume if the user navigates away.
+    if (built.items.length > 0) {
+      const fresh = sessionStorageService.newSession({
+        sessionId: `web-${mode}-${Date.now()}`,
+        mode,
+        level: userLevel,
+        totalSteps: built.items.length,
+        label: PRACTICE_MODES.find((p) => p.mode === mode)?.title,
+      });
+      void sessionStorageService.saveSessionProgress(fresh);
+    }
     void enrichSessionFromAI(mode);
   };
 
@@ -243,6 +256,8 @@ const PracticeSessionPage = () => {
     if (!session) return;
     if (index + 1 >= session.items.length) {
       setFinished(true);
+      // Session done — clear the resume snapshot so the Dashboard card hides.
+      void sessionStorageService.clearCompletedSession();
       const skillKey =
         session.focusSkills[0] === "grammar"
           ? "grammar"
@@ -258,9 +273,19 @@ const PracticeSessionPage = () => {
       );
       return;
     }
-    setIndex((i) => i + 1);
+    const nextIndex = index + 1;
+    setIndex(nextIndex);
     setAnswer("");
     setRevealed(false);
+    // Persist step progress so we can resume mid-session.
+    void sessionStorageService.loadActiveSession().then((active) => {
+      if (!active) return;
+      void sessionStorageService.saveSessionProgress({
+        ...active,
+        stepIndex: nextIndex,
+        totalSteps: session.items.length,
+      });
+    });
   };
 
   // No content

@@ -10,6 +10,7 @@ import OnboardingModal from "@/components/OnboardingModal";
 import TodaysPracticeCard from "@/components/TodaysPracticeCard";
 import LevelReadinessCard from "@/components/LevelReadinessCard";
 import EchoSteps from "@/components/EchoSteps";
+import ResumePracticeCard from "@/components/ResumePracticeCard";
 
 /**
  * Today screen — the primary post-login destination.
@@ -70,6 +71,8 @@ const DashboardPage = () => {
         </div>
 
         <EchoSteps className="px-1" />
+
+        <ResumePracticeCard />
 
         <TodaysPracticeCard />
 
