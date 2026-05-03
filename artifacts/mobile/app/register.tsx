@@ -33,6 +33,7 @@ export default function RegisterScreen() {
 
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [language, setLanguage] = useState<AppLanguage>("sv");
@@ -47,22 +48,28 @@ export default function RegisterScreen() {
   };
 
   const emailRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
 
   const hasDisplayName = displayName.trim().length >= 2;
-  const isValid = hasDisplayName && email.includes("@");
+  const passwordOk = !password || password.length >= 8;
+  const isValid = hasDisplayName && email.includes("@") && passwordOk;
 
   if (isLoaded && isSignedIn) {
     return <Redirect href="/(tabs)" />;
   }
 
   const handleSendCode = async () => {
-    if (!isValid) {
+    if (!hasDisplayName || !email.includes("@")) {
       setError("Please enter your name and a valid email address.");
+      return;
+    }
+    if (password && password.length < 8) {
+      setError("Choose a password with at least 8 characters, or leave it blank.");
       return;
     }
     setError(null);
     setLoading(true);
-    const err = await sendRegisterCode(email.trim(), displayName.trim());
+    const err = await sendRegisterCode(email.trim(), displayName.trim(), password || undefined);
     setLoading(false);
     if (err) {
       setError(err);
@@ -148,10 +155,24 @@ export default function RegisterScreen() {
             placeholder="your@email.com"
             keyboardType="email-address"
             autoComplete="email"
+            returnKeyType="next"
+            onSubmitEditing={() => passwordRef.current?.focus()}
+            containerStyle={{ marginBottom: 16 }}
+            testID="register-email"
+          />
+
+          <AppTextInput
+            ref={passwordRef}
+            label="Password (optional)"
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Leave blank for code sign-in"
+            secureTextEntry
+            autoComplete="new-password"
             returnKeyType="send"
             onSubmitEditing={handleSendCode}
             containerStyle={{ marginBottom: 20 }}
-            testID="register-email"
+            testID="register-password"
           />
 
           <AppButton

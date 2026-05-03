@@ -1,14 +1,16 @@
 import { useAuth as useClerkAuth } from "@clerk/clerk-expo";
 import { Redirect, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
+  TextInput,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Image,
+  TouchableOpacity,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -21,17 +23,22 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useColors } from "@/hooks/useColors";
 import { getPreferredLanguage, setPreferredLanguage } from "@/lib/languagePreference";
 
+type Mode = "password" | "code";
+
 export default function LoginScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { sendLoginCode, signInWithGoogle, signInWithApple } = useAuth();
+  const { loginWithPassword, sendLoginCode, signInWithGoogle, signInWithApple } = useAuth();
   const { isSignedIn, isLoaded } = useClerkAuth();
 
+  const [mode, setMode] = useState<Mode>("password");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [language, setLanguage] = useState<AppLanguage>("sv");
+  const passwordRef = useRef<TextInput>(null);
 
   React.useEffect(() => {
     getPreferredLanguage().then(setLanguage);
@@ -45,6 +52,28 @@ export default function LoginScreen() {
   if (isLoaded && isSignedIn) {
     return <Redirect href="/(tabs)" />;
   }
+
+  const handlePasswordSignIn = async () => {
+    if (!email.trim() || !email.includes("@")) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    if (!password) {
+      setError("Please enter your password.");
+      return;
+    }
+    setError(null);
+    setLoading(true);
+    const result = await loginWithPassword(email.trim(), password);
+    setLoading(false);
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+    if (result.needsSecondFactor) {
+      router.push({ pathname: "/verify-2fa", params: { email: email.trim() } });
+    }
+  };
 
   const handleSendCode = async () => {
     if (!email.trim() || !email.includes("@")) {
@@ -115,7 +144,9 @@ export default function LoginScreen() {
             Sign in
           </Typography>
           <Typography variant="caption" muted style={{ marginBottom: 18 }}>
-            We&apos;ll email you a one-time code — no password needed.
+            {mode === "password"
+              ? "Use your email and password."
+              : "We'll email you a one-time code — no password needed."}
           </Typography>
 
           <AppTextInput
@@ -125,20 +156,89 @@ export default function LoginScreen() {
             placeholder="your@email.com"
             keyboardType="email-address"
             autoComplete="email"
-            returnKeyType="send"
-            onSubmitEditing={handleSendCode}
+            returnKeyType={mode === "password" ? "next" : "send"}
+            onSubmitEditing={
+              mode === "password" ? () => passwordRef.current?.focus() : handleSendCode
+            }
             containerStyle={{ marginBottom: 16 }}
             testID="login-email"
           />
 
-          <AppButton
-            title={loading ? "Sending…" : "Send code"}
-            onPress={handleSendCode}
-            loading={loading}
-            disabled={loading || !email.trim()}
-            size="lg"
-            testID="login-submit"
-          />
+          {mode === "password" && (
+            <>
+              <AppTextInput
+                ref={passwordRef}
+                label="Password"
+                value={password}
+                onChangeText={setPassword}
+                placeholder="••••••••"
+                secureTextEntry
+                autoComplete="current-password"
+                returnKeyType="send"
+                onSubmitEditing={handlePasswordSignIn}
+                containerStyle={{ marginBottom: 8 }}
+                testID="login-password"
+              />
+              <TouchableOpacity
+                onPress={() => router.push("/forgot-password")}
+                style={styles.forgotRow}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                testID="login-forgot-password"
+              >
+                <Typography variant="caption" style={{ color: colors.primary }}>
+                  Forgot password?
+                </Typography>
+              </TouchableOpacity>
+              <AppButton
+                title={loading ? "Signing in…" : "Sign in"}
+                onPress={handlePasswordSignIn}
+                loading={loading}
+                disabled={loading || !email.trim() || !password}
+                size="lg"
+                testID="login-submit"
+              />
+              <TouchableOpacity
+                onPress={() => {
+                  setMode("code");
+                  setError(null);
+                  setPassword("");
+                }}
+                style={styles.toggleRow}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                testID="login-use-code"
+              >
+                <Typography variant="caption" muted>
+                  Sign in with a code instead
+                </Typography>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {mode === "code" && (
+            <>
+              <AppButton
+                title={loading ? "Sending…" : "Send code"}
+                onPress={handleSendCode}
+                loading={loading}
+                disabled={loading || !email.trim()}
+                size="lg"
+                testID="login-submit"
+              />
+              <TouchableOpacity
+                onPress={() => {
+                  setMode("password");
+                  setError(null);
+                }}
+                style={styles.toggleRow}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                testID="login-use-password"
+              >
+                <Typography variant="caption" muted>
+                  Use your password instead
+                </Typography>
+              </TouchableOpacity>
+            </>
+          )}
 
           <View style={styles.dividerRow}>
             <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
@@ -202,6 +302,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 24,
     borderWidth: 1,
+  },
+  forgotRow: {
+    alignSelf: "flex-end",
+    marginBottom: 12,
+  },
+  toggleRow: {
+    alignSelf: "center",
+    marginTop: 12,
   },
   dividerRow: {
     flexDirection: "row",

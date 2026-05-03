@@ -45,6 +45,9 @@ function RootLayoutNav() {
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="register" options={{ headerShown: false }} />
         <Stack.Screen name="verify-email" options={{ headerShown: false }} />
+        <Stack.Screen name="verify-2fa" options={{ headerShown: false }} />
+        <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
+        <Stack.Screen name="reset-password" options={{ headerShown: false }} />
         <Stack.Screen name="sso-callback" options={{ headerShown: false }} />
         <Stack.Screen name="flashcards" options={{ headerShown: true }} />
         <Stack.Screen name="stats" options={{ headerShown: true }} />

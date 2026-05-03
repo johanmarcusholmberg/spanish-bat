@@ -19,18 +19,30 @@ export interface UserProfile {
   placementTestCompleted: boolean;
 }
 
+export interface PasswordLoginResult {
+  error: string | null;
+  needsSecondFactor: boolean;
+}
+
 interface AuthContextType {
   isLoggedIn: boolean;
   isAdmin: boolean;
   user: UserProfile | null;
   userId: string | null;
   loading: boolean;
+  // Phase B: password sign-in (primary)
+  loginWithPassword: (email: string, password: string) => Promise<PasswordLoginResult>;
+  verifySecondFactorCode: (code: string) => Promise<string | null>;
+  // Phase A: email-code sign-in (fallback)
   sendLoginCode: (email: string) => Promise<string | null>;
   verifyLoginCode: (code: string) => Promise<string | null>;
-  sendRegisterCode: (email: string, displayName: string) => Promise<string | null>;
+  sendRegisterCode: (email: string, displayName: string, password?: string) => Promise<string | null>;
   verifyRegisterCode: (code: string) => Promise<string | null>;
   resendLoginCode: () => Promise<string | null>;
   resendRegisterCode: () => Promise<string | null>;
+  // Forgot password
+  sendResetPasswordCode: (email: string) => Promise<string | null>;
+  verifyResetPasswordCode: (code: string, newPassword: string) => Promise<string | null>;
   signInWithGoogle: () => Promise<string | null>;
   signInWithApple: () => Promise<string | null>;
   logout: () => Promise<void>;
@@ -43,12 +55,16 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   userId: null,
   loading: true,
+  loginWithPassword: async () => ({ error: null, needsSecondFactor: false }),
+  verifySecondFactorCode: async () => null,
   sendLoginCode: async () => null,
   verifyLoginCode: async () => null,
   sendRegisterCode: async () => null,
   verifyRegisterCode: async () => null,
   resendLoginCode: async () => null,
   resendRegisterCode: async () => null,
+  sendResetPasswordCode: async () => null,
+  verifyResetPasswordCode: async () => null,
   signInWithGoogle: async () => null,
   signInWithApple: async () => null,
   logout: async () => {},
@@ -163,6 +179,119 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // ─── Password sign-in (primary) ──────────────────────────────────────────
+  // signIn.create({ strategy: "password", identifier, password }) signs the
+  // user in directly when MFA is off. If the Clerk instance demands a second
+  // factor (status === "needs_second_factor") we automatically dispatch the
+  // email-code 2FA so the UI can prompt for it via verifySecondFactorCode().
+
+  async function loginWithPassword(
+    email: string,
+    password: string,
+  ): Promise<PasswordLoginResult> {
+    if (!signIn || !setActiveSignIn) return { error: "Sign-in not available", needsSecondFactor: false };
+    try {
+      const trimmed = email.trim();
+      if (!trimmed) return { error: "Please enter your email address.", needsSecondFactor: false };
+      if (!password) return { error: "Please enter your password.", needsSecondFactor: false };
+      const attempt = await signIn.create({
+        identifier: trimmed,
+        password,
+        strategy: "password",
+      });
+      if (attempt.status === "complete") {
+        await setActiveSignIn({ session: attempt.createdSessionId });
+        return { error: null, needsSecondFactor: false };
+      }
+      if (attempt.status === "needs_second_factor") {
+        const emailFactor = attempt.supportedSecondFactors?.find(
+          (f: { strategy: string }) => f.strategy === "email_code",
+        ) as { emailAddressId?: string } | undefined;
+        try {
+          await signIn.prepareSecondFactor({
+            strategy: "email_code",
+            ...(emailFactor?.emailAddressId ? { emailAddressId: emailFactor.emailAddressId } : {}),
+          } as Parameters<typeof signIn.prepareSecondFactor>[0]);
+        } catch (err) {
+          return {
+            error: clerkErrorMessage(err, "Could not send verification code"),
+            needsSecondFactor: true,
+          };
+        }
+        return { error: null, needsSecondFactor: true };
+      }
+      return { error: "Sign-in could not be completed.", needsSecondFactor: false };
+    } catch (err) {
+      return { error: clerkErrorMessage(err, "Sign-in failed"), needsSecondFactor: false };
+    }
+  }
+
+  async function verifySecondFactorCode(code: string): Promise<string | null> {
+    if (!signIn || !setActiveSignIn) return "Sign-in not available";
+    try {
+      const trimmed = code.trim();
+      if (!trimmed) return "Please enter the code from your email.";
+      const result = await signIn.attemptSecondFactor({
+        strategy: "email_code",
+        code: trimmed,
+      });
+      if (result.status === "complete") {
+        await setActiveSignIn({ session: result.createdSessionId });
+        return null;
+      }
+      return "Could not complete sign-in. Please request a new code.";
+    } catch (err) {
+      return clerkErrorMessage(err, "Invalid or expired code");
+    }
+  }
+
+  // ─── Forgot / reset password ─────────────────────────────────────────────
+  // signIn.create({ strategy: "reset_password_email_code", identifier }) both
+  // sets up the SignIn resource and dispatches the reset email. The verify
+  // step submits both the code and the replacement password and finalises
+  // the session in one shot.
+
+  async function sendResetPasswordCode(email: string): Promise<string | null> {
+    if (!signIn) return "Sign-in not available";
+    try {
+      const trimmed = email.trim();
+      if (!trimmed) return "Please enter your email address.";
+      await signIn.create({
+        strategy: "reset_password_email_code",
+        identifier: trimmed,
+      });
+      return null;
+    } catch (err) {
+      return clerkErrorMessage(err, "Could not send reset code");
+    }
+  }
+
+  async function verifyResetPasswordCode(
+    code: string,
+    newPassword: string,
+  ): Promise<string | null> {
+    if (!signIn || !setActiveSignIn) return "Sign-in not available";
+    try {
+      const trimmed = code.trim();
+      if (!trimmed) return "Please enter the code from your email.";
+      if (!newPassword || newPassword.length < 8) {
+        return "Choose a password with at least 8 characters.";
+      }
+      const result = await signIn.attemptFirstFactor({
+        strategy: "reset_password_email_code",
+        code: trimmed,
+        password: newPassword,
+      });
+      if (result.status === "complete") {
+        await setActiveSignIn({ session: result.createdSessionId });
+        return null;
+      }
+      return "Password reset, but sign-in could not be completed. Please sign in again.";
+    } catch (err) {
+      return clerkErrorMessage(err, "Could not reset password");
+    }
+  }
+
   // ─── Email-code login ────────────────────────────────────────────────────
   // The Clerk instance is configured passwordless: `email_code` is the only
   // first-factor strategy. We dispatch the code via signIn.create and redeem
@@ -215,16 +344,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ─── Email-code registration ─────────────────────────────────────────────
 
-  async function sendRegisterCode(email: string, displayName: string): Promise<string | null> {
+  async function sendRegisterCode(
+    email: string,
+    displayName: string,
+    password?: string,
+  ): Promise<string | null> {
     if (!signUp) return "Sign-up not available";
     try {
       const trimmedEmail = email.trim();
       const trimmedName = displayName.trim();
+      const trimmedPassword = (password ?? "").trim();
       if (!trimmedEmail) return "Please enter your email address.";
-      await signUp.create({
-        emailAddress: trimmedEmail,
-        ...(trimmedName ? { firstName: trimmedName } : {}),
-      });
+      // Password is optional in the UI — if filled we register the user
+      // with a real credential; if blank we fall through to the Phase A
+      // email-code-only path and Clerk treats the account as passwordless.
+      const params: Record<string, unknown> = { emailAddress: trimmedEmail };
+      if (trimmedName) params.firstName = trimmedName;
+      if (trimmedPassword) params.password = trimmedPassword;
+      await signUp.create(params as Parameters<typeof signUp.create>[0]);
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       setRegisterCodeReady(true);
       return null;
@@ -347,12 +484,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user: profile,
         userId: clerkUser?.id ?? null,
         loading,
+        loginWithPassword,
+        verifySecondFactorCode,
         sendLoginCode,
         verifyLoginCode,
         sendRegisterCode,
         verifyRegisterCode,
         resendLoginCode,
         resendRegisterCode,
+        sendResetPasswordCode,
+        verifyResetPasswordCode,
         signInWithGoogle,
         signInWithApple,
         logout,

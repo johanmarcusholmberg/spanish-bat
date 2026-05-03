@@ -4,7 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import LanguageToggle from "@/components/LanguageToggle";
-import { ArrowLeft, Loader2, Mail, KeyRound, User } from "lucide-react";
+import { ArrowLeft, Loader2, Lock, Mail, KeyRound, User } from "lucide-react";
 import logo from "@/assets/murcielago-logo.png";
 
 const RegisterPage = () => {
@@ -14,6 +14,7 @@ const RegisterPage = () => {
   const [step, setStep] = useState<"details" | "code">("details");
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -38,8 +39,15 @@ const RegisterPage = () => {
       });
       return;
     }
+    if (password && password.length < 8) {
+      toast({
+        title: language === "sv" ? "Välj ett lösenord på minst 8 tecken" : "Choose a password with at least 8 characters",
+        variant: "soft",
+      });
+      return;
+    }
     setLoading(true);
-    const err = await sendRegisterCode(email.trim(), displayName.trim());
+    const err = await sendRegisterCode(email.trim(), displayName.trim(), password || undefined);
     setLoading(false);
     if (err) {
       toast({ title: err, variant: "soft" });
@@ -140,6 +148,27 @@ const RegisterPage = () => {
                       className="w-full pl-9 pr-3 py-2 rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition text-sm"
                       placeholder="email@example.com"
                       autoComplete="email"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="flex items-center justify-between text-xs font-medium text-foreground mb-1">
+                    <span>{language === "sv" ? "Lösenord" : "Password"}</span>
+                    <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                      {language === "sv" ? "Valfritt" : "Optional"}
+                    </span>
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2 rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition text-sm"
+                      placeholder={language === "sv" ? "Lämna tomt för kod-inloggning" : "Leave empty for code sign-in"}
+                      autoComplete="new-password"
+                      minLength={8}
                     />
                   </div>
                 </div>

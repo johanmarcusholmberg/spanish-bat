@@ -26,18 +26,31 @@ interface ClerkError {
   code?: string;
 }
 
+export interface PasswordLoginResult {
+  error: string | null;
+  needsSecondFactor: boolean;
+}
+
 interface AuthContextType {
   isLoggedIn: boolean;
   isAdmin: boolean;
   user: UserProfile | null;
   session: SessionLike | null;
   loading: boolean;
+  // Phase B: password sign-in (primary)
+  loginWithPassword: (email: string, password: string) => Promise<PasswordLoginResult>;
+  verifySecondFactorCode: (code: string) => Promise<string | null>;
+  // Phase A: email-code sign-in (fallback)
   sendLoginCode: (email: string) => Promise<string | null>;
   resendLoginCode: () => Promise<string | null>;
   verifyLoginCode: (code: string) => Promise<string | null>;
-  sendRegisterCode: (email: string, displayName: string) => Promise<string | null>;
+  // Registration: optional password — empty falls back to email-code only
+  sendRegisterCode: (email: string, displayName: string, password?: string) => Promise<string | null>;
   resendRegisterCode: () => Promise<string | null>;
   verifyRegisterCode: (code: string) => Promise<string | null>;
+  // Forgot password
+  sendResetPasswordCode: (email: string) => Promise<string | null>;
+  verifyResetPasswordCode: (code: string, newPassword: string) => Promise<string | null>;
   logout: () => Promise<void>;
   updateProfile: (profile: Partial<UserProfile>) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
@@ -50,12 +63,16 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   loading: true,
+  loginWithPassword: async () => ({ error: null, needsSecondFactor: false }),
+  verifySecondFactorCode: async () => null,
   sendLoginCode: async () => null,
   resendLoginCode: async () => null,
   verifyLoginCode: async () => null,
   sendRegisterCode: async () => null,
   resendRegisterCode: async () => null,
   verifyRegisterCode: async () => null,
+  sendResetPasswordCode: async () => null,
+  verifyResetPasswordCode: async () => null,
   logout: async () => {},
   updateProfile: async () => {},
   signInWithGoogle: async () => {},
@@ -162,12 +179,66 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, clerkUser?.id]);
 
+  // ─── Password sign-in (primary) ───────────────────────────────────────────
+  // signIn.password() signs the user in directly when MFA is off. If the
+  // Clerk instance later gets MFA enforced, the SignIn resource transitions
+  // to `needs_second_factor`; we automatically dispatch an email-code 2FA
+  // and let the UI prompt for it via verifySecondFactorCode().
+
+  const loginWithPassword = async (
+    email: string,
+    password: string,
+  ): Promise<PasswordLoginResult> => {
+    if (!signIn) return { error: "Sign-in not available", needsSecondFactor: false };
+    try {
+      const trimmed = email.trim();
+      if (!trimmed) return { error: "Please enter your email address.", needsSecondFactor: false };
+      if (!password) return { error: "Please enter your password.", needsSecondFactor: false };
+      const { error } = await signIn.password({ emailAddress: trimmed, password });
+      if (error) return { error: resultErr(error, "Sign-in failed"), needsSecondFactor: false };
+      if (signIn.status === "complete") {
+        await signIn.finalize();
+        return { error: null, needsSecondFactor: false };
+      }
+      if (signIn.status === "needs_second_factor") {
+        // Pre-dispatch the email-code 2FA so the user can enter it next.
+        const { error: mfaErr } = await signIn.mfa.sendEmailCode();
+        if (mfaErr) {
+          return {
+            error: resultErr(mfaErr, "Could not send verification code"),
+            needsSecondFactor: true,
+          };
+        }
+        setPendingLoginEmail(trimmed);
+        return { error: null, needsSecondFactor: true };
+      }
+      return { error: "Sign-in could not be completed.", needsSecondFactor: false };
+    } catch (err) {
+      return { error: clerkErr(err, "Sign-in failed"), needsSecondFactor: false };
+    }
+  };
+
+  const verifySecondFactorCode = async (code: string): Promise<string | null> => {
+    if (!signIn) return "Sign-in not available";
+    try {
+      const trimmed = code.trim();
+      if (!trimmed) return "Please enter the code from your email.";
+      const { error } = await signIn.mfa.verifyEmailCode({ code: trimmed });
+      if (error) return resultErr(error, "Invalid or expired code");
+      if (signIn.status === "complete") {
+        await signIn.finalize();
+        return null;
+      }
+      return "Could not complete sign-in. Please try again.";
+    } catch (err) {
+      return clerkErr(err, "Invalid or expired code");
+    }
+  };
+
   // ─── Email-code login ─────────────────────────────────────────────────────
-  // The Clerk instance is configured passwordless: the only first factor is
-  // `email_code`. signIn.emailCode.sendCode dispatches a 6-digit code to the
-  // address; verifyCode redeems it and signIn.finalize() activates the
-  // session. Both calls return `{ error }` on a recoverable failure (bad
-  // email, expired code, etc.) and throw on transport errors — handle both.
+  // signIn.emailCode.sendCode dispatches a 6-digit code; verifyCode redeems
+  // it and signIn.finalize() activates the session. Used as a fallback when
+  // the user clicks "Sign in with a code instead".
 
   const sendLoginCode = async (email: string): Promise<string | null> => {
     if (!signIn) return "Sign-in not available";
@@ -187,8 +258,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!signIn) return "Sign-in not available";
     if (!pendingLoginEmail) return "Please enter your email and try again.";
     try {
-      // Re-pass the identifier explicitly so the call still works after a
-      // page reload that wiped the in-flight signIn resource.
       const { error } = await signIn.emailCode.sendCode({ emailAddress: pendingLoginEmail });
       if (error) return resultErr(error, "Could not resend code");
       return null;
@@ -216,18 +285,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // ─── Email-code registration ──────────────────────────────────────────────
+  // ─── Registration ─────────────────────────────────────────────────────────
+  // If the caller passes a password, use the password-aware signUp path so
+  // the user gets a real password on file. Otherwise fall back to the Phase
+  // A email-code-only registration. Both branches end with email-code
+  // verification because the Clerk instance requires verified email.
 
-  const sendRegisterCode = async (email: string, displayName: string): Promise<string | null> => {
+  const sendRegisterCode = async (
+    email: string,
+    displayName: string,
+    password?: string,
+  ): Promise<string | null> => {
     if (!signUp) return "Sign-up not available";
     try {
       const trimmedEmail = email.trim();
       const trimmedName = displayName.trim();
+      const trimmedPassword = (password ?? "").trim();
       if (!trimmedEmail) return "Please enter your email address.";
-      const createParams: Record<string, unknown> = { emailAddress: trimmedEmail };
-      if (trimmedName) createParams.firstName = trimmedName;
-      const { error } = await signUp.create(createParams as Parameters<typeof signUp.create>[0]);
-      if (error) return resultErr(error, "Registration failed");
+
+      if (trimmedPassword) {
+        // Password-aware registration. signUp.password() creates the
+        // sign-up with the supplied credentials in one call.
+        const passwordParams = {
+          emailAddress: trimmedEmail,
+          password: trimmedPassword,
+          ...(trimmedName ? { firstName: trimmedName } : {}),
+        };
+        const { error } = await signUp.password(passwordParams);
+        if (error) return resultErr(error, "Registration failed");
+      } else {
+        const createParams = {
+          emailAddress: trimmedEmail,
+          ...(trimmedName ? { firstName: trimmedName } : {}),
+        };
+        const { error } = await signUp.create(createParams);
+        if (error) return resultErr(error, "Registration failed");
+      }
+
       const { error: sendError } = await signUp.verifications.sendEmailCode();
       if (sendError) return resultErr(sendError, "Could not send code");
       setPendingRegisterEmail(trimmedEmail);
@@ -241,9 +335,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!signUp) return "Sign-up not available";
     if (!pendingRegisterEmail) return "Please enter your details and try again.";
     try {
-      // Don't re-call signUp.create — Clerk rejects creating a second
-      // sign-up while one is already in progress. Just dispatch a new
-      // verification email for the existing in-progress sign-up.
       const { error } = await signUp.verifications.sendEmailCode();
       if (error) return resultErr(error, "Could not resend code");
       return null;
@@ -266,6 +357,57 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return "Could not complete sign-up. Please request a new code.";
     } catch (err) {
       return clerkErr(err, "Invalid or expired code");
+    }
+  };
+
+  // ─── Forgot / reset password ──────────────────────────────────────────────
+  // Step 1 sets the identifier on the SignIn resource. Step 2 dispatches the
+  // reset email. Step 3 (verify + new password) is handled in a second call
+  // that submits both code and the replacement password via the future API
+  // namespace `signIn.resetPasswordEmailCode`.
+
+  const sendResetPasswordCode = async (email: string): Promise<string | null> => {
+    if (!signIn) return "Sign-in not available";
+    try {
+      const trimmed = email.trim();
+      if (!trimmed) return "Please enter your email address.";
+      const { error: createError } = await signIn.create({ identifier: trimmed });
+      if (createError) return resultErr(createError, "Could not start password reset");
+      const { error } = await signIn.resetPasswordEmailCode.sendCode();
+      if (error) return resultErr(error, "Could not send reset code");
+      setPendingLoginEmail(trimmed);
+      return null;
+    } catch (err) {
+      return clerkErr(err, "Could not send reset code");
+    }
+  };
+
+  const verifyResetPasswordCode = async (
+    code: string,
+    newPassword: string,
+  ): Promise<string | null> => {
+    if (!signIn) return "Sign-in not available";
+    try {
+      const trimmedCode = code.trim();
+      if (!trimmedCode) return "Please enter the code from your email.";
+      if (!newPassword || newPassword.length < 8) {
+        return "Choose a password with at least 8 characters.";
+      }
+      const { error: verifyError } = await signIn.resetPasswordEmailCode.verifyCode({
+        code: trimmedCode,
+      });
+      if (verifyError) return resultErr(verifyError, "Invalid or expired code");
+      const { error: submitError } = await signIn.resetPasswordEmailCode.submitPassword({
+        password: newPassword,
+      });
+      if (submitError) return resultErr(submitError, "Could not set new password");
+      if (signIn.status === "complete") {
+        await signIn.finalize();
+        return null;
+      }
+      return "Password reset, but sign-in could not be completed. Please sign in again.";
+    } catch (err) {
+      return clerkErr(err, "Could not reset password");
     }
   };
 
@@ -318,12 +460,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         user: profile,
         session,
         loading,
+        loginWithPassword,
+        verifySecondFactorCode,
         sendLoginCode,
         resendLoginCode,
         verifyLoginCode,
         sendRegisterCode,
         resendRegisterCode,
         verifyRegisterCode,
+        sendResetPasswordCode,
+        verifyResetPasswordCode,
         logout,
         updateProfile,
         signInWithGoogle,
