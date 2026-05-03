@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useSignIn, useSignUp, useSession, useUser, useClerk, useSSO } from "@clerk/clerk-expo";
 import * as WebBrowser from "expo-web-browser";
+import * as AuthSession from "expo-auth-session";
 import { Platform } from "react-native";
 import { setAuthTokenGetter, api } from "@/lib/api";
 import { clearAllUserData } from "@/lib/storage";
@@ -274,7 +275,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function startOAuth(strategy: "oauth_google" | "oauth_apple"): Promise<string | null> {
     try {
-      const { createdSessionId, setActive } = await startSSOFlow({ strategy });
+      // Explicit redirect URL so Clerk sends the OAuth provider back to a
+      // route that actually exists in our Expo Router tree. On native this
+      // becomes `murcielago://sso-callback`; on web it becomes
+      // `<origin>/sso-callback`.
+      const redirectUrl = AuthSession.makeRedirectUri({
+        scheme: "murcielago",
+        path: "sso-callback",
+      });
+      const { createdSessionId, setActive } = await startSSOFlow({
+        strategy,
+        redirectUrl,
+      });
       if (createdSessionId && setActive) {
         await setActive({ session: createdSessionId });
         return null;
