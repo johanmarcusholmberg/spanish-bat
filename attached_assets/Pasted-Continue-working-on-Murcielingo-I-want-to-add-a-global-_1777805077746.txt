@@ -1,0 +1,160 @@
+Continue working on Murcielingo.
+
+I want to add a global language selector to the application.
+
+GOAL
+Add a clear global language icon where the user can select the app language. This should work well now and be future-safe if more languages are added later.
+
+Important:
+- Do not rebuild the app from scratch.
+- Do not replace the existing design system.
+- Reuse existing routing, layout, authentication, settings, and i18n/localization patterns if they already exist.
+- The solution must work for both web and the future native mobile app.
+- Do not hardcode the implementation in a way that only supports two languages.
+
+FEATURE REQUIREMENTS
+
+1. Global language icon
+Add a language/globe icon in the global app UI.
+
+It should be visible from the main app shell, for example:
+- top-right in the web header
+- inside the profile/settings area on smaller/mobile layouts if the header is crowded
+- accessible from the homepage/public pages if language switching is relevant there too
+
+The icon should open a small menu, dropdown, sheet, or modal depending on screen size:
+- desktop/web: dropdown or popover
+- mobile/native-ready layout: bottom sheet or simple modal pattern
+
+2. Language selection
+The menu should show available languages from a central configuration list, not hardcoded in the component.
+
+Example structure:
+- code: "en"
+- label: "English"
+- nativeLabel: "English"
+- flagOrIcon: optional
+- enabled: true
+
+Current minimum languages:
+- English
+- Swedish
+
+If Spanish is already supported in the app UI, include Spanish too. If not, prepare the config so Spanish can be added without changing the selector logic.
+
+3. Future-safe language architecture
+Create or update a central language configuration file, for example:
+
+src/i18n/languages.ts
+or equivalent existing location.
+
+The selector should render languages from this config.
+
+Do not scatter available language options across multiple components.
+
+The language selection logic should support:
+- adding more languages later
+- hiding disabled/incomplete languages
+- showing native labels
+- fallback language if selected language is unavailable
+- persistent user choice
+
+4. Persistence
+When a user selects a language:
+- save it locally for guests/logged-out users
+- save it to the user profile/settings if the user is logged in and such a settings table/profile structure already exists
+- restore selected language on app load
+- avoid flicker where the app first loads one language and then quickly switches
+
+Use the existing storage approach if one already exists.
+
+For web this can be localStorage or existing app settings storage.
+For future mobile/native readiness, keep the storage abstraction clean so it can later use AsyncStorage or SecureStore without rewriting the UI component.
+
+5. User profile integration
+If the app already has a profile/settings page, add a language preference field there too.
+
+The global icon and the profile setting must stay synchronized:
+- changing language from the icon updates profile/settings
+- changing language from profile/settings updates the global selector
+- selected language is reflected immediately in the UI
+
+6. Localization behavior
+Use the existing i18n/localization system if one exists.
+
+If no proper i18n setup exists yet:
+- create a small, clean localization foundation
+- do not translate the whole app in this phase unless already structured
+- add a clear pattern for translation keys
+- migrate only the language selector labels and a few visible navigation/profile labels as proof of concept
+- leave TODO comments or a small migration note for gradually moving remaining hardcoded copy
+
+The implementation should avoid:
+- duplicate translation dictionaries
+- language-specific conditionals scattered across components
+- string comparisons like selectedLanguage === "Swedish"
+
+Use language codes instead.
+
+7. Accessibility and UX
+The language icon/menu should be:
+- keyboard accessible
+- screen-reader friendly
+- reachable on mobile
+- visually consistent with the Murcielingo design
+- not too technical-looking
+- easy to understand for a normal learner
+
+Use labels such as:
+- "Language"
+- "Choose language"
+- "App language"
+
+The selected language should be clearly marked with:
+- checkmark
+- active state
+- or selected label
+
+8. Mobile/native readiness
+Because Murcielingo should later work as both web and native mobile app:
+- avoid browser-only APIs directly inside UI components
+- isolate storage and language detection in utilities/hooks
+- avoid hover-only interactions
+- ensure the selector works with touch
+- make the popover/sheet/modal pattern responsive
+
+9. Testing/checks
+Add or update tests where appropriate.
+
+At minimum verify:
+- the language selector renders all enabled languages from the config
+- disabled languages are not shown
+- selecting a language updates the active language
+- selected language persists after reload/app restart simulation
+- fallback language is used if an unsupported code is stored
+- profile/settings language and global selector stay synchronized if profile/settings already exist
+
+10. Final report
+After implementation, report:
+- files changed
+- where the global language icon appears
+- how to add a new language later
+- how selected language is persisted
+- what parts of the app are already translated
+- what remains hardcoded and should be migrated later
+
+DESIGN DIRECTION
+The language selector should feel like a natural part of Murcielingo.
+
+It should not feel like a developer/debug setting.
+
+The user should understand:
+“I can choose the app language here.”
+
+The architecture should make it easy to later add:
+- Spanish
+- German
+- French
+- more languages
+
+without rewriting the component.
