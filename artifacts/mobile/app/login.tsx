@@ -119,8 +119,6 @@ export default function LoginScreen() {
             Sign in
           </Typography>
 
-          <AuthMessageBanner message={error} />
-
           <AppTextInput
             label="Email"
             value={email}
@@ -205,6 +203,7 @@ export default function LoginScreen() {
           </Typography>
         </View>
       </ScrollView>
+      <AuthMessageBanner message={error} />
     </KeyboardAvoidingView>
   );
 }

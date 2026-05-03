@@ -145,22 +145,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string): Promise<string | null> => {
     if (!signIn) return "Sign-in not available";
     try {
-      const { error } = await signIn.create({ identifier: email, password } as Parameters<typeof signIn.create>[0]);
+      // v6 future API: `signIn.password({ identifier, password })` does the
+      // full first-factor verification in one call. The earlier `create()` +
+      // status-check pattern was leaving the sign-in in a `needs_first_factor`
+      // state, so users always saw "Login failed" even with valid credentials.
+      const { error } = await signIn.password({ identifier: email, password } as Parameters<typeof signIn.password>[0]);
       if (error) {
-        return (error as ClerkError).longMessage ?? (error as ClerkError).message ?? "Login failed";
+        return (error as ClerkError).longMessage ?? (error as ClerkError).message ?? "Invalid email or password";
       }
-      // v6: status is on the resource, finalize activates the session
       if (signIn.status === "complete") {
         await signIn.finalize();
         return null;
       }
-      return "Login failed";
+      // Status could be `needs_second_factor` (MFA), etc. Surface a clear msg
+      // rather than a generic "Login failed".
+      return signIn.status === "needs_second_factor"
+        ? "Two-factor authentication is required for this account."
+        : "Could not complete sign-in. Please try again.";
     } catch (err: unknown) {
       if (err && typeof err === "object" && "errors" in err) {
         const clerkErr = err as { errors: ClerkError[] };
-        return clerkErr.errors?.[0]?.longMessage ?? "Login failed";
+        return clerkErr.errors?.[0]?.longMessage ?? clerkErr.errors?.[0]?.message ?? "Invalid email or password";
       }
-      return err instanceof Error ? err.message : "Login failed";
+      return err instanceof Error ? err.message : "Invalid email or password";
     }
   };
 

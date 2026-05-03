@@ -103,7 +103,6 @@ export default function ResetPasswordScreen() {
         </View>
 
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <AuthMessageBanner message={error} />
 
           <AppTextInput
             label="Verification code"
@@ -160,6 +159,7 @@ export default function ResetPasswordScreen() {
           />
         </View>
       </ScrollView>
+      <AuthMessageBanner message={error} />
     </KeyboardAvoidingView>
   );
 }

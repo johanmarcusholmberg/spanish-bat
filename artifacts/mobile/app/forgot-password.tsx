@@ -89,7 +89,6 @@ export default function ForgotPasswordScreen() {
         </View>
 
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <AuthMessageBanner message={error} />
 
           <AppTextInput
             label="Email"
@@ -126,6 +125,7 @@ export default function ForgotPasswordScreen() {
           </Typography>
         </View>
       </ScrollView>
+      <AuthMessageBanner message={error} />
     </KeyboardAvoidingView>
   );
 }

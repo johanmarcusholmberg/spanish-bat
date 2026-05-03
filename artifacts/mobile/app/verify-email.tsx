@@ -111,9 +111,6 @@ export default function VerifyEmailScreen() {
         </View>
 
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <AuthMessageBanner message={error} />
-          <AuthMessageBanner message={info} variant="info" />
-
           <AppTextInput
             label="Verification code"
             value={code}
@@ -152,6 +149,7 @@ export default function VerifyEmailScreen() {
           </Typography>
         </View>
       </ScrollView>
+      <AuthMessageBanner message={error || info} variant={error ? "error" : "info"} />
     </KeyboardAvoidingView>
   );
 }

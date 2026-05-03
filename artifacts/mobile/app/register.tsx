@@ -137,7 +137,6 @@ export default function RegisterScreen() {
         </View>
 
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <AuthMessageBanner message={error} />
 
           <AppTextInput
             label="Display name"
@@ -246,6 +245,7 @@ export default function RegisterScreen() {
           </Typography>
         </View>
       </ScrollView>
+      <AuthMessageBanner message={error} />
     </KeyboardAvoidingView>
   );
 }
