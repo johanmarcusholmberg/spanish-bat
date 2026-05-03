@@ -12,3 +12,7 @@
 export * from "./learningStates";
 export * from "./mistakeMemory";
 export * from "./aiPractice";
+export * from "./kvStorage";
+export * from "./sessionStorage";
+export * from "./learningCache";
+export * from "./notificationPreferences";

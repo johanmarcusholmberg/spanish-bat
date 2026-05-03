@@ -1,92 +1,18 @@
 /**
- * notificationPreferenceService
- * -----------------------------
- * Strictly-opt-in notification preferences for Murcielingo. Notifications are
- * a habit aid, not a growth hack — every category defaults to OFF.
- *
- * This file is intentionally decoupled from any push provider (expo-notifications
- * is not yet a project dependency). The scheduler (notificationScheduler.ts)
- * reads these preferences and decides whether to register / cancel real
- * notifications when the native backend is wired in.
+ * Mobile shim around the shared notification-preference store. Binds
+ * AsyncStorage so the same opt-in defaults and serialized update chain
+ * apply on both web and mobile.
  */
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  createNotificationPreferenceService,
+  DEFAULT_NOTIFICATION_PREFS,
+  type NotificationPreferences,
+} from "@workspace/learning-coach";
 
-const PREFS_KEY = "murci.notifications.prefs.v1";
+import { asyncStorageKv } from "./asyncStorageKv";
 
-export interface NotificationPreferences {
-  /** Master toggle — if false, no notification of any kind is scheduled. */
-  enabled: boolean;
-  /** Daily 5-minute practice nudge. */
-  dailyPractice: boolean;
-  /** "N words are ready for review" reminder. */
-  weakWordReminder: boolean;
-  /** "Keep your streak alive" reminder. */
-  streakReminder: boolean;
-  /** "You're close to your level check" reminder. */
-  levelReadiness: boolean;
-  /** Weekly progress summary. */
-  weeklySummary: boolean;
-  /** Local hour (0–23) at which the daily nudge should fire. Defaults to 19. */
-  preferredHour: number;
-  /** Whether we've ever requested OS-level permission. */
-  osPermissionRequested: boolean;
-}
+export type { NotificationPreferences };
+export { DEFAULT_NOTIFICATION_PREFS };
 
-export const DEFAULT_NOTIFICATION_PREFS: NotificationPreferences = {
-  enabled: false,
-  dailyPractice: false,
-  weakWordReminder: false,
-  streakReminder: false,
-  levelReadiness: false,
-  weeklySummary: false,
-  preferredHour: 19,
-  osPermissionRequested: false,
-};
-
-let updateChain: Promise<NotificationPreferences> = Promise.resolve(
-  { ...DEFAULT_NOTIFICATION_PREFS },
-);
-
-export const notificationPreferenceService = {
-  async load(): Promise<NotificationPreferences> {
-    try {
-      const raw = await AsyncStorage.getItem(PREFS_KEY);
-      if (!raw) return { ...DEFAULT_NOTIFICATION_PREFS };
-      const parsed = JSON.parse(raw) as Partial<NotificationPreferences>;
-      return { ...DEFAULT_NOTIFICATION_PREFS, ...parsed };
-    } catch {
-      return { ...DEFAULT_NOTIFICATION_PREFS };
-    }
-  },
-
-  async save(prefs: NotificationPreferences): Promise<void> {
-    try {
-      await AsyncStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
-    } catch {
-      /* best effort */
-    }
-  },
-
-  /**
-   * Serialized read-modify-write. A shared promise chain prevents lost
-   * updates when the UI dispatches several toggles in quick succession.
-   */
-  update(patch: Partial<NotificationPreferences>): Promise<NotificationPreferences> {
-    const run = async (): Promise<NotificationPreferences> => {
-      const current = await notificationPreferenceService.load();
-      const next: NotificationPreferences = { ...current, ...patch };
-      await notificationPreferenceService.save(next);
-      return next;
-    };
-    updateChain = updateChain.then(run, run);
-    return updateChain;
-  },
-
-  async reset(): Promise<void> {
-    try {
-      await AsyncStorage.removeItem(PREFS_KEY);
-    } catch {
-      /* best effort */
-    }
-  },
-};
+export const notificationPreferenceService =
+  createNotificationPreferenceService(asyncStorageKv);
