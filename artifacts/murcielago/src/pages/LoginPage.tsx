@@ -131,6 +131,7 @@ const LoginPage = () => {
     setMode("reset-verify");
     setCode("");
     setNewPassword("");
+    okToast(language === "sv" ? "Återställningskod skickad till din e-post." : "We've sent a reset code to your email.");
   };
 
   const handleVerifyReset = async (e: React.FormEvent) => {
@@ -146,7 +147,11 @@ const LoginPage = () => {
     setLoading(true);
     const err = await verifyResetPasswordCode(code.trim(), newPassword);
     setLoading(false);
-    if (err) errToast(err);
+    if (err) {
+      errToast(err);
+      return;
+    }
+    okToast(language === "sv" ? "Lösenordet är uppdaterat." : "Your password has been updated.");
   };
 
   const handleGoogle = async () => {
