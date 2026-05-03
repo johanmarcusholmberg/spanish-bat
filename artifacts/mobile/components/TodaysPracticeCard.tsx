@@ -13,6 +13,7 @@ import { Card } from "./Card";
 import { Typography } from "./Typography";
 import { useColors } from "@/hooks/useColors";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
+import WhyThisPractice from "./WhyThisPractice";
 
 const MODE_ICON: Record<PracticeMode, keyof typeof Feather.glyphMap> = {
   quick: "zap",
@@ -26,11 +27,17 @@ const MODE_ICON: Record<PracticeMode, keyof typeof Feather.glyphMap> = {
 
 interface Props {
   readinessState?: "learning" | "test_recommended" | "passed_but_can_continue";
+  hasResume?: boolean;
+  lang?: "en" | "sv";
 }
 
-export const TodaysPracticeCard: React.FC<Props> = ({ readinessState }) => {
+export const TodaysPracticeCard: React.FC<Props> = ({
+  readinessState,
+  hasResume = false,
+  lang = "en",
+}) => {
   const colors = useColors();
-  const { stats, weakSpots, todaysFocus } = usePracticeStats();
+  const { stats, weakSpots } = usePracticeStats();
   const dueCount = useMemo(
     () => countDueItems(stats),
     [stats.itemSchedule, stats.itemStats],
@@ -47,6 +54,18 @@ export const TodaysPracticeCard: React.FC<Props> = ({ readinessState }) => {
   );
   const meta = getPracticeModeMeta(recommended.mode);
   const showLevelCheck = readinessState === "test_recommended";
+  const minMinutes = Math.max(2, meta.estimatedMinutes - 2);
+  const maxMinutes = meta.estimatedMinutes + 2;
+  const hasHistory =
+    Object.keys(stats.itemStats ?? {}).length > 0 ||
+    (stats.recentMistakeIds?.length ?? 0) > 0;
+  const ctaLabel = hasResume
+    ? lang === "sv"
+      ? "Återuppta dagens övning"
+      : "Resume today's practice"
+    : lang === "sv"
+      ? "Starta dagens övning"
+      : "Start today's practice";
 
   return (
     <Card
@@ -65,14 +84,14 @@ export const TodaysPracticeCard: React.FC<Props> = ({ readinessState }) => {
               variant="caption"
               style={{ color: colors.primary, fontWeight: "700", letterSpacing: 1, fontSize: 10 }}
             >
-              TODAY'S PRACTICE
+              {lang === "sv" ? "DAGENS EKO-ÖVNING" : "TODAY'S ECHO PRACTICE"}
             </Typography>
             <View style={[styles.badge, { backgroundColor: colors.primary + "20" }]}>
               <Typography
                 variant="caption"
                 style={{ color: colors.primary, fontWeight: "700", fontSize: 9 }}
               >
-                RECOMMENDED
+                {lang === "sv" ? "REKOMMENDERAS" : "RECOMMENDED"}
               </Typography>
             </View>
             {dueCount > 0 && (
@@ -81,29 +100,44 @@ export const TodaysPracticeCard: React.FC<Props> = ({ readinessState }) => {
                   variant="caption"
                   style={{ color: "#b45309", fontWeight: "700", fontSize: 9 }}
                 >
-                  {dueCount} DUE
+                  {dueCount} {lang === "sv" ? "REDO" : "DUE"}
                 </Typography>
               </View>
             )}
           </View>
           <Typography variant="h3" style={{ marginTop: 4 }}>
-            {meta.title}
+            {lang === "sv" ? "Dagens eko-övning" : "Today's Echo Practice"}
           </Typography>
           <Typography variant="caption" muted style={{ marginTop: 4 }}>
-            {recommended.reason.en}
+            {recommended.reason[lang]}
           </Typography>
           <Typography
             variant="caption"
             muted
             style={{ marginTop: 4, fontStyle: "italic" }}
           >
-            {todaysFocus.en}
+            {lang === "sv"
+              ? "Eka språket. Bygg minnet en session i taget."
+              : "Echo the language. Build recall one session at a time."}
           </Typography>
           <View style={styles.metaRow}>
             <Feather name="clock" size={11} color={colors.mutedForeground} />
             <Typography variant="caption" muted style={{ fontSize: 11 }}>
-              ~{meta.estimatedMinutes} min · ~{meta.defaultSize} questions
+              {minMinutes}–{maxMinutes} min ·{" "}
+              {lang === "sv"
+                ? "kort talrunda ingår"
+                : "short speaking round included"}
             </Typography>
+          </View>
+          <View style={{ marginTop: 8 }}>
+            <WhyThisPractice
+              mode={recommended.mode}
+              weakSpots={weakSpots}
+              dueCount={dueCount}
+              hasHistory={hasHistory}
+              recommenderReason={recommended.reason}
+              lang={lang}
+            />
           </View>
         </View>
       </View>
@@ -116,7 +150,7 @@ export const TodaysPracticeCard: React.FC<Props> = ({ readinessState }) => {
       >
         <Feather name="play-circle" size={16} color="#fff" />
         <Typography variant="label" color="#fff" style={{ marginLeft: 6 }}>
-          Continue practice
+          {ctaLabel}
         </Typography>
       </Pressable>
       {showLevelCheck && (

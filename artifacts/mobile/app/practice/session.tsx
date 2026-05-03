@@ -297,17 +297,14 @@ export default function PracticeSessionScreen() {
   if (done) {
     const accuracy = Math.round((correct / session.items.length) * 100);
     const strengthened = session.focusSkills.slice(0, 3).map((s) => friendlySkillName(s, "en"));
-    const headline =
-      accuracy >= 90
-        ? "Brilliant work!"
-        : accuracy >= 70
-          ? "Nice work — you're getting stronger."
-          : accuracy >= 50
-            ? "Good moment to review this."
-            : "Let's make this more automatic.";
+    const repeatSoon = (weakSpots ?? [])
+      .slice(0, 2)
+      .map((w) => friendlySubskillName(w.subskill, "en"));
+    const totalAttempted = session.items.length;
+    const headline = "Nice work — today's echo practice is done.";
     const subline =
       accuracy >= 70
-        ? "Want to keep practicing or take a break?"
+        ? "Take a breath, or do three more minutes — both work."
         : "Short, frequent practice sticks best.";
     return (
       <Screen>
@@ -325,29 +322,31 @@ export default function PracticeSessionScreen() {
               </Typography>
             </View>
 
-            <View style={[styles.statsRow, { marginTop: 18 }]}>
-              <View style={[styles.statBox, { backgroundColor: colors.muted }]}>
-                <Typography variant="caption" muted style={{ fontSize: 10 }}>
-                  ACCURACY
-                </Typography>
-                <Typography variant="h2" style={{ marginTop: 2, color: colors.primary }}>
-                  {accuracy}%
-                </Typography>
-              </View>
-              <View style={[styles.statBox, { backgroundColor: colors.muted }]}>
-                <Typography variant="caption" muted style={{ fontSize: 10 }}>
-                  CORRECT
-                </Typography>
-                <Typography variant="h2" style={{ marginTop: 2 }}>
-                  {correct}/{session.items.length}
-                </Typography>
-              </View>
+            <View style={{ marginTop: 18, padding: 12, backgroundColor: colors.muted, borderRadius: 10 }}>
+              <Typography variant="caption" muted style={{ fontSize: 10, letterSpacing: 1 }}>
+                TODAY YOU PRACTICED
+              </Typography>
+              <Typography variant="body" style={{ marginTop: 4 }}>
+                {totalAttempted} phrases · {correct} landed first try ({accuracy}%).
+              </Typography>
             </View>
 
             {strengthened.length > 0 && (
-              <View style={{ marginTop: 16 }}>
-                <Typography variant="caption" muted style={{ marginBottom: 6, fontSize: 10, letterSpacing: 1 }}>
-                  YOU STRENGTHENED
+              <View
+                style={{
+                  marginTop: 10,
+                  padding: 12,
+                  backgroundColor: "#10b98114",
+                  borderRadius: 10,
+                  borderWidth: 1,
+                  borderColor: "#10b98133",
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  style={{ color: "#047857", marginBottom: 6, fontSize: 10, letterSpacing: 1 }}
+                >
+                  GETTING STRONGER
                 </Typography>
                 <View style={styles.chipRow}>
                   {strengthened.map((s) => (
@@ -364,9 +363,32 @@ export default function PracticeSessionScreen() {
               </View>
             )}
 
-            <View style={{ marginTop: 16, padding: 12, backgroundColor: colors.muted, borderRadius: 10 }}>
+            {repeatSoon.length > 0 && (
+              <View
+                style={{
+                  marginTop: 10,
+                  padding: 12,
+                  backgroundColor: "#f5970014",
+                  borderRadius: 10,
+                  borderWidth: 1,
+                  borderColor: "#f5970033",
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  style={{ color: "#b45309", fontSize: 10, letterSpacing: 1, marginBottom: 4 }}
+                >
+                  REPEAT SOON
+                </Typography>
+                <Typography variant="body">
+                  Murci will bring {repeatSoon.join(" and ")} back tomorrow.
+                </Typography>
+              </View>
+            )}
+
+            <View style={{ marginTop: 10, padding: 12, backgroundColor: colors.muted, borderRadius: 10 }}>
               <Typography variant="caption" muted style={{ fontSize: 10, letterSpacing: 1 }}>
-                WHAT TO PRACTICE NEXT
+                RECOMMENDED NEXT STEP
               </Typography>
               <Typography variant="body" style={{ marginTop: 4 }}>
                 {accuracy >= 70
@@ -376,12 +398,21 @@ export default function PracticeSessionScreen() {
             </View>
 
             <Pressable
-              onPress={() => start(session.mode)}
+              onPress={() => router.replace("/(tabs)" as never)}
               style={[styles.btn, { backgroundColor: colors.primary, marginTop: 18 }]}
             >
-              <Feather name="refresh-cw" size={16} color="#fff" />
+              <Feather name="check" size={16} color="#fff" />
               <Typography variant="label" color="#fff" style={{ marginLeft: 6 }}>
-                Practice again
+                Done
+              </Typography>
+            </Pressable>
+            <Pressable
+              onPress={() => start("review_previous")}
+              style={[styles.btn, { borderColor: colors.border, borderWidth: 1, marginTop: 8 }]}
+            >
+              <Feather name="refresh-cw" size={16} color={colors.foreground} />
+              <Typography variant="label" style={{ marginLeft: 6 }}>
+                Continue for 3 more minutes
               </Typography>
             </Pressable>
             <Pressable
@@ -391,15 +422,6 @@ export default function PracticeSessionScreen() {
               <Feather name="target" size={16} color={colors.foreground} />
               <Typography variant="label" style={{ marginLeft: 6 }}>
                 Practice focus areas
-              </Typography>
-            </Pressable>
-            <Pressable
-              onPress={() => router.replace("/(tabs)" as never)}
-              style={[styles.btn, { borderColor: colors.border, borderWidth: 1, marginTop: 8 }]}
-            >
-              <Feather name="home" size={16} color={colors.foreground} />
-              <Typography variant="label" style={{ marginLeft: 6 }}>
-                Back to dashboard
               </Typography>
             </Pressable>
             <Pressable

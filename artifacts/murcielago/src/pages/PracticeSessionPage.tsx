@@ -482,19 +482,23 @@ const PracticeSessionPage = () => {
   if (finished) {
     const accuracy = Math.round((correctCount / session.items.length) * 100);
     const strengthened = session.focusSkills.slice(0, 3).map((s) => friendlySkillName(s, lang));
+    const repeatSoon = (weakSpots ?? []).slice(0, 2).map((w) => friendlySubskillName(w.subskill, lang));
+    const totalAttempted = session.items.length;
     const headline =
-      accuracy >= 90
-        ? lang === "sv" ? "Riktigt bra jobbat!" : "Brilliant work!"
-        : accuracy >= 70
-          ? lang === "sv" ? "Bra jobbat — du blir starkare." : "Nice work — you're getting stronger."
-          : accuracy >= 50
-            ? lang === "sv" ? "Bra moment att repetera detta." : "Good moment to review this."
-            : lang === "sv" ? "Vi gör det här mer automatiskt." : "Let's make this more automatic.";
+      lang === "sv"
+        ? "Snyggt — dagens eko-övning är klar."
+        : "Nice work — today's echo practice is done.";
     const subline =
       accuracy >= 70
-        ? lang === "sv" ? "Vill du fortsätta öva eller ta en paus?" : "Want to keep practicing or take a break?"
-        : lang === "sv" ? "En kort repetition fastnar bäst." : "Short, frequent practice sticks best.";
+        ? lang === "sv"
+          ? "En liten paus eller tre minuter till? Båda funkar."
+          : "Take a breath, or do three more minutes — both work."
+        : lang === "sv"
+          ? "En kort repetition fastnar bäst."
+          : "Short, frequent practice sticks best.";
     const showLevelCheck = readiness?.state !== "learning";
+    const continueLabel =
+      lang === "sv" ? "Fortsätt 3 minuter till" : "Continue for 3 more minutes";
     return (
       <AppLayout>
         <div className="max-w-xl mx-auto px-4 py-8">
@@ -505,63 +509,84 @@ const PracticeSessionPage = () => {
             <h2 className="text-2xl font-heading font-bold">{headline}</h2>
             <p className="text-sm text-muted-foreground mt-1">{subline}</p>
 
-            <div className="grid grid-cols-2 gap-3 mt-5 text-center">
+            <div className="mt-5 text-left space-y-3">
               <div className="bg-background/50 rounded-lg p-3">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                  {lang === "sv" ? "Träffsäkerhet" : "Accuracy"}
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
+                  {lang === "sv" ? "Idag övade du" : "Today you practiced"}
                 </p>
-                <p className="font-bold text-2xl text-primary">{accuracy}%</p>
-              </div>
-              <div className="bg-background/50 rounded-lg p-3">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                  {lang === "sv" ? "Rätt" : "Correct"}
-                </p>
-                <p className="font-bold text-2xl">
-                  {correctCount}<span className="text-sm text-muted-foreground">/{session.items.length}</span>
+                <p className="text-sm">
+                  {lang === "sv"
+                    ? `${totalAttempted} fraser · ${correctCount} satt direkt (${accuracy}%).`
+                    : `${totalAttempted} phrases · ${correctCount} landed first try (${accuracy}%).`}
                 </p>
               </div>
-            </div>
 
-            {strengthened.length > 0 && (
-              <div className="mt-5 text-left">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground mb-2">
-                  {lang === "sv" ? "Du stärkte" : "You strengthened"}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {strengthened.map((s) => (
-                    <span key={s} className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
-                      {s}
-                    </span>
-                  ))}
+              {strengthened.length > 0 && (
+                <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3">
+                  <p className="text-[10px] uppercase tracking-wide text-emerald-700 mb-1">
+                    {lang === "sv" ? "Blir starkare" : "Getting stronger"}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {strengthened.map((s) => (
+                      <span
+                        key={s}
+                        className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 border border-emerald-500/20"
+                      >
+                        {s}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <div className="mt-5 text-left bg-background/40 rounded-lg p-3">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
-                {lang === "sv" ? "Föreslås härnäst" : "What to practice next"}
-              </p>
-              <p className="text-sm">
-                {accuracy >= 70
-                  ? lang === "sv"
-                    ? "Behöver övning på några områden? Prova fokusområden."
-                    : "A few areas could use more time. Try focus areas next."
-                  : lang === "sv"
-                    ? "En kort sammanställning av nuvarande nivå hjälper det att fastna."
-                    : "A short level practice will help it stick."}
-              </p>
+              {repeatSoon.length > 0 && (
+                <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-3">
+                  <p className="text-[10px] uppercase tracking-wide text-amber-700 mb-1">
+                    {lang === "sv" ? "Eka snart igen" : "Repeat soon"}
+                  </p>
+                  <p className="text-sm">
+                    {lang === "sv"
+                      ? `Murci tar tillbaka ${repeatSoon.join(" och ")} imorgon.`
+                      : `Murci will bring ${repeatSoon.join(" and ")} back tomorrow.`}
+                  </p>
+                </div>
+              )}
+
+              <div className="bg-background/40 rounded-lg p-3">
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
+                  {lang === "sv" ? "Föreslås härnäst" : "Recommended next step"}
+                </p>
+                <p className="text-sm">
+                  {accuracy >= 70
+                    ? lang === "sv"
+                      ? "Några områden behöver lite mer tid — prova fokusområden."
+                      : "A few areas could use more time. Try focus areas next."
+                    : lang === "sv"
+                      ? "En kort nivåövning hjälper det att fastna."
+                      : "A short level practice will help it stick."}
+                </p>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-6">
-              <Button onClick={() => prepareSession(session.mode)}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                {lang === "sv" ? "Öva igen" : "Practice again"}
+              <Button onClick={() => navigate("/dashboard")}>
+                <Home className="h-4 w-4 mr-2" />
+                {lang === "sv" ? "Klar" : "Done"}
               </Button>
-              <Button variant="outline" onClick={() => prepareSession("weak_spots")}>
+              {(isPremium || dailyLimit.canStart) && (
+                <Button
+                  variant="outline"
+                  onClick={() => prepareSession("review_previous")}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  {continueLabel}
+                </Button>
+              )}
+              <Button variant="ghost" onClick={() => prepareSession("weak_spots")}>
                 <Target className="h-4 w-4 mr-2" />
                 {lang === "sv" ? "Öva fokusområden" : "Practice focus areas"}
               </Button>
-              <Button variant="outline" onClick={() => navigate("/dashboard")}>
+              <Button variant="ghost" onClick={() => navigate("/practice")}>
                 <Home className="h-4 w-4 mr-2" />
                 {lang === "sv" ? "Tillbaka till start" : "Back to dashboard"}
               </Button>

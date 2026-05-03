@@ -29,6 +29,7 @@ import {
 import TodaysPracticeCard from "@/components/TodaysPracticeCard";
 import EchoSteps from "@/components/EchoSteps";
 import LevelReadinessCard from "@/components/LevelReadinessCard";
+import EchoMemoryPreview from "@/components/EchoMemoryPreview";
 import { useResumableSession } from "@/hooks/useResumableSession";
 
 const PASSED_KEY = (userId: string, level: string) =>
@@ -278,7 +279,14 @@ export default function TodayScreen() {
       )}
 
       {/* 4. Today's recommended practice */}
-      <TodaysPracticeCard readinessState={readiness.state} />
+      <TodaysPracticeCard
+        readinessState={readiness.state}
+        hasResume={hasResumable}
+        lang={lang}
+      />
+
+      {/* 4b. Echo Memory preview (free) / quick review (premium) */}
+      <EchoMemoryPreview lang={lang} />
 
       {/* 4. Continue where you left off */}
       {data?.lastActivity && (

@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useDailySessionLimit } from "@/hooks/useDailySessionLimit";
 import SoftPaywall from "@/components/SoftPaywall";
+import WhyThisPractice from "@/components/WhyThisPractice";
+import { sessionStorageService } from "@/lib/learningCoachStores";
 import {
   Sparkles,
   Target,
@@ -89,6 +91,29 @@ const TodaysPracticeCard: React.FC = () => {
   const dailyLimit = useDailySessionLimit();
   const dailyDone = !isPremium && !dailyLimit.canStart;
 
+  // Detect a resumable in-progress session so the CTA can switch to "Resume".
+  const [hasResume, setHasResume] = React.useState(false);
+  React.useEffect(() => {
+    let cancelled = false;
+    sessionStorageService
+      .loadActiveSession()
+      .then((s) => {
+        if (cancelled) return;
+        setHasResume(!!s && s.totalSteps > 0 && s.stepIndex < s.totalSteps - 1);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Soft 8–12 min estimate range so it sounds like a coach.
+  const minMinutes = Math.max(2, meta.estimatedMinutes - 2);
+  const maxMinutes = meta.estimatedMinutes + 2;
+  const hasHistory =
+    Object.keys(stats.itemStats ?? {}).length > 0 ||
+    (stats.recentMistakeIds?.length ?? 0) > 0;
+
   if (dailyDone) {
     return (
       <SoftPaywall
@@ -121,20 +146,38 @@ const TodaysPracticeCard: React.FC = () => {
             )}
           </div>
           <h3 className="font-heading font-bold text-lg leading-snug">
-            {t(`practiceMode_${meta.mode}_title`)}
+            {lang === "sv"
+              ? "Dagens eko-övning"
+              : "Today's Echo Practice"}
           </h3>
           <p className="text-sm text-muted-foreground mt-1">
             {recommended.reason[lang]}
           </p>
           <p className="text-xs text-muted-foreground mt-2 italic">
-            {todaysFocus[lang]}
+            {lang === "sv"
+              ? "Eka språket. Bygg minnet en session i taget."
+              : "Echo the language. Build recall one session at a time."}
           </p>
           <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1">
-              <Clock className="h-3 w-3" />~{meta.estimatedMinutes} min
+              <Clock className="h-3 w-3" />
+              {minMinutes}–{maxMinutes} min
             </span>
-            <span>· ~{meta.defaultSize} {t("practiceQuestions")}</span>
+            <span>
+              ·{" "}
+              {lang === "sv"
+                ? "En kort talrunda ingår."
+                : "A short speaking round is included."}
+            </span>
           </div>
+          <WhyThisPractice
+            mode={recommended.mode}
+            weakSpots={weakSpots}
+            dueCount={dueCount}
+            hasHistory={hasHistory}
+            recommenderReason={recommended.reason}
+            className="mt-3"
+          />
           <div className="flex flex-col sm:flex-row gap-2 mt-4">
             <Button
               size="sm"
@@ -142,7 +185,13 @@ const TodaysPracticeCard: React.FC = () => {
               onClick={() => navigate(`/practice/session?mode=${recommended.mode}`)}
             >
               <PlayCircle className="h-4 w-4 mr-2" />
-              {t("practiceContinue")}
+              {hasResume
+                ? lang === "sv"
+                  ? "Återuppta dagens övning"
+                  : "Resume today's practice"
+                : lang === "sv"
+                  ? "Starta dagens övning"
+                  : "Start today's practice"}
             </Button>
             {showTestCta && (
               <Button

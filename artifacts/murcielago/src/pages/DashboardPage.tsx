@@ -11,6 +11,7 @@ import TodaysPracticeCard from "@/components/TodaysPracticeCard";
 import LevelReadinessCard from "@/components/LevelReadinessCard";
 import EchoSteps from "@/components/EchoSteps";
 import ResumePracticeCard from "@/components/ResumePracticeCard";
+import EchoMemoryPreview from "@/components/EchoMemoryPreview";
 
 /**
  * Today screen — the primary post-login destination.
@@ -75,6 +76,8 @@ const DashboardPage = () => {
         <ResumePracticeCard />
 
         <TodaysPracticeCard />
+
+        <EchoMemoryPreview />
 
         <ContinueCard />
 
