@@ -41,11 +41,13 @@ export default function EchoLearnScreen() {
   const phrases = useMemo(() => PHRASES, []);
   const [index, setIndex] = useState(0);
   const [done, setDone] = useState(false);
+  const [echoed, setEchoed] = useState(0);
 
   const current = phrases[index];
   const progress = ((index + 1) / phrases.length) * 100;
 
   const advance = () => {
+    setEchoed((n) => n + 1);
     if (index + 1 >= phrases.length) {
       setDone(true);
       learningFeedbackService.feedbackSessionComplete();
@@ -54,10 +56,16 @@ export default function EchoLearnScreen() {
     setIndex((i) => i + 1);
   };
 
+  const restart = () => {
+    setIndex(0);
+    setDone(false);
+    setEchoed(0);
+  };
+
   if (done) {
     return (
       <Screen>
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView showsVerticalScrollIndicator={false} testID="echo-complete">
           <Card padding={20}>
             <View style={{ alignItems: "center" }}>
               <View style={[styles.celebrate, { backgroundColor: colors.primary + "22" }]}>
@@ -68,15 +76,17 @@ export default function EchoLearnScreen() {
               </Typography>
               <Typography variant="caption" muted center style={{ marginTop: 4 }}>
                 {lang === "sv"
+                  ? `${echoed} av ${phrases.length} fraser ekade`
+                  : `${echoed} of ${phrases.length} phrases echoed`}
+              </Typography>
+              <Typography variant="caption" muted center style={{ marginTop: 4 }}>
+                {lang === "sv"
                   ? "Korta, frekventa sessioner sätter sig bäst."
                   : "Short, frequent practice sticks best."}
               </Typography>
             </View>
             <Pressable
-              onPress={() => {
-                setIndex(0);
-                setDone(false);
-              }}
+              onPress={restart}
               style={[styles.btn, { backgroundColor: colors.primary, marginTop: 18 }]}
             >
               <Feather name="refresh-cw" size={16} color={colors.primaryForeground} />
@@ -89,10 +99,20 @@ export default function EchoLearnScreen() {
               </Typography>
             </Pressable>
             <Pressable
-              onPress={() => router.replace("/(tabs)" as never)}
+              onPress={() => router.replace("/practice" as never)}
               style={[styles.btn, { borderColor: colors.border, borderWidth: 1, marginTop: 8 }]}
             >
-              <Typography variant="label">{lang === "sv" ? "Tillbaka hem" : "Back to home"}</Typography>
+              <Typography variant="label">
+                {lang === "sv" ? "Fortsätt dagens övning" : "Continue today's practice"}
+              </Typography>
+            </Pressable>
+            <Pressable
+              onPress={() => router.replace("/(tabs)" as never)}
+              style={[styles.btn, { marginTop: 8 }]}
+            >
+              <Typography variant="caption" muted>
+                {lang === "sv" ? "Tillbaka hem" : "Back to home"}
+              </Typography>
             </Pressable>
           </Card>
         </ScrollView>

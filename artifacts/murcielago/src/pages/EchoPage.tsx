@@ -39,7 +39,7 @@ const EchoPage = () => {
   const {
     currentWord, currentStep, echoNumber, totalEchos,
     wordIndex, totalWords, wordsCompleted, completed,
-    advanceStep, resetSession,
+    advanceStep, resetSession, sessionWords,
   } = useEchoLoop((user?.level || "A1") as Level, lang);
 
   useEffect(() => { trackLastActivity("exercises", "/learn/echo", "Echo"); }, []);
@@ -60,12 +60,41 @@ const EchoPage = () => {
     resetTranscript();
   };
 
+  // Empty-state guard: extremely rare, but if the catalog has no nouns at
+  // the user's level, render a friendly card instead of a blank page.
+  // Placed AFTER all hooks so we never violate React's hooks order rule.
+  if (sessionWords.length === 0) {
+    return (
+      <AppLayout>
+        <div className="animate-fade-in max-w-lg mx-auto" data-testid="echo-page">
+          <button onClick={() => navigate("/practice")} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition mb-4">
+            <ArrowLeft className="h-4 w-4" /> {lang === "sv" ? "Tillbaka till övningar" : "Back to practice"}
+          </button>
+          <div className="bg-card rounded-lg p-8 shadow-soft text-center">
+            <MurciMascot size="md" mood="happy" message={lang === "sv" ? "Inga ord redo just nu." : "No words ready yet."} />
+            <p className="text-sm text-muted-foreground mt-4">
+              {lang === "sv"
+                ? "Vi laddar fler ord på din nivå strax. Prova en snabbsession under tiden."
+                : "We're loading more words at your level. Try a quick session in the meantime."}
+            </p>
+            <button
+              onClick={() => navigate("/practice")}
+              className="mt-5 inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-md gradient-peach text-primary-foreground font-semibold shadow-warm hover:opacity-90 transition"
+            >
+              {lang === "sv" ? "Öppna övningar" : "Open practice"} <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
   if (completed) {
     return (
       <AppLayout>
-        <div className="animate-fade-in max-w-lg mx-auto text-center" ref={contentRef}>
-          <button onClick={() => navigate("/exercises")} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition mb-4">
-            <ArrowLeft className="h-4 w-4" /> {t("exercises")}
+        <div className="animate-fade-in max-w-lg mx-auto text-center" ref={contentRef} data-testid="echo-complete">
+          <button onClick={() => navigate("/practice")} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition mb-4">
+            <ArrowLeft className="h-4 w-4" /> {lang === "sv" ? "Tillbaka till övningar" : "Back to practice"}
           </button>
           <div className="bg-card rounded-lg p-8 shadow-soft">
             <MurciMascot size="lg" mood="celebrating" message={murciMessages.done[lang]} />
@@ -75,18 +104,22 @@ const EchoPage = () => {
                 {lang === "sv" ? "Echo-session klar!" : "Echo Session Complete!"}
               </h2>
               <p className="text-muted-foreground mb-1">
-                {lang === "sv" ? `${wordsCompleted} ord bemästrade` : `${wordsCompleted} words mastered`}
+                {lang === "sv"
+                  ? `${wordsCompleted} av ${totalWords} ord bemästrade`
+                  : `${wordsCompleted} of ${totalWords} words mastered`}
               </p>
               <p className="text-sm text-muted-foreground mb-6">
-                {lang === "sv" ? "Orden kommer att komma tillbaka för repetition." : "Words will return for review."}
+                {lang === "sv"
+                  ? "Murci minns dem – vi tar tillbaka dem för repetition vid rätt tillfälle."
+                  : "Murci will remember them — we'll bring them back for review at the right time."}
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button onClick={() => { resetSession(); resetStepState(); }} className="flex-1 py-2.5 rounded-md gradient-peach text-primary-foreground font-semibold shadow-warm hover:opacity-90 transition flex items-center justify-center gap-2">
-                <RotateCcw className="h-4 w-4" /> {lang === "sv" ? "Ny session" : "New Session"}
+                <RotateCcw className="h-4 w-4" /> {lang === "sv" ? "Ny session" : "New session"}
               </button>
-              <button onClick={() => navigate("/exercises")} className="flex-1 py-2.5 rounded-md bg-muted text-foreground font-semibold hover:bg-muted/80 transition">
-                {t("exercises")}
+              <button onClick={() => navigate("/dashboard")} className="flex-1 py-2.5 rounded-md bg-muted text-foreground font-semibold hover:bg-muted/80 transition flex items-center justify-center gap-2">
+                {lang === "sv" ? "Se Eko-minne" : "See Echo Memory"} <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -161,9 +194,9 @@ const EchoPage = () => {
 
   return (
     <AppLayout>
-      <div className="animate-fade-in max-w-lg mx-auto" ref={contentRef}>
-        <button onClick={() => navigate("/exercises")} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition mb-4">
-          <ArrowLeft className="h-4 w-4" /> {t("exercises")}
+      <div className="animate-fade-in max-w-lg mx-auto" ref={contentRef} data-testid="echo-page">
+        <button onClick={() => navigate("/practice")} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition mb-4">
+          <ArrowLeft className="h-4 w-4" /> {lang === "sv" ? "Tillbaka till övningar" : "Back to practice"}
         </button>
 
         <div className="flex items-center justify-between mb-4">
@@ -199,13 +232,20 @@ const EchoPage = () => {
             />
           </div>
 
-          <p className="text-center text-xs text-muted-foreground mb-4">
-            Echo {echoNumber}/{totalEchos} — {stepLabel(currentStep)}
-          </p>
-
           {/* ============ STEP: RECOGNITION ============ */}
           {currentStep === "recognition" && (
-            <div className="text-center space-y-4">
+            <div
+              className="text-center space-y-4"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                // Only handle Enter when the container itself is focused.
+                // If the focus is on the inner "Got it" button, the button's
+                // own activation will fire and we must not also call advance.
+                if (e.key === "Enter" && e.target === e.currentTarget) {
+                  handleRecognitionContinue();
+                }
+              }}
+            >
               <div className="flex items-center justify-center gap-2">
                 <h2 className="text-3xl font-heading font-bold text-foreground">{capitalizeFirst(noun.spanish)}</h2>
                 <SaveWordButton spanish={noun.spanish} context={noun.example.es} variant="icon" />
