@@ -27,14 +27,14 @@ const RegisterPage = () => {
     if (displayName.trim().length < 2) {
       toast({
         title: language === "sv" ? "Ange ditt namn" : "Please enter your name",
-        variant: "destructive",
+        variant: "soft",
       });
       return;
     }
     if (!email.trim() || !email.includes("@")) {
       toast({
         title: language === "sv" ? "Ange en giltig e-postadress" : "Please enter a valid email address",
-        variant: "destructive",
+        variant: "soft",
       });
       return;
     }
@@ -42,7 +42,7 @@ const RegisterPage = () => {
     const err = await sendRegisterCode(email.trim(), displayName.trim());
     setLoading(false);
     if (err) {
-      toast({ title: err, variant: "destructive" });
+      toast({ title: err, variant: "soft" });
     } else {
       setStep("code");
     }
@@ -53,21 +53,21 @@ const RegisterPage = () => {
     if (!code.trim()) {
       toast({
         title: language === "sv" ? "Ange koden från e-posten" : "Please enter the code from your email",
-        variant: "destructive",
+        variant: "soft",
       });
       return;
     }
     setLoading(true);
     const err = await verifyRegisterCode(code.trim());
     setLoading(false);
-    if (err) toast({ title: err, variant: "destructive" });
+    if (err) toast({ title: err, variant: "soft" });
   };
 
   const handleResend = async () => {
     setResending(true);
     const err = await resendRegisterCode();
     setResending(false);
-    if (err) toast({ title: err, variant: "destructive" });
+    if (err) toast({ title: err, variant: "soft" });
     else
       toast({
         title: language === "sv" ? "En ny kod är på väg." : "A new code is on its way.",

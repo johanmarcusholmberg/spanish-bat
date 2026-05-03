@@ -26,7 +26,7 @@ const LoginPage = () => {
     if (!email.trim() || !email.includes("@")) {
       toast({
         title: language === "sv" ? "Ange en giltig e-postadress" : "Please enter a valid email address",
-        variant: "destructive",
+        variant: "soft",
       });
       return;
     }
@@ -34,7 +34,7 @@ const LoginPage = () => {
     const err = await sendLoginCode(email.trim());
     setLoading(false);
     if (err) {
-      toast({ title: err, variant: "destructive" });
+      toast({ title: err, variant: "soft" });
     } else {
       setStep("code");
     }
@@ -45,21 +45,21 @@ const LoginPage = () => {
     if (!code.trim()) {
       toast({
         title: language === "sv" ? "Ange koden från e-posten" : "Please enter the code from your email",
-        variant: "destructive",
+        variant: "soft",
       });
       return;
     }
     setLoading(true);
     const err = await verifyLoginCode(code.trim());
     setLoading(false);
-    if (err) toast({ title: err, variant: "destructive" });
+    if (err) toast({ title: err, variant: "soft" });
   };
 
   const handleResend = async () => {
     setResending(true);
     const err = await resendLoginCode();
     setResending(false);
-    if (err) toast({ title: err, variant: "destructive" });
+    if (err) toast({ title: err, variant: "soft" });
     else
       toast({
         title: language === "sv" ? "En ny kod är på väg." : "A new code is on its way.",
