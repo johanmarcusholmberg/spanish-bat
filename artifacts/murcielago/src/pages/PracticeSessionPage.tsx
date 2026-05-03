@@ -41,7 +41,7 @@ import {
   savedItemsToPracticeItems,
   persistedIdFromLocalId,
 } from "@/lib/savedPracticeItems";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { checkMultiAnswer } from "@/lib/answerUtils";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
 import { sessionStorageService } from "@/lib/learningCoachStores";
@@ -73,6 +73,9 @@ const PracticeSessionPage = () => {
   const [revealed, setRevealed] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const [finished, setFinished] = useState(false);
+  // Toggled when /generate-practice-session returns 402 daily_limit_reached
+  // — shows the contextual SoftPaywall sheet over the running session.
+  const [showDailyLimitPaywall, setShowDailyLimitPaywall] = useState(false);
 
   const userLevel = (user?.level || "A1") as Level;
   const localItems = useMemo<LocalPracticeItem[]>(() => buildAllPracticeItems(), []);
@@ -204,8 +207,17 @@ const PracticeSessionPage = () => {
         if (fresh.length === 0) return prev;
         return { ...prev, items: [...prev.items, ...fresh] };
       });
-    } catch {
-      // graceful
+    } catch (err) {
+      // The server enforces the Free-tier daily-session cap and returns
+      // 402 { code: "daily_limit_reached" }. Surface the contextual
+      // paywall sheet and resync the local counter so the rest of the
+      // UI (the post-session "Continue" button etc.) hides correctly.
+      if (err instanceof ApiError && err.code === "daily_limit_reached") {
+        setShowDailyLimitPaywall(true);
+        void dailyLimit.refresh();
+        return;
+      }
+      // graceful — AI is best-effort, the local pre-built session still works
     }
   };
 
@@ -774,6 +786,17 @@ const PracticeSessionPage = () => {
           </div>
         </div>
       </div>
+      {showDailyLimitPaywall && (
+        <SoftPaywall
+          variant="sheet"
+          context="daily_session_done"
+          onDismiss={() => setShowDailyLimitPaywall(false)}
+          onSecondary={() => {
+            setShowDailyLimitPaywall(false);
+            navigate("/practice/flashcards");
+          }}
+        />
+      )}
     </AppLayout>
   );
 };

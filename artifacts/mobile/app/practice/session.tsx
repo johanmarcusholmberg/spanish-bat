@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, StyleSheet, Pressable, ScrollView } from "react-native";
+import { View, StyleSheet, Pressable, ScrollView, Alert } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import {
@@ -37,7 +37,7 @@ import {
 } from "@/lib/savedPracticeItems";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
 import { useDailySessionLimit } from "@/hooks/useDailySessionLimit";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { learningFeedbackService } from "@/lib/learningFeedbackService";
 import {
   sessionStorageService,
@@ -164,8 +164,27 @@ export default function PracticeSessionScreen() {
         if (fresh.length === 0) return prev;
         return { ...prev, items: [...prev.items, ...fresh] };
       });
-    } catch {
-      // silent
+    } catch (err) {
+      // The server enforces the Free-tier daily-session cap and returns
+      // 402 { code: "daily_limit_reached" }. Resync the local counter
+      // and offer the user the upgrade path. The local pre-built
+      // session still runs — we just stop AI enrichment for the day.
+      if (err instanceof ApiError && err.code === "daily_limit_reached") {
+        void dailyLimit.refresh();
+        Alert.alert(
+          "You've finished today's session",
+          "Free includes one Spanish session per day. Go Premium for unlimited sessions, or come back tomorrow!",
+          [
+            { text: "Maybe later", style: "cancel" },
+            {
+              text: "Go Premium",
+              onPress: () => router.push("/paywall" as never),
+            },
+          ],
+        );
+        return;
+      }
+      // silent — AI enrichment is best-effort
     }
   };
 

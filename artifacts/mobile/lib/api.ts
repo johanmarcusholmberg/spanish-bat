@@ -1,3 +1,23 @@
+/**
+ * Thrown by `fetchApi` on non-2xx responses. Exposes the HTTP status and
+ * the optional machine-readable `code` from the server's JSON body so
+ * callers can branch on specific error kinds (e.g. `daily_limit_reached`)
+ * without parsing strings.
+ */
+export class ApiError extends Error {
+  status: number;
+  code?: string;
+  body?: Record<string, unknown>;
+  constructor(status: number, message: string, body?: Record<string, unknown>) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.body = body;
+    const c = body?.code;
+    if (typeof c === "string") this.code = c;
+  }
+}
+
 let authTokenGetter: (() => Promise<string | null>) | null = null;
 
 export function setAuthTokenGetter(getter: () => Promise<string | null>) {
@@ -31,13 +51,15 @@ async function fetchApi(
   });
 
   if (!resp.ok) {
-    let body: { error?: string } = {};
+    let body: Record<string, unknown> = {};
     try {
-      body = await resp.json();
+      body = (await resp.json()) as Record<string, unknown>;
     } catch {
       // response body may be empty on error responses
     }
-    throw new Error(body?.error ?? `API error ${resp.status}`);
+    const message =
+      typeof body?.error === "string" ? body.error : `API error ${resp.status}`;
+    throw new ApiError(resp.status, message, body);
   }
 
   if (resp.status === 204 || resp.headers.get("content-length") === "0") {
