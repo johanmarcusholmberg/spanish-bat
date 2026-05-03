@@ -16,3 +16,4 @@ export * from "./kvStorage";
 export * from "./sessionStorage";
 export * from "./learningCache";
 export * from "./notificationPreferences";
+export * from "./dailySessionCounter";

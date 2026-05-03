@@ -10,6 +10,9 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useProgress } from "@/contexts/ProgressContext";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
 import { Button } from "@/components/ui/button";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+import { useDailySessionLimit } from "@/hooks/useDailySessionLimit";
+import SoftPaywall from "@/components/SoftPaywall";
 import {
   Sparkles,
   Target,
@@ -82,6 +85,18 @@ const TodaysPracticeCard: React.FC = () => {
   const Icon = MODE_ICONS[recommended.mode];
   const showTestCta = readiness?.state === "test_recommended";
   const dueBadgeText = t("practiceDueBadge").replace("{n}", String(dueCount));
+  const { isPremium } = useFeatureAccess();
+  const dailyLimit = useDailySessionLimit();
+  const dailyDone = !isPremium && !dailyLimit.canStart;
+
+  if (dailyDone) {
+    return (
+      <SoftPaywall
+        context="daily_session_done"
+        onSecondary={() => navigate("/practice/flashcards")}
+      />
+    );
+  }
 
   return (
     <div className="bg-card rounded-2xl p-5 shadow-soft border border-primary/20">

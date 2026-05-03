@@ -45,6 +45,9 @@ import { api } from "@/lib/api";
 import { checkMultiAnswer } from "@/lib/answerUtils";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
 import { sessionStorageService } from "@/lib/learningCoachStores";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+import { useDailySessionLimit } from "@/hooks/useDailySessionLimit";
+import SoftPaywall from "@/components/SoftPaywall";
 
 const MODE_ICONS: Record<PracticeMode, React.ElementType> = {
   quick: Sparkles,
@@ -98,6 +101,8 @@ const PracticeSessionPage = () => {
   }, [lang]);
 
   const { stats: trackedStats, recordAttempt, weakSpots } = usePracticeStats();
+  const { access, isPremium } = useFeatureAccess();
+  const dailyLimit = useDailySessionLimit();
 
   const stats = useMemo(() => {
     const skillAccuracy: Record<string, number> = { ...(trackedStats.skillAccuracy ?? {}) };
@@ -139,8 +144,18 @@ const PracticeSessionPage = () => {
   };
 
   const prepareSession = (mode: PracticeMode) => {
-    const built = buildSession(mode);
+    const builtRaw = buildSession(mode);
+    // Free plan: cap session length so the daily preview stays short.
+    const capped =
+      Number.isFinite(access.maxSessionSteps) &&
+      builtRaw.items.length > access.maxSessionSteps
+        ? { ...builtRaw, items: builtRaw.items.slice(0, access.maxSessionSteps) }
+        : builtRaw;
+    const built = capped;
     setSession(built);
+    // Count this against the daily session limit for free users. Premium
+    // users still get the counter (it's harmless) but it's never used.
+    void dailyLimit.recordStart();
     setShowIntro(true);
     setIndex(0);
     setAnswer("");
@@ -558,6 +573,14 @@ const PracticeSessionPage = () => {
               )}
             </div>
           </div>
+          {!isPremium && !dailyLimit.canStart && (
+            <div className="mt-5">
+              <SoftPaywall
+                context="daily_session_done"
+                onSecondary={() => navigate("/practice/flashcards")}
+              />
+            </div>
+          )}
         </div>
       </AppLayout>
     );

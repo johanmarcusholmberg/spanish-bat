@@ -6,14 +6,19 @@ import { router } from "expo-router";
 import { Typography } from "./Typography";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/contexts/AuthContext";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+import type { PracticeMixKey } from "@workspace/subscription";
 
 /**
  * Native version of the web PracticeMixesGrid. Same 10 purpose-based
  * mixes, with mobile-friendly tap targets.
+ *
+ * Free vs Premium parity with web: locked / preview mixes stay visible
+ * but route to the paywall instead of the session.
  */
 
 interface Mix {
-  key: string;
+  key: PracticeMixKey;
   title: { en: string; sv: string };
   desc: { en: string; sv: string };
   minutes: number;
@@ -135,13 +140,19 @@ export const PracticeMixesGrid: React.FC = () => {
   const colors = useColors();
   const { user } = useAuth();
   const lang: "en" | "sv" = user?.learningFrom === "sv" ? "sv" : "en";
+  const { mixAccess, isPremium } = useFeatureAccess();
 
   return (
     <View style={styles.grid}>
-      {MIXES.map((m) => (
+      {MIXES.map((m) => {
+        const access = mixAccess(m.key);
+        const locked = !isPremium && access !== "full";
+        return (
         <Pressable
           key={m.key}
-          onPress={() => router.push(m.to as never)}
+          onPress={() =>
+            router.push((locked ? "/paywall" : m.to) as never)
+          }
           style={({ pressed }) => [
             styles.card,
             {
@@ -155,12 +166,37 @@ export const PracticeMixesGrid: React.FC = () => {
             <View
               style={[styles.iconBox, { backgroundColor: colors.primary + "20" }]}
             >
-              <Feather name={m.icon} size={18} color={colors.primary} />
+              <Feather
+                name={locked ? "lock" : m.icon}
+                size={18}
+                color={colors.primary}
+              />
             </View>
             <View style={{ flex: 1 }}>
-              <Typography variant="label" style={{ fontWeight: "700" }}>
-                {m.title[lang]}
-              </Typography>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <Typography variant="label" style={{ fontWeight: "700" }}>
+                  {m.title[lang]}
+                </Typography>
+                {locked && (
+                  <View
+                    style={{
+                      backgroundColor: "#FCE7B0",
+                      borderColor: "#E0A82E",
+                      borderWidth: 1,
+                      borderRadius: 999,
+                      paddingHorizontal: 6,
+                      paddingVertical: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      style={{ fontSize: 9, color: "#7A5800", fontWeight: "700" }}
+                    >
+                      {access === "preview" ? "Preview" : "Premium"}
+                    </Typography>
+                  </View>
+                )}
+              </View>
               <Typography
                 variant="caption"
                 muted
@@ -178,7 +214,8 @@ export const PracticeMixesGrid: React.FC = () => {
             </View>
           </View>
         </Pressable>
-      ))}
+        );
+      })}
     </View>
   );
 };

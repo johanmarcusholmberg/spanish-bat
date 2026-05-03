@@ -6,6 +6,7 @@
  * mobile client uses.
  */
 import {
+  createDailySessionCounter,
   createLearningCacheService,
   createNotificationPreferenceService,
   createSessionStorageService,
@@ -28,6 +29,7 @@ export const sessionStorageService = createSessionStorageService(kv);
 export const learningCacheService = createLearningCacheService(kv);
 export const notificationPreferenceService =
   createNotificationPreferenceService(kv);
+export const dailySessionCounter = createDailySessionCounter(kv);
 
 export const isResumable = sharedIsResumable;
 export { DEFAULT_NOTIFICATION_PREFS };
