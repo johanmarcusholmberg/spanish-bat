@@ -18,11 +18,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppButton } from "@/components/AppButton";
 import { AppTextInput } from "@/components/AppTextInput";
 import { AuthMessageBanner } from "@/components/AuthMessageBanner";
-import { LanguagePicker, type AppLanguage } from "@/components/LanguagePicker";
+import { LanguagePicker } from "@/components/LanguagePicker";
 import { Typography } from "@/components/Typography";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useColors } from "@/hooks/useColors";
-import { getPreferredLanguage, setPreferredLanguage } from "@/lib/languagePreference";
 
 export default function RegisterScreen() {
   const colors = useColors();
@@ -30,22 +30,13 @@ export default function RegisterScreen() {
   const router = useRouter();
   const { sendRegisterCode, signInWithGoogle, signInWithApple } = useAuth();
   const { isSignedIn, isLoaded } = useClerkAuth();
+  const { t } = useLanguage();
 
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [language, setLanguage] = useState<AppLanguage>("sv");
-
-  React.useEffect(() => {
-    getPreferredLanguage().then(setLanguage);
-  }, []);
-
-  const handleLanguageChange = (lang: AppLanguage) => {
-    setLanguage(lang);
-    setPreferredLanguage(lang);
-  };
 
   const emailRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
@@ -109,12 +100,10 @@ export default function RegisterScreen() {
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
             <Feather name="arrow-left" size={18} color={colors.mutedForeground} />
-            <Typography variant="caption" muted>Back to sign in</Typography>
+            <Typography variant="caption" muted>{t("register.backToSignIn")}</Typography>
           </TouchableOpacity>
           <LanguagePicker
             variant="globe"
-            value={language}
-            onChange={handleLanguageChange}
             testID="register-language-picker"
           />
         </View>
@@ -127,10 +116,10 @@ export default function RegisterScreen() {
             accessibilityLabel="Murciélingo bat logo"
           />
           <Typography variant="h2" center style={{ marginTop: 10 }}>
-            Create your account
+            {t("register.title")}
           </Typography>
           <Typography variant="body" muted center style={{ marginTop: 4 }}>
-            We&apos;ll email you a code to confirm.
+            {t("register.subtitle")}
           </Typography>
         </View>
 
@@ -176,7 +165,7 @@ export default function RegisterScreen() {
           />
 
           <AppButton
-            title={loading ? "Sending…" : "Send code"}
+            title={loading ? t("register.sendingCode") : t("register.sendCode")}
             onPress={handleSendCode}
             loading={loading}
             disabled={loading || !isValid}
@@ -186,13 +175,13 @@ export default function RegisterScreen() {
 
           <View style={styles.dividerRow}>
             <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-            <Typography variant="caption" muted>or sign up with</Typography>
+            <Typography variant="caption" muted>{t("register.orSignUpWith")}</Typography>
             <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
           </View>
 
           <View style={{ gap: 10 }}>
             <AppButton
-              title="Continue with Google"
+              title={t("register.continueWithGoogle")}
               onPress={() => handleOAuth("google")}
               variant="outline"
               size="lg"
@@ -201,7 +190,7 @@ export default function RegisterScreen() {
             />
             {Platform.OS !== "android" && (
               <AppButton
-                title="Continue with Apple"
+                title={t("register.continueWithApple")}
                 onPress={() => handleOAuth("apple")}
                 variant="outline"
                 size="lg"
@@ -214,12 +203,12 @@ export default function RegisterScreen() {
 
         <View style={styles.footer}>
           <Typography variant="caption" muted center>
-            Already have an account?{" "}
+            {t("register.haveAccount")}{" "}
             <Text
               onPress={() => router.replace("/login")}
               style={{ color: colors.primary, fontFamily: "Inter_600SemiBold" }}
             >
-              Sign in
+              {t("register.signIn")}
             </Text>
           </Typography>
         </View>

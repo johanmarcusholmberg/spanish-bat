@@ -18,6 +18,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { clerkTokenCache } from "@/lib/storage";
 
 SplashScreen.preventAutoHideAsync();
@@ -88,9 +89,11 @@ export default function RootLayout() {
           <QueryClientProvider client={queryClient}>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <KeyboardProvider>
-                <AuthProvider>
-                  <RootLayoutNav />
-                </AuthProvider>
+                <LanguageProvider>
+                  <AuthProvider>
+                    <RootLayoutNav />
+                  </AuthProvider>
+                </LanguageProvider>
               </KeyboardProvider>
             </GestureHandlerRootView>
           </QueryClientProvider>

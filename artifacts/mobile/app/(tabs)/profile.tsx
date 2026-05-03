@@ -12,7 +12,7 @@ import { Card } from "@/components/Card";
 import { LanguagePicker } from "@/components/LanguagePicker";
 import { useColors } from "@/hooks/useColors";
 import { useAuth, Level } from "@/contexts/AuthContext";
-import { setPreferredLanguage } from "@/lib/languagePreference";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { api } from "@/lib/api";
 import { legalLinks } from "@/lib/legal";
 import NotificationPreferences from "@/components/NotificationPreferences";
@@ -22,6 +22,7 @@ const LEVELS: Level[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 export default function ProfileScreen() {
   const colors = useColors();
   const { user, logout, isAdmin, updateProfile } = useAuth();
+  const { t, setLanguage: setAppLanguage } = useLanguage();
 
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(user?.displayName ?? "");
@@ -29,9 +30,9 @@ export default function ProfileScreen() {
   const [deleting, setDeleting] = useState(false);
 
   const handleLogout = () => {
-    Alert.alert("Sign out", "Are you sure you want to sign out?", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Sign out", style: "destructive", onPress: logout },
+    Alert.alert(t("profile.signOutConfirmTitle"), t("profile.signOutConfirmBody"), [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: t("profile.signOut"), style: "destructive", onPress: logout },
     ]);
   };
 
@@ -137,8 +138,11 @@ export default function ProfileScreen() {
   const setLanguage = async (lang: "sv" | "en") => {
     if (lang === user?.learningFrom) return;
     try {
+      // Update server-persisted profile preference and the global app
+      // language context in lock-step. setAppLanguage handles AsyncStorage
+      // persistence and immediately updates all subscribed screens.
       await updateProfile({ learningFrom: lang });
-      await setPreferredLanguage(lang);
+      await setAppLanguage(lang);
     } catch {
       Alert.alert("Failed to save", "Please try again.");
     }
@@ -251,7 +255,7 @@ export default function ProfileScreen() {
       {/* Language */}
       <Card style={{ marginBottom: 12 }}>
         <Typography variant="label" muted style={{ marginBottom: 10 }}>
-          LEARNING FROM
+          {t("profile.learningFrom").toUpperCase()}
         </Typography>
         <LanguagePicker
           variant="card"
@@ -330,7 +334,7 @@ export default function ProfileScreen() {
       </Card>
 
       <AppButton
-        title="Sign out"
+        title={t("profile.signOut")}
         onPress={handleLogout}
         variant="outline"
         size="lg"

@@ -17,11 +17,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppButton } from "@/components/AppButton";
 import { AppTextInput } from "@/components/AppTextInput";
 import { AuthMessageBanner } from "@/components/AuthMessageBanner";
-import { LanguagePicker, type AppLanguage } from "@/components/LanguagePicker";
+import { LanguagePicker } from "@/components/LanguagePicker";
 import { Typography } from "@/components/Typography";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useColors } from "@/hooks/useColors";
-import { getPreferredLanguage, setPreferredLanguage } from "@/lib/languagePreference";
 
 type Mode = "password" | "code";
 
@@ -31,23 +31,14 @@ export default function LoginScreen() {
   const router = useRouter();
   const { loginWithPassword, sendLoginCode, signInWithGoogle, signInWithApple } = useAuth();
   const { isSignedIn, isLoaded } = useClerkAuth();
+  const { t } = useLanguage();
 
   const [mode, setMode] = useState<Mode>("password");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [language, setLanguage] = useState<AppLanguage>("sv");
   const passwordRef = useRef<TextInput>(null);
-
-  React.useEffect(() => {
-    getPreferredLanguage().then(setLanguage);
-  }, []);
-
-  const handleLanguageChange = (lang: AppLanguage) => {
-    setLanguage(lang);
-    setPreferredLanguage(lang);
-  };
 
   if (isLoaded && isSignedIn) {
     return <Redirect href="/(tabs)" />;
@@ -121,8 +112,6 @@ export default function LoginScreen() {
         <View style={{ alignItems: "flex-end", marginBottom: 8 }}>
           <LanguagePicker
             variant="globe"
-            value={language}
-            onChange={handleLanguageChange}
             testID="login-language-picker"
           />
         </View>
@@ -138,18 +127,18 @@ export default function LoginScreen() {
             Murciélingo
           </Typography>
           <Typography variant="body" muted center style={{ marginTop: 4 }}>
-            Learn Spanish naturally
+            {t("login.tagline")}
           </Typography>
         </View>
 
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Typography variant="h3" style={{ marginBottom: 6 }}>
-            Sign in
+            {t("login.title")}
           </Typography>
           <Typography variant="caption" muted style={{ marginBottom: 18 }}>
             {mode === "password"
-              ? "Use your email and password."
-              : "We'll email you a one-time code — no password needed."}
+              ? t("login.subtitlePassword")
+              : t("login.subtitleCode")}
           </Typography>
 
           <AppTextInput
@@ -189,11 +178,11 @@ export default function LoginScreen() {
                 testID="login-forgot-password"
               >
                 <Typography variant="caption" style={{ color: colors.primary }}>
-                  Forgot password?
+                  {t("login.forgotPassword")}
                 </Typography>
               </TouchableOpacity>
               <AppButton
-                title={loading ? "Signing in…" : "Sign in"}
+                title={loading ? t("login.submitting") : t("login.submit")}
                 onPress={handlePasswordSignIn}
                 loading={loading}
                 disabled={loading || !email.trim() || !password}
@@ -211,7 +200,7 @@ export default function LoginScreen() {
                 testID="login-use-code"
               >
                 <Typography variant="caption" muted>
-                  Sign in with a code instead
+                  {t("login.useCodeInstead")}
                 </Typography>
               </TouchableOpacity>
             </>
@@ -220,7 +209,7 @@ export default function LoginScreen() {
           {mode === "code" && (
             <>
               <AppButton
-                title={loading ? "Sending…" : "Send code"}
+                title={loading ? t("login.sendingCode") : t("login.sendCode")}
                 onPress={handleSendCode}
                 loading={loading}
                 disabled={loading || !email.trim()}
@@ -237,7 +226,7 @@ export default function LoginScreen() {
                 testID="login-use-password"
               >
                 <Typography variant="caption" muted>
-                  Use your password instead
+                  {t("login.usePasswordInstead")}
                 </Typography>
               </TouchableOpacity>
             </>
@@ -245,13 +234,13 @@ export default function LoginScreen() {
 
           <View style={styles.dividerRow}>
             <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-            <Typography variant="caption" muted>or sign in with</Typography>
+            <Typography variant="caption" muted>{t("login.orSignInWith")}</Typography>
             <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
           </View>
 
           <View style={{ gap: 10 }}>
             <AppButton
-              title="Continue with Google"
+              title={t("login.continueWithGoogle")}
               onPress={() => handleOAuth("google")}
               variant="outline"
               size="lg"
@@ -260,7 +249,7 @@ export default function LoginScreen() {
             />
             {Platform.OS !== "android" && (
               <AppButton
-                title="Continue with Apple"
+                title={t("login.continueWithApple")}
                 onPress={() => handleOAuth("apple")}
                 variant="outline"
                 size="lg"
@@ -273,12 +262,12 @@ export default function LoginScreen() {
 
         <View style={styles.footer}>
           <Typography variant="caption" muted center>
-            Don't have an account?{" "}
+            {t("login.noAccount")}{" "}
             <Text
               onPress={() => router.push("/register")}
               style={{ color: colors.primary, fontFamily: "Inter_600SemiBold" }}
             >
-              Create one
+              {t("login.createOne")}
             </Text>
           </Typography>
         </View>

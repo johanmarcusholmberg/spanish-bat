@@ -10,6 +10,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 
 import { Typography } from "@/components/Typography";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useColors } from "@/hooks/useColors";
 import {
   AppLanguage,
@@ -21,8 +22,12 @@ export type { AppLanguage };
 const OPTIONS = getEnabledAppLanguages();
 
 interface LanguagePickerProps {
-  value: AppLanguage;
-  onChange: (lang: AppLanguage) => void;
+  /**
+   * Controlled value. When omitted, the picker reads/writes the global
+   * LanguageContext directly.
+   */
+  value?: AppLanguage;
+  onChange?: (lang: AppLanguage) => void;
   variant?: "segmented" | "card" | "minimal" | "globe";
   style?: ViewStyle;
   testID?: string;
@@ -43,16 +48,26 @@ export function LanguagePicker({
   testID,
 }: LanguagePickerProps) {
   const colors = useColors();
+  const { language: ctxLanguage, setLanguage: ctxSetLanguage, t } = useLanguage();
   const [open, setOpen] = useState(false);
 
+  const currentValue: AppLanguage = value ?? ctxLanguage;
+  const handleChange = (lang: AppLanguage) => {
+    if (onChange) {
+      onChange(lang);
+    } else {
+      void ctxSetLanguage(lang);
+    }
+  };
+
   if (variant === "globe") {
-    const current = OPTIONS.find((o) => o.code === value) ?? OPTIONS[0];
+    const current = OPTIONS.find((o) => o.code === currentValue) ?? OPTIONS[0];
     return (
       <>
         <Pressable
           onPress={() => setOpen(true)}
           accessibilityRole="button"
-          accessibilityLabel="Change language"
+          accessibilityLabel={t("language.change")}
           testID={testID ?? "language-globe-trigger"}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           style={[styles.globeBtn, style]}
@@ -100,15 +115,15 @@ export function LanguagePicker({
                       fontSize: 11,
                     }}
                   >
-                    Language
+                    {t("language.title")}
                   </Typography>
                   {OPTIONS.map((opt) => {
-                    const active = value === opt.code;
+                    const active = currentValue === opt.code;
                     return (
                       <Pressable
                         key={opt.code}
                         onPress={() => {
-                          onChange(opt.code);
+                          handleChange(opt.code);
                           setOpen(false);
                         }}
                         accessibilityRole="menuitem"
@@ -163,7 +178,7 @@ export function LanguagePicker({
         testID={testID}
       >
         {OPTIONS.map((opt, i) => {
-          const active = value === opt.code;
+          const active = currentValue === opt.code;
           return (
             <React.Fragment key={opt.code}>
               {i > 0 ? (
@@ -172,7 +187,7 @@ export function LanguagePicker({
                 />
               ) : null}
               <Pressable
-                onPress={() => onChange(opt.code)}
+                onPress={() => handleChange(opt.code)}
                 accessibilityRole="radio"
                 accessibilityState={{ checked: active, selected: active }}
                 accessibilityLabel={opt.long}
@@ -206,11 +221,11 @@ export function LanguagePicker({
         accessibilityRole="radiogroup"
       >
         {OPTIONS.map((opt) => {
-          const active = value === opt.code;
+          const active = currentValue === opt.code;
           return (
             <Pressable
               key={opt.code}
-              onPress={() => onChange(opt.code)}
+              onPress={() => handleChange(opt.code)}
               accessibilityRole="radio"
               accessibilityState={{ checked: active, selected: active }}
               accessibilityLabel={opt.long}
@@ -253,11 +268,11 @@ export function LanguagePicker({
       testID={testID}
     >
       {OPTIONS.map((opt) => {
-        const active = value === opt.code;
+        const active = currentValue === opt.code;
         return (
           <Pressable
             key={opt.code}
-            onPress={() => onChange(opt.code)}
+            onPress={() => handleChange(opt.code)}
             accessibilityRole="radio"
             accessibilityState={{ checked: active, selected: active }}
             accessibilityLabel={opt.long}
