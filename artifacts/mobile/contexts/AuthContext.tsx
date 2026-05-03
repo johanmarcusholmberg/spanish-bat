@@ -180,7 +180,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const emailFactor = attempt.supportedFirstFactors?.find(
         (f: { strategy: string }) => f.strategy === "email_code",
       ) as { emailAddressId?: string } | undefined;
-      const emailAddressId = emailFactor?.emailAddressId ?? "";
+      const emailAddressId = emailFactor?.emailAddressId;
+      if (!emailAddressId) {
+        return "We couldn't find an email-code option for that address. Please double-check and try again.";
+      }
       await signIn.prepareFirstFactor({
         strategy: "email_code",
         emailAddressId,
@@ -248,7 +251,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function resendLoginCode(): Promise<string | null> {
     if (!signIn) return "Sign-in not available";
-    if (loginEmailFactorId === null) return "Please enter your email and try again.";
+    if (!loginEmailFactorId) return "Please enter your email and try again.";
     try {
       // Re-dispatch the code on the existing in-progress signIn rather
       // than re-creating it (Clerk treats create as one-shot per flow).

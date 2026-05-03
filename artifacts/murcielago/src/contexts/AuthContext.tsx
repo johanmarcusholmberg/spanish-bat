@@ -83,6 +83,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
+  // Track which passwordless flows have been initialised so resend
+  // calls can re-dispatch on the existing in-progress resource and so
+  // we can fall back to a fresh send if the page was reloaded.
+  const [pendingLoginEmail, setPendingLoginEmail] = useState<string | null>(null);
+  const [pendingRegisterEmail, setPendingRegisterEmail] = useState<string | null>(null);
   const { setProfileLang } = useLanguage();
 
   const session: SessionLike | null = clerkUser
@@ -171,6 +176,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!trimmed) return "Please enter your email address.";
       const { error } = await signIn.emailCode.sendCode({ emailAddress: trimmed });
       if (error) return resultErr(error, "Could not send code");
+      setPendingLoginEmail(trimmed);
       return null;
     } catch (err) {
       return clerkErr(err, "Could not send code");
@@ -179,11 +185,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const resendLoginCode = async (): Promise<string | null> => {
     if (!signIn) return "Sign-in not available";
+    if (!pendingLoginEmail) return "Please enter your email and try again.";
     try {
-      // The signIn resource is already initialised from the previous
-      // sendCode call — re-invoking sendCode just dispatches a fresh code
-      // for the same identifier.
-      const { error } = await signIn.emailCode.sendCode({});
+      // Re-pass the identifier explicitly so the call still works after a
+      // page reload that wiped the in-flight signIn resource.
+      const { error } = await signIn.emailCode.sendCode({ emailAddress: pendingLoginEmail });
       if (error) return resultErr(error, "Could not resend code");
       return null;
     } catch (err) {
@@ -224,6 +230,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (error) return resultErr(error, "Registration failed");
       const { error: sendError } = await signUp.verifications.sendEmailCode();
       if (sendError) return resultErr(sendError, "Could not send code");
+      setPendingRegisterEmail(trimmedEmail);
       return null;
     } catch (err) {
       return clerkErr(err, "Registration failed");
@@ -232,6 +239,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const resendRegisterCode = async (): Promise<string | null> => {
     if (!signUp) return "Sign-up not available";
+    if (!pendingRegisterEmail) return "Please enter your details and try again.";
     try {
       // Don't re-call signUp.create — Clerk rejects creating a second
       // sign-up while one is already in progress. Just dispatch a new
