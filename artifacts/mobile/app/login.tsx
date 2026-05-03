@@ -11,6 +11,7 @@ import {
   Platform,
   ScrollView,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -98,10 +99,13 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.header}>
-          <View style={[styles.logoContainer, { backgroundColor: colors.primary }]}>
-            <Feather name="book-open" size={32} color={colors.primaryForeground} />
-          </View>
-          <Typography variant="h1" center style={{ marginTop: 16 }}>
+          <Image
+            source={require("../assets/images/icon.png")}
+            style={styles.logoImage}
+            resizeMode="contain"
+            accessibilityLabel="Murciélingo bat logo"
+          />
+          <Typography variant="h1" center style={{ marginTop: 12 }}>
             Murciélingo
           </Typography>
           <Typography variant="body" muted center style={{ marginTop: 4 }}>
@@ -232,12 +236,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 32,
   },
-  logoContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
+  logoImage: {
+    width: 96,
+    height: 96,
   },
   card: {
     borderRadius: 16,

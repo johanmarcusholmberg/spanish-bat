@@ -11,6 +11,7 @@ import {
   Platform,
   ScrollView,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -120,10 +121,13 @@ export default function RegisterScreen() {
         </View>
 
         <View style={styles.header}>
-          <View style={[styles.logoContainer, { backgroundColor: colors.primary }]}>
-            <Feather name="user-plus" size={28} color={colors.primaryForeground} />
-          </View>
-          <Typography variant="h2" center style={{ marginTop: 14 }}>
+          <Image
+            source={require("../assets/images/icon.png")}
+            style={styles.logoImage}
+            resizeMode="contain"
+            accessibilityLabel="Murciélingo bat logo"
+          />
+          <Typography variant="h2" center style={{ marginTop: 10 }}>
             Create your account
           </Typography>
           <Typography variant="body" muted center style={{ marginTop: 4 }}>
@@ -300,12 +304,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 24,
   },
-  logoContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
+  logoImage: {
+    width: 84,
+    height: 84,
   },
   card: {
     borderRadius: 16,

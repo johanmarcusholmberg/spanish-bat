@@ -88,6 +88,11 @@ const RegisterPage = () => {
             {t("backToLogin")}
           </Link>
           <div className="text-center mb-4">
+            <img
+              src={logo}
+              alt="Murcielingo"
+              className="h-20 w-20 sm:h-24 sm:w-24 mx-auto mb-3"
+            />
             <h1 className="text-xl sm:text-2xl font-heading font-bold text-foreground">{t("createAccount")}</h1>
             <p className="text-sm text-muted-foreground mt-1">
               {language === "sv" ? "Det tar bara en minut." : "It only takes a minute."}

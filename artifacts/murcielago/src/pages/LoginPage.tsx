@@ -55,6 +55,11 @@ const LoginPage = () => {
       <div className="flex-1 flex justify-center px-4 pt-8 sm:pt-12 pb-6">
         <div className="w-full max-w-sm" style={{ animation: "fade-in 0.4s ease-out both" }}>
           <div className="text-center mb-5">
+            <img
+              src={logo}
+              alt="Murcielingo"
+              className="h-20 w-20 sm:h-24 sm:w-24 mx-auto mb-3"
+            />
             <h1 className="text-2xl font-heading font-bold text-foreground">{t("login")}</h1>
             <p className="text-sm text-muted-foreground mt-1">{t("appTagline")}</p>
           </div>
