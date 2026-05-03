@@ -1,0 +1,158 @@
+Continue working on Murcielingo.
+
+The Today page visual polish is now good enough. Do not redesign the visual system again.
+
+Next priority: make Today’s Echo feel functionally real and useful.
+
+Do not use Git, commits, branches, PRs, or deployment steps.
+Do not do a broad redesign.
+Do not add more decorative motifs.
+Focus on user flow, states, and actual session behavior.
+
+GOAL
+Today’s Echo should not only look like the main feature — it should behave like the main daily practice entry point.
+
+The user should understand:
+- what today’s practice is
+- why it was chosen
+- what happens when they start
+- whether they are continuing, completed, or limited by free plan
+- what they can do next
+
+TASK 1 — Verify Today’s Echo CTA behavior
+
+Audit what happens when the user clicks:
+
+- Start today’s practice
+- Resume today’s practice
+- Review saved words
+- Unlock full adaptive practice
+
+Make sure each CTA leads somewhere real and useful.
+
+If a final adaptive backend does not exist yet, route the user to the best existing practice flow and pass enough context so it feels like a Today’s Echo session.
+
+Avoid dead buttons, placeholder screens, or generic routes.
+
+TASK 2 — Add clear Today’s Echo states
+
+Implement or verify these states:
+
+1. Not started
+- CTA: Start today’s practice
+- Shows today’s focus, level, estimated time
+
+2. In progress
+- CTA: Resume today’s practice
+- Shows progress, e.g. 3 of 8 completed
+
+3. Completed
+- CTA: Review saved words or Practice more
+- Shows a short completion message
+
+4. Free limit reached
+- CTA: Unlock full adaptive practice
+- Shows clear but friendly upgrade copy
+
+5. No data yet
+- CTA: Begin first practice
+- Explains that Murcielingo adapts after the user starts practicing
+
+6. Error/loading
+- Loading should look intentional
+- Error should be human-readable and offer retry or fallback
+
+TASK 3 — Make Today’s Echo plan data structured
+
+Avoid hardcoding everything directly inside JSX.
+
+Create or refine a small Today’s Echo model/helper/hook such as:
+
+- useTodaysEcho()
+- buildTodaysEchoPlan()
+- getTodaysEchoState()
+
+The returned object should include:
+
+- status
+- title
+- description
+- focusArea
+- level
+- estimatedMinutes
+- sessionType
+- progressCurrent
+- progressTotal
+- primaryActionLabel
+- primaryActionTarget
+- secondaryActionLabel
+- secondaryActionTarget
+- isLimitedForFreeUser
+- upgradeReason
+- explanation
+
+This can use existing user/practice data where available.
+
+If real adaptive data is not available yet, use a clean temporary fallback and mark it clearly with a TODO.
+
+TASK 4 — Add “why this today?”
+
+Add a small expandable or subtle explanation near Today’s Echo:
+
+“Why this today?”
+
+Example:
+“Based on your A1 level and recent vocabulary practice, today focuses on recall and pronunciation.”
+
+This should be simple and human, not technical.
+
+Avoid exposing raw scoring, subscription objects, or implementation details.
+
+TASK 5 — Free vs paid behavior
+
+Free users:
+- Can complete a limited Today’s Echo session
+- See upgrade only after the useful free action is complete or when they try to continue beyond the limit
+- Do not feel blocked immediately
+
+Paid users:
+- Get full Today’s Echo behavior
+- No unnecessary locked messaging
+
+Admin users:
+- Use the normal learner Today’s Echo experience
+- Admin access remains discreet and role-gated
+
+TASK 6 — Session continuity
+
+If possible with current app structure:
+- remember if today’s session was started
+- allow resume
+- mark completed
+- reset for a new day
+
+Use existing persistence/storage if available.
+If not available, create a minimal frontend-safe approach and mark what should later be moved server-side.
+
+TASK 7 — Test flows
+
+Manually verify:
+
+- first-time user
+- returning user with no active session
+- returning user with active session
+- completed today’s session
+- free user after limit
+- paid user
+- admin user
+- mobile layout
+
+EXPECTED RESULT
+
+After this task:
+- Today’s Echo feels like a real daily practice loop
+- CTA buttons lead to meaningful flows
+- free and paid states are clear
+- session progress/resume/completion feels coherent
+- the visual design remains stable
+- typecheck/tests pass
