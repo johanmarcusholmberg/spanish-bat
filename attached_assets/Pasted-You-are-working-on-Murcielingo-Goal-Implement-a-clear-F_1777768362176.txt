@@ -1,0 +1,425 @@
+You are working on Murcielingo.
+
+Goal:
+Implement a clear Free vs Premium access model for Murcielingo based on the product direction:
+
+Free = daily habit preview.
+Premium = adaptive personal Spanish coach.
+
+The differentiation should be based on learning depth, personalization, adaptiveness, and unlimited practice — not by making the free app feel broken.
+
+Core product principle:
+Free users should understand the Murcielingo habit loop:
+“I open the app, do Today’s Practice, echo phrases, and see progress.”
+
+Premium users should feel Murcielingo becomes their personal Spanish coach:
+“Murcielingo remembers my weak areas, creates more practice, helps me speak, and guides me toward the next level.”
+
+Important constraints:
+- This work is being done directly in Replit.
+- Do not create branches.
+- Do not open pull requests.
+- Do not configure GitHub automation.
+- Do not commit or push unless I explicitly ask later.
+- Make changes directly in the Replit workspace.
+- After changes are complete, summarize exactly what was changed and what files were touched.
+- Also list follow-up tasks, known limitations, and TODOs.
+- Preserve existing functionality.
+- Do not break authentication, routing, progress persistence, learning sessions, Echo, onboarding, or existing practice modules.
+- Keep the implementation suitable for both web and future native mobile app use.
+- Avoid web-only logic in core entitlement/session services.
+
+Product direction:
+Do not turn Murcielingo into a large course-management system.
+
+The app should still feel like:
+“A small daily Spanish coach that knows what I need to echo next.”
+
+The user should not think:
+“Which module should I open?”
+
+They should think:
+“I’ll do today’s practice.”
+
+Subscription model:
+Start with one free plan and one paid plan.
+
+Plan 1: Free
+Positioning:
+“Start echoing Spanish.”
+
+Purpose:
+Let users experience the daily habit loop and understand the value of Murcielingo.
+
+Free users should have:
+- 1 short Today’s Practice session per day.
+- Session length around 5 minutes or approximately 8–12 practice steps.
+- Basic mixed practice:
+  - vocabulary recall
+  - basic Echo/listen-and-repeat
+  - simple sentence building
+  - basic review
+- Basic Echo access.
+- Manual confidence rating for speaking/Echo.
+- Limited manual practice modes.
+- Basic Flashcards.
+- Basic Quiz.
+- One short conversation or reading sample.
+- Basic progress:
+  - current level
+  - streak
+  - words practiced
+  - basic “needs review” preview
+- Limited Library access:
+  - some grammar/vocabulary/reading content visible
+  - locked Premium content may be visible but not fully usable
+- Limited level check access:
+  - either one level check attempt per level
+  - or a limited placement/level check
+- Basic daily reminder setting if notification foundation exists.
+
+Free users should not feel blocked before understanding the product value.
+
+Do NOT:
+- Show only locked screens to free users.
+- Block the first daily practice.
+- Block basic Echo completely.
+- Block all progress.
+- Ask for payment immediately after signup.
+- Paywall every navigation tap.
+
+Plan 2: Premium
+Positioning:
+“Your personal Spanish coach.”
+
+Purpose:
+Unlock the full adaptive, personal, unlimited Murcielingo experience.
+
+Premium users should have:
+- Unlimited Today’s Practice.
+- Multiple sessions per day.
+- Longer and adaptive session lengths:
+  - 2 minutes
+  - 5 minutes
+  - 10 minutes
+  - 15 minutes
+- Ability to continue practicing after completing the daily session.
+- All Practice Mixes:
+  - 5-minute warm-up
+  - Daily review
+  - Speaking confidence
+  - Weak words
+  - Grammar rescue
+  - Conversation practice
+  - Listen and echo
+  - Test readiness
+  - Travel Spanish, if present
+- Full adaptive practice.
+- Full weak-word sessions.
+- Full mistake memory.
+- Detailed recurring mistake patterns.
+- Personalized recommendations.
+- Full Echo/speaking features:
+  - more speaking sessions
+  - recording/playback if available
+  - pronunciation confidence tracking
+  - future-ready support for pronunciation scoring/speech recognition
+- AI-generated practice variations where architecture exists:
+  - sentence variations
+  - short dialogues
+  - level-adapted reading texts
+  - Echo phrases from weak words
+  - simple mistake explanations
+  - grammar examples
+- Full progress and readiness:
+  - detailed level readiness
+  - skill strengths
+  - weak areas
+  - test readiness explanation
+  - learning history
+- Unlimited or more generous level checks.
+- Offline review mode if offline cache foundation exists.
+- Custom notification/reminder settings if notification foundation exists.
+
+Main implementation requirement:
+Create a central entitlement system.
+
+Do not hardcode plan checks manually across many components.
+
+Create or update a centralized entitlement model/service/hook that answers questions like:
+- What plan does the user have?
+- Can the user start another session today?
+- Can the user use this Practice Mix?
+- Can the user access full Echo?
+- Can the user access AI-generated practice?
+- Can the user see advanced mistake insights?
+- Can the user use offline review?
+- Can the user take another level check?
+- Should the UI show a soft paywall?
+
+Suggested files/services/hooks:
+- subscriptionPlans.ts
+- entitlementService.ts
+- useEntitlements.ts
+- useSubscriptionPlan.ts
+- featureAccess.ts
+- paywallCopy.ts
+
+Use existing project conventions and file structure. Do not create duplicate systems if similar logic already exists.
+
+Suggested entitlement structure:
+Free:
+- dailySessionLimit: 1
+- maxSessionSteps: 12
+- availableSessionLengths: [5]
+- practiceMixAccess:
+  - daily_review: true
+  - basic_flashcards: true
+  - basic_quiz: true
+  - basic_echo: true
+  - weak_words: preview_only
+  - speaking_confidence: false
+  - grammar_rescue: false
+  - conversation_practice: preview_only
+  - listen_and_echo: limited
+  - test_readiness: preview_only
+  - travel_spanish: preview_only
+- aiPractice: false
+- fullMistakeMemory: false
+- advancedProgress: false
+- fullEcho: false
+- recordingPlayback: false or limited depending on current implementation
+- offlineMode: false
+- customNotifications: false
+- levelCheckAttempts: limited
+
+Premium:
+- dailySessionLimit: unlimited
+- maxSessionSteps: unlimited
+- availableSessionLengths: [2, 5, 10, 15]
+- practiceMixAccess: all
+- aiPractice: true
+- fullMistakeMemory: true
+- advancedProgress: true
+- fullEcho: true
+- recordingPlayback: true if supported
+- offlineMode: true if supported
+- customNotifications: true if supported
+- levelCheckAttempts: unlimited or generous
+
+If the project already has subscription/payment state:
+- Integrate with it.
+- Do not replace working Stripe/payment logic unless necessary.
+- Keep plan detection centralized.
+
+If the project does not yet have payment/subscription state:
+- Add a safe placeholder plan state.
+- Default users to Free.
+- Add a mock/dev-only way to preview Premium behavior if appropriate.
+- Clearly mark TODOs for Stripe/web subscription and app store subscription integration.
+
+Important:
+Because Murcielingo may become a native mobile app, do not assume only Stripe will exist forever.
+Design plan detection so it can later support:
+- Web subscription provider, such as Stripe
+- iOS in-app purchase
+- Android in-app purchase
+- manual/test entitlement override for development
+
+Suggested plan source abstraction:
+- getCurrentPlan()
+- getSubscriptionStatus()
+- hasActivePremium()
+- getEntitlementsForPlan(plan)
+
+Paywall philosophy:
+Use soft, contextual paywalls.
+
+Good paywall moments:
+- After the free daily session is completed:
+  “Want to keep practicing today?”
+- When opening a locked Practice Mix:
+  “Unlock Speaking Confidence practice.”
+- When viewing detailed mistake insights:
+  “See exactly what to practice next.”
+- When requesting AI-generated practice:
+  “Generate more practice from your weak words.”
+- When trying to extend session length:
+  “Practice for 10 or 15 minutes with Premium.”
+
+Bad paywall moments:
+- Immediately after signup.
+- Before the first practice.
+- Before the user has experienced Echo.
+- Before the user has completed at least one meaningful session.
+- On every navigation tap.
+
+Paywall UX requirements:
+- Keep the tone warm and non-aggressive.
+- Explain the learning benefit, not only the feature.
+- Always provide a clear free alternative where possible.
+- Example:
+  - Primary: “Unlock Premium”
+  - Secondary: “Do today’s free practice”
+  - Secondary: “Keep my 5-minute session”
+  - Secondary: “Review basic flashcards”
+- Do not use dark patterns.
+- Do not block navigation unnecessarily.
+- Make locked content visible enough that users understand what Premium unlocks.
+
+Suggested paywall copy:
+- “Keep practicing today”
+- “Unlock your personal Spanish coach”
+- “Practice your weak words without daily limits”
+- “Generate more Echo phrases from words you almost know”
+- “See the patterns behind your mistakes”
+- “Try longer sessions when you have more time”
+- “Premium helps Murcielingo adapt to what you need next”
+
+Free user experience requirements:
+A free user should be able to:
+1. Complete onboarding.
+2. Start their first practice.
+3. Use one short Today’s Practice per day.
+4. Try basic Echo.
+5. See basic progress and streak.
+6. Open Practice and Library.
+7. See Premium previews.
+8. Understand why Premium would help.
+9. Continue returning daily without the app feeling broken.
+
+Premium user experience requirements:
+A Premium user should be able to:
+1. Start more than one session per day.
+2. Choose longer session lengths.
+3. Access all Practice Mixes.
+4. Continue after daily practice.
+5. Get adaptive weak-area sessions.
+6. See advanced mistake insights.
+7. Use AI-generated variations where available.
+8. Use full Echo/speaking functionality where available.
+9. Access detailed progress/readiness.
+10. Use offline/notification features where available.
+
+UI placement recommendations:
+Today screen:
+- Free:
+  - Show Start today’s practice.
+  - After completion, show “You finished today’s free practice” and offer Premium to keep practicing.
+  - Still offer basic review/free available actions.
+- Premium:
+  - Show Start today’s practice.
+  - Show session length options.
+  - Show “Continue practicing” and all relevant mixes.
+
+Practice screen:
+- Free:
+  - Show all practice mixes, but mark Premium mixes as locked or preview.
+  - Allow basic flashcards, quiz, and basic Echo.
+- Premium:
+  - Unlock all mixes.
+
+Library screen:
+- Free:
+  - Show preview/basic content.
+  - Lock deeper content or full collections.
+- Premium:
+  - Unlock full library access.
+
+Progress screen:
+- Free:
+  - Basic streak, current level, words practiced, needs review preview.
+- Premium:
+  - Detailed strengths, weak areas, mistake patterns, test readiness, learning history.
+
+Echo/speaking:
+- Free:
+  - Basic listen-and-repeat with manual confidence.
+- Premium:
+  - Full Echo sessions, recording/playback, pronunciation tracking if available.
+
+AI practice:
+- Free:
+  - Show preview or one limited sample if desired.
+- Premium:
+  - Unlock full AI-generated variations.
+
+Level checks:
+- Free:
+  - Limited attempts.
+- Premium:
+  - Unlimited or more generous attempts and targeted readiness preparation.
+
+Implementation phases:
+
+Phase 1: Entitlement foundation
+- Inspect current subscription/auth/payment/user profile logic.
+- Add or update centralized plan and entitlement definitions.
+- Default to Free if no plan exists.
+- Add Premium handling in a way that can later connect to Stripe/App Store/Google Play.
+
+Phase 2: Session limits
+- Apply free daily session limit.
+- Limit free session length/steps.
+- Allow Premium users unlimited or expanded sessions.
+- Prevent duplicate counting when resuming sessions.
+- Ensure Today screen shows the correct CTA depending on entitlement.
+
+Phase 3: Practice Mix access
+- Apply access rules to Practice Mixes.
+- Keep locked Premium mixes visible.
+- Add soft paywall/preview states.
+- Keep free basic modes usable.
+
+Phase 4: Progress and mistake insights
+- Show basic progress to Free users.
+- Show advanced insights to Premium users.
+- Add previews for locked advanced insights.
+
+Phase 5: Echo and AI access
+- Apply Basic vs Full Echo access.
+- Gate AI-generated practice behind Premium.
+- Add graceful fallbacks if AI services are not implemented yet.
+
+Phase 6: Library and level checks
+- Add Free/Premium access distinction for Library content.
+- Add level-check attempt rules.
+- Keep the user able to continue practicing even if not taking a level check.
+
+Phase 7: Paywall and copy polish
+- Add reusable paywall component or modal/sheet.
+- Add centralized paywall copy.
+- Make paywall contextual and learning-benefit focused.
+- Check mobile responsiveness and touch targets.
+
+Phase 8: Testing
+Test at least these scenarios:
+- New free user after onboarding.
+- Free user before completing daily session.
+- Free user after completing daily session.
+- Free user opening locked Practice Mix.
+- Free user viewing Progress.
+- Premium user starting multiple sessions.
+- Premium user choosing longer session.
+- Premium user accessing all Practice Mixes.
+- User resuming a session.
+- User ready for level check.
+- User declining level check and continuing practice.
+
+Acceptance criteria:
+- Free vs Premium is clearly defined in a central entitlement system.
+- Free users can experience the Murcielingo habit loop.
+- Premium users unlock adaptive, personal, unlimited learning.
+- The app does not feel broken for free users.
+- Paywalls are contextual, soft, and benefit-focused.
+- Existing learning functionality remains intact.
+- Today’s Practice remains the core product experience.
+- Practice, Library, Progress, Echo, AI, mistake memory, offline, notifications, and level checks respect entitlements where relevant.
+- The structure is ready for web payments and future mobile app subscriptions.
+- The implementation remains suitable for native mobile conversion.
+
+After implementation:
+- Summarize exactly what changed.
+- List all files touched.
+- List any known limitations.
+- List recommended next steps.
