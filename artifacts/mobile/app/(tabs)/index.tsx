@@ -30,6 +30,7 @@ import TodaysPracticeCard from "@/components/TodaysPracticeCard";
 import EchoSteps from "@/components/EchoSteps";
 import LevelReadinessCard from "@/components/LevelReadinessCard";
 import EchoMemoryPreview from "@/components/EchoMemoryPreview";
+import StreakCard from "@/components/StreakCard";
 import { useResumableSession } from "@/hooks/useResumableSession";
 
 const PASSED_KEY = (userId: string, level: string) =>
@@ -37,6 +38,7 @@ const PASSED_KEY = (userId: string, level: string) =>
 
 interface DashboardData {
   streak: { currentStreak: number; longestStreak: number; lastActiveDate: string } | null;
+  activityLog: { activityDate: string; count: number }[];
   progress: { category: string; completed: number; total: number }[];
   lastActivity: { exerciseType: string; exercisePath: string; exerciseLabel: string } | null;
   vocabCount: number;
@@ -79,6 +81,7 @@ export default function TodayScreen() {
       ]);
       const next: DashboardData = {
         streak: streaksRes.streak as DashboardData["streak"],
+        activityLog: streaksRes.activityLog ?? [],
         progress: progressRes.progress ?? [],
         lastActivity: progressRes.lastActivity as DashboardData["lastActivity"],
         vocabCount: (vocabRes.words ?? []).length,
@@ -124,6 +127,7 @@ export default function TodayScreen() {
               if (cancelled) return;
               if (summary.data) {
                 setData({
+                  activityLog: [],
                   streak: {
                     currentStreak: summary.data.streakDays,
                     longestStreak: summary.data.streakDays,
@@ -352,37 +356,12 @@ export default function TodayScreen() {
       <LevelReadinessCard readiness={readiness} />
 
       {/* 6. Streak summary */}
-      <Card style={{ marginBottom: 12 }}>
-        <View style={styles.streakRow}>
-          <View style={[styles.streakIcon, { backgroundColor: colors.primary + "20" }]}>
-            <Feather name="zap" size={22} color={colors.primary} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Typography variant="h3">
-              {streakCount}{" "}
-              {streakCount === 1
-                ? lang === "sv" ? "dag" : "day"
-                : lang === "sv" ? "dagar" : "days"}
-            </Typography>
-            <Typography variant="caption" muted>
-              {lang === "sv" ? "Längst" : "Longest"}: {longestStreak}{" "}
-              {longestStreak === 1
-                ? lang === "sv" ? "dag" : "day"
-                : lang === "sv" ? "dagar" : "days"}
-            </Typography>
-          </View>
-          <Card
-            variant="muted"
-            padding={10}
-            onPress={() => router.push("/(tabs)/progress")}
-            style={{ borderRadius: 12 }}
-          >
-            <Typography variant="caption" style={{ color: colors.foreground }}>
-              {lang === "sv" ? "Se framsteg" : "View progress"}
-            </Typography>
-          </Card>
-        </View>
-      </Card>
+      <StreakCard
+        currentStreak={streakCount}
+        longestStreak={longestStreak}
+        activityLog={data?.activityLog ?? []}
+        lang={lang}
+      />
     </ScrollView>
   );
 }
@@ -410,18 +389,6 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1.5,
-  },
-  streakRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-  },
-  streakIcon: {
-    width: 46,
-    height: 46,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
   },
   recentsRow: {
     flexDirection: "row",
