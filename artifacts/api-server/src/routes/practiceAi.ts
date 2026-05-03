@@ -22,11 +22,15 @@ import {
   normalizePromptForDedup,
   type AIPracticeRequest,
 } from "@workspace/practice-ai";
-import { db, practiceItemsTable, userDailySessionsTable } from "@workspace/db";
-import { eq, sql } from "drizzle-orm";
+import { db, practiceItemsTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 import { getFeatureAccess } from "@workspace/subscription";
 import { getCurrentPlan } from "../lib/subscription";
-import { deriveDay, parseTzOffset } from "../lib/dailySessions";
+import {
+  deriveDay,
+  parseTzOffset,
+  tryConsumeDailySession,
+} from "../lib/dailySessions";
 
 const router = Router();
 
@@ -107,44 +111,20 @@ router.post("/generate-practice-session", requireAuth, async (req, res) => {
   // Atomic check-and-increment of the daily-session counter. This is
   // the authoritative enforcement point for the Free-tier cap — direct
   // API callers can't bypass it because the increment is conditional on
-  // the cap inside a single SQL upsert. Premium plans (Infinity limit)
-  // skip the whole branch.
+  // the cap inside a single SQL upsert (see `tryConsumeDailySession`).
+  // Premium plans (Infinity limit) skip the whole branch.
   try {
     const planId = await getCurrentPlan(userId);
     const limit = getFeatureAccess(planId).dailySessionLimit;
     if (Number.isFinite(limit)) {
       const today = deriveDay(parseTzOffset(body.tzOffsetMinutes));
-      const updated = await db
-        .insert(userDailySessionsTable)
-        .values({ userId, day: today, count: 1 })
-        .onConflictDoUpdate({
-          target: userDailySessionsTable.userId,
-          set: {
-            day: sql`EXCLUDED.day`,
-            count: sql`CASE
-                WHEN ${userDailySessionsTable.day} <> EXCLUDED.day THEN 1
-                ELSE ${userDailySessionsTable.count} + 1
-              END`,
-            updatedAt: new Date(),
-          },
-          where: sql`${userDailySessionsTable.day} <> EXCLUDED.day OR ${userDailySessionsTable.count} < ${limit}`,
-        })
-        .returning({
-          day: userDailySessionsTable.day,
-          count: userDailySessionsTable.count,
-        });
-      if (updated.length === 0) {
-        // Conflict matched but WHERE rejected → cap reached today.
-        const current = await db
-          .select()
-          .from(userDailySessionsTable)
-          .where(eq(userDailySessionsTable.userId, userId))
-          .limit(1);
+      const consumed = await tryConsumeDailySession(userId, today, limit);
+      if (!consumed.ok) {
         return res.status(402).json({
           error: "Daily practice session limit reached",
           code: "daily_limit_reached",
           limit,
-          count: current[0]?.count ?? limit,
+          count: consumed.count,
         });
       }
     }

@@ -1,9 +1,12 @@
 import { Router } from "express";
-import { db } from "@workspace/db";
-import { userDailySessionsTable } from "@workspace/db";
-import { eq, sql } from "drizzle-orm";
+import { db, userDailySessionsTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 import { requireAuth } from "../middlewares/requireAuth";
-import { deriveDay, parseTzOffset } from "../lib/dailySessions";
+import {
+  deriveDay,
+  parseTzOffset,
+  syncDailySessionFloor,
+} from "../lib/dailySessions";
 
 const router = Router();
 
@@ -49,30 +52,7 @@ router.post("/daily-sessions/record", requireAuth, async (req, res) => {
   const day = deriveDay(tzOffsetMinutes);
 
   try {
-    const seedCount = Math.max(1, localCount);
-    const rows = await db
-      .insert(userDailySessionsTable)
-      .values({ userId, day, count: seedCount })
-      .onConflictDoUpdate({
-        target: userDailySessionsTable.userId,
-        set: {
-          day: sql`EXCLUDED.day`,
-          count: sql`CASE
-              WHEN ${userDailySessionsTable.day} = EXCLUDED.day
-                THEN GREATEST(${userDailySessionsTable.count}, EXCLUDED.count)
-              ELSE EXCLUDED.count
-            END`,
-          updatedAt: new Date(),
-        },
-      })
-      .returning({
-        day: userDailySessionsTable.day,
-        count: userDailySessionsTable.count,
-      });
-    const row = rows[0];
-    if (!row) {
-      return res.status(500).json({ error: "Server error" });
-    }
+    const row = await syncDailySessionFloor(userId, day, localCount);
     return res.json({ dailySession: { day: row.day, count: row.count } });
   } catch (err) {
     req.log.error({ err }, "Failed to record daily session");
