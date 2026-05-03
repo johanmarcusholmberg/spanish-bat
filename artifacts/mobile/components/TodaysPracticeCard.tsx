@@ -160,7 +160,9 @@ export const TodaysPracticeCard: React.FC<Props> = ({
         >
           <Feather name="clipboard" size={16} color={colors.foreground} />
           <Typography variant="label" style={{ marginLeft: 6 }}>
-            You look ready for a level check
+            {lang === "sv"
+              ? "Du verkar redo för en nivåkoll"
+              : "You look ready for a level check"}
           </Typography>
         </Pressable>
       )}
