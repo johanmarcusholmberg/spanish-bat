@@ -95,6 +95,33 @@ export const api = {
     send: (data: { subject: string; message: string; email: string }) =>
       fetchApi("/contact", { method: "POST", body: JSON.stringify(data) }),
   },
+  echoMemory: {
+    get: () =>
+      fetchApi("/echo-memory") as Promise<{
+        echoMemory: {
+          userId: string;
+          trackedCount: number;
+          improvedCount: number;
+          dueCount: number;
+          weakCount: number;
+          topFocusSubskill: string | null;
+          topImprovedSubskill: string | null;
+          updatedAt: string | null;
+        } | null;
+      }>,
+    upsert: (data: {
+      trackedCount?: number;
+      improvedCount?: number;
+      dueCount?: number;
+      weakCount?: number;
+      topFocusSubskill?: string | null;
+      topImprovedSubskill?: string | null;
+    }) =>
+      fetchApi("/echo-memory", {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+  },
   practice: {
     generate: (input: {
       userLevel: string;

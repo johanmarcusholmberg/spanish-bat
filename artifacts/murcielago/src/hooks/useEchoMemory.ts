@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   countDueItems,
   friendlySubskillName,
@@ -6,39 +6,45 @@ import {
   type UserPracticeStats,
 } from "@workspace/practice";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
+import { api } from "@/lib/api";
 
 export interface EchoMemorySummary {
-  /** Whether the user has any practice history at all. */
   hasData: boolean;
-  /** Phrases the user has tripped on recently. */
   weakCount: number;
-  /** Items currently due for review. */
   dueCount: number;
-  /** Items that are getting stronger (more correct than wrong, seen recently). */
   improvedCount: number;
-  /** Total items Murci has seen the user practice. */
   trackedCount: number;
-  /** First friendly subskill name (e.g. "travel phrases"). */
   topFocus: { en: string; sv: string } | null;
-  /** First friendly subskill name the user is improving on. */
   topImproved: { en: string; sv: string } | null;
 }
 
-const RECENT_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
+interface ServerSnapshot {
+  trackedCount: number;
+  improvedCount: number;
+  dueCount: number;
+  weakCount: number;
+  topFocusSubskill: string | null;
+  topImprovedSubskill: string | null;
+}
 
-function deriveSummary(
+const RECENT_MS = 1000 * 60 * 60 * 24 * 7;
+
+function deriveLocal(
   stats: UserPracticeStats,
   weakSpots: WeakSpot[],
-): EchoMemorySummary {
+): {
+  trackedCount: number;
+  improvedCount: number;
+  dueCount: number;
+  weakCount: number;
+  topFocusSubskill: string | null;
+  topImprovedSubskill: string | null;
+} {
   const itemStats = stats.itemStats ?? {};
   const recent = stats.recentMistakeIds ?? [];
   const now = Date.now();
-
   let improvedCount = 0;
   let trackedCount = 0;
-  let topImprovedSubskill: string | null = null;
-  let topImprovedScore = -Infinity;
-
   for (const [, s] of Object.entries(itemStats)) {
     if (!s) continue;
     trackedCount += 1;
@@ -47,8 +53,8 @@ function deriveSummary(
       improvedCount += 1;
     }
   }
-
-  // Pick a topImproved subskill from the subskillStats if available.
+  let topImprovedSubskill: string | null = null;
+  let topImprovedScore = -Infinity;
   const subStats = stats.subskillStats ?? {};
   for (const [key, s] of Object.entries(subStats)) {
     if (!s) continue;
@@ -60,35 +66,102 @@ function deriveSummary(
       topImprovedSubskill = key.split("/")[1] ?? null;
     }
   }
-
-  const topFocusSub = weakSpots[0]?.subskill ?? null;
-  const topFocus =
-    topFocusSub != null
-      ? {
-          en: friendlySubskillName(topFocusSub, "en"),
-          sv: friendlySubskillName(topFocusSub, "sv"),
-        }
-      : null;
-  const topImproved =
-    topImprovedSubskill != null
-      ? {
-          en: friendlySubskillName(topImprovedSubskill, "en"),
-          sv: friendlySubskillName(topImprovedSubskill, "sv"),
-        }
-      : null;
-
   return {
-    hasData: trackedCount > 0,
-    weakCount: recent.length,
-    dueCount: countDueItems(stats),
-    improvedCount,
     trackedCount,
-    topFocus,
-    topImproved,
+    improvedCount,
+    dueCount: countDueItems(stats),
+    weakCount: recent.length,
+    topFocusSubskill: weakSpots[0]?.subskill ?? null,
+    topImprovedSubskill,
   };
+}
+
+function toFriendly(
+  sub: string | null,
+): { en: string; sv: string } | null {
+  if (!sub) return null;
+  return {
+    en: friendlySubskillName(sub, "en"),
+    sv: friendlySubskillName(sub, "sv"),
+  };
+}
+
+function snapshotsEqual(a: ServerSnapshot, b: ServerSnapshot): boolean {
+  return (
+    a.trackedCount === b.trackedCount &&
+    a.improvedCount === b.improvedCount &&
+    a.dueCount === b.dueCount &&
+    a.weakCount === b.weakCount &&
+    a.topFocusSubskill === b.topFocusSubskill &&
+    a.topImprovedSubskill === b.topImprovedSubskill
+  );
 }
 
 export function useEchoMemory(): EchoMemorySummary {
   const { stats, weakSpots } = usePracticeStats();
-  return useMemo(() => deriveSummary(stats, weakSpots), [stats, weakSpots]);
+  const [server, setServer] = useState<ServerSnapshot | null>(null);
+  const lastSentRef = useRef<ServerSnapshot | null>(null);
+
+  // One-shot server fetch on mount so cleared local storage / new device
+  // can still surface "you're getting stronger on X".
+  useEffect(() => {
+    let cancelled = false;
+    api.echoMemory
+      .get()
+      .then((res) => {
+        if (cancelled) return;
+        if (res?.echoMemory) {
+          setServer({
+            trackedCount: res.echoMemory.trackedCount ?? 0,
+            improvedCount: res.echoMemory.improvedCount ?? 0,
+            dueCount: res.echoMemory.dueCount ?? 0,
+            weakCount: res.echoMemory.weakCount ?? 0,
+            topFocusSubskill: res.echoMemory.topFocusSubskill ?? null,
+            topImprovedSubskill: res.echoMemory.topImprovedSubskill ?? null,
+          });
+        }
+      })
+      .catch(() => {
+        /* offline / unauthenticated — fall back to local-only */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const local = useMemo(() => deriveLocal(stats, weakSpots), [stats, weakSpots]);
+
+  // Persist whenever local has real data and differs from what we last sent.
+  useEffect(() => {
+    if (local.trackedCount === 0) return;
+    if (lastSentRef.current && snapshotsEqual(lastSentRef.current, local)) {
+      return;
+    }
+    const handle = setTimeout(() => {
+      const attempt = local;
+      api.echoMemory
+        .upsert(attempt)
+        .then(() => {
+          lastSentRef.current = attempt;
+        })
+        .catch(() => {
+          /* leave lastSentRef unchanged so the next render retries */
+        });
+    }, 1500);
+    return () => clearTimeout(handle);
+  }, [local]);
+
+  // Merge: local is authoritative when it has data; otherwise hydrate from server.
+  const merged: ServerSnapshot =
+    local.trackedCount > 0 ? local : (server ?? local);
+
+  return {
+    hasData: merged.trackedCount > 0,
+    weakCount: merged.weakCount,
+    dueCount: merged.dueCount,
+    improvedCount: merged.improvedCount,
+    trackedCount: merged.trackedCount,
+    topFocus: toFriendly(merged.topFocusSubskill),
+    topImproved: toFriendly(merged.topImprovedSubskill),
+  };
 }
