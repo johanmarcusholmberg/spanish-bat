@@ -1,0 +1,175 @@
+Continue working on Murcielingo.
+
+The latest frontend refinement is much better. Do not redesign the whole page again.
+
+This task is a UX QA and polish pass for the new Today’s Echo dashboard.
+
+Do not use Git, commits, branches, PRs, or deployment steps.
+Do not replace the current design system.
+Do not add more decorative motifs unless clearly needed.
+Do not make broad backend changes.
+
+GOAL
+Review and polish the new Today page so the UI feels intentional, usable, and production-ready across user states and screen sizes.
+
+CHECK 1 — Today’s Echo hierarchy
+
+Verify that Today’s Echo is still the clearest main action on the page.
+
+The user should immediately understand:
+- what they should practice today
+- why it is recommended
+- how long it takes
+- what button to press next
+
+Polish if needed:
+- reduce visual noise if the hero feels too decorated
+- make the CTA visually dominant
+- keep the explanation short and human
+- make the focus/meta rows easy to scan
+- ensure the echo-ring watermark does not reduce readability
+
+CHECK 2 — Motif system restraint
+
+Review the custom motifs:
+- echo rings
+- soundwave
+- mic pulse
+- dotted path
+- phrase bubble
+- sentence flow
+- wing curve
+
+They should feel like one coherent Murcielingo visual language.
+
+Fix if needed:
+- inconsistent stroke widths
+- motifs that look too much like random icons
+- motifs that compete with text
+- motifs that appear too often
+- low contrast or poor readability
+- overly decorative elements on small screens
+
+The motifs should support the experience, not dominate it.
+
+CHECK 3 — Continue learning cards
+
+Review the Practice Areas cards.
+
+Each card should feel useful, not just decorative.
+
+Ensure each card has:
+- clear title
+- helpful one-line description
+- meaningful status
+- clear tap/click affordance
+- consistent spacing
+- good mobile layout
+
+If the statuses are currently static placeholders, prepare a clean structure so they can later be driven by real learning data.
+
+Do not expose technical placeholder language to users.
+
+CHECK 4 — Admin placement
+
+Admin should not compete with the learner experience.
+
+Review the current admin pill in the header.
+
+If it feels too prominent, move it into:
+- profile menu
+or
+- a small secondary admin-only control
+
+Admin must remain:
+- hidden from non-admin users
+- accessible only to users with role admin or administrator
+- protected by role check
+
+During development, authenticator/2FA remains paused.
+
+Keep the comment:
+TODO: Re-enable authenticator/2FA for admin before production.
+
+CHECK 5 — Free, paid, admin, and logged-out states
+
+Verify the frontend experience for:
+
+Logged-out:
+- cannot access Today page
+- redirected to login where appropriate
+
+Free user:
+- sees Today’s Echo
+- can start limited daily practice
+- sees upgrade prompt only when relevant
+- does not see admin
+
+Paid user:
+- sees full Today’s Echo
+- no unnecessary locked states
+- does not see admin unless also admin
+
+Admin:
+- sees normal learner dashboard
+- has discreet access to admin
+- does not need authenticator during development
+- still requires admin role
+
+CHECK 6 — Mobile-first review
+
+Review the Today page on mobile widths.
+
+Ensure:
+- Today’s Echo appears near the top
+- CTA is easy to tap
+- no tiny controls
+- bottom navigation does not cover content
+- practice cards stack cleanly
+- text does not feel cramped
+- motifs do not clutter the small screen
+- no hover-only interactions are required
+
+CHECK 7 — Copy polish
+
+Review English and Swedish copy.
+
+Keep it warm, simple, and product-specific.
+
+Prefer:
+- Today’s Echo
+- Start today’s practice
+- Resume today’s practice
+- Today’s focus
+- Built from your level and recent practice
+- Practice areas
+- Review saved words
+- Improve pronunciation
+
+Avoid:
+- Dashboard
+- Modules
+- Overview
+- Generic feature language
+- Technical subscription/admin wording in learner UI
+
+CHECK 8 — Accessibility and polish
+
+Check:
+- color contrast
+- focus states
+- keyboard navigation
+- button labels
+- aria labels for custom motif-only controls
+- reduced motion preference if animations exist
+- readable text over gradients/watermarks
+
+EXPECTED RESULT
+After this pass:
+- Today’s Echo remains the clear primary action
+- the motif system feels coherent and restrained
+- admin access is discreet and role-gated
+- free/paid/admin states are clear
+- mobile view feels app-like
+- the page feels polished rather than over-designed
+- typecheck/tests pass
