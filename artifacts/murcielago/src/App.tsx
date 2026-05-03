@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { ClerkProvider } from "@clerk/react";
+import { ClerkProvider, AuthenticateWithRedirectCallback } from "@clerk/react";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ProgressProvider } from "@/contexts/ProgressContext";
@@ -63,7 +63,15 @@ const AppRoutes = () => (
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
-      <Route path="/sso-callback" element={<Navigate to="/dashboard" replace />} />
+      <Route
+        path="/sso-callback"
+        element={
+          <AuthenticateWithRedirectCallback
+            signInFallbackRedirectUrl="/dashboard"
+            signUpFallbackRedirectUrl="/dashboard"
+          />
+        }
+      />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/about" element={<StaticPage />} />
       <Route path="/faq" element={<StaticPage />} />
