@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useUser, useClerk, useSignIn, useSignUp } from "@clerk/react";
 type OAuthStrategy = `oauth_${string}`;
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -15,7 +15,6 @@ interface UserProfile {
   placementTestCompleted: boolean;
 }
 
-// Minimal session type for backward compatibility
 interface SessionLike {
   user: { id: string };
   access_token: string;
@@ -24,6 +23,7 @@ interface SessionLike {
 interface ClerkError {
   longMessage?: string;
   message?: string;
+  code?: string;
 }
 
 interface AuthContextType {
@@ -32,12 +32,11 @@ interface AuthContextType {
   user: UserProfile | null;
   session: SessionLike | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<string | null>;
-  register: (email: string, password: string) => Promise<string | null>;
+  sendLoginCode: (email: string) => Promise<string | null>;
+  verifyLoginCode: (code: string) => Promise<string | null>;
+  sendRegisterCode: (email: string, displayName: string) => Promise<string | null>;
+  verifyRegisterCode: (code: string) => Promise<string | null>;
   logout: () => Promise<void>;
-  resetPassword: (email: string) => Promise<string | null>;
-  completeResetPassword: (code: string, password: string) => Promise<string | null>;
-  updatePassword: (password: string) => Promise<string | null>;
   updateProfile: (profile: Partial<UserProfile>) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signInWithApple: () => Promise<void>;
@@ -49,16 +48,28 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   loading: true,
-  login: async () => null,
-  register: async () => null,
+  sendLoginCode: async () => null,
+  verifyLoginCode: async () => null,
+  sendRegisterCode: async () => null,
+  verifyRegisterCode: async () => null,
   logout: async () => {},
-  resetPassword: async () => null,
-  completeResetPassword: async () => null,
-  updatePassword: async () => null,
   updateProfile: async () => {},
   signInWithGoogle: async () => {},
   signInWithApple: async () => {},
 });
+
+function clerkErr(err: unknown, fallback: string): string {
+  if (err && typeof err === "object" && "errors" in err) {
+    const e = err as { errors: ClerkError[] };
+    return e.errors?.[0]?.longMessage ?? e.errors?.[0]?.message ?? fallback;
+  }
+  return err instanceof Error ? err.message : fallback;
+}
+
+function resultErr(error: unknown, fallback: string): string {
+  const e = error as ClerkError | undefined;
+  return e?.longMessage ?? e?.message ?? fallback;
+}
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { user: clerkUser, isLoaded } = useUser();
@@ -70,7 +81,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profileLoading, setProfileLoading] = useState(false);
   const { setProfileLang } = useLanguage();
 
-  // Create a session-like object for backward compatibility
   const session: SessionLike | null = clerkUser
     ? { user: { id: clerkUser.id }, access_token: "clerk" }
     : null;
@@ -140,58 +150,82 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setProfile(null);
       setIsAdmin(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, clerkUser?.id]);
 
-  const login = async (email: string, password: string): Promise<string | null> => {
+  // ─── Email-code login ─────────────────────────────────────────────────────
+  // The Clerk instance is configured passwordless: the only first factor is
+  // `email_code`. signIn.emailCode.sendCode dispatches a 6-digit code to the
+  // address; verifyCode redeems it and signIn.finalize() activates the
+  // session. Both calls return `{ error }` on a recoverable failure (bad
+  // email, expired code, etc.) and throw on transport errors — handle both.
+
+  const sendLoginCode = async (email: string): Promise<string | null> => {
     if (!signIn) return "Sign-in not available";
     try {
-      // v6 future API: `signIn.password({ identifier, password })` does the
-      // full first-factor verification in one call. The earlier `create()` +
-      // status-check pattern was leaving the sign-in in a `needs_first_factor`
-      // state, so users always saw "Login failed" even with valid credentials.
-      const { error } = await signIn.password({ identifier: email, password } as Parameters<typeof signIn.password>[0]);
-      if (error) {
-        return (error as ClerkError).longMessage ?? (error as ClerkError).message ?? "Invalid email or password";
-      }
+      const trimmed = email.trim();
+      if (!trimmed) return "Please enter your email address.";
+      const { error } = await signIn.emailCode.sendCode({ emailAddress: trimmed });
+      if (error) return resultErr(error, "Could not send code");
+      return null;
+    } catch (err) {
+      return clerkErr(err, "Could not send code");
+    }
+  };
+
+  const verifyLoginCode = async (code: string): Promise<string | null> => {
+    if (!signIn) return "Sign-in not available";
+    try {
+      const trimmed = code.trim();
+      if (!trimmed) return "Please enter the code from your email.";
+      const { error } = await signIn.emailCode.verifyCode({ code: trimmed });
+      if (error) return resultErr(error, "Invalid or expired code");
       if (signIn.status === "complete") {
         await signIn.finalize();
         return null;
       }
-      // Status could be `needs_second_factor` (MFA), etc. Surface a clear msg
-      // rather than a generic "Login failed".
       return signIn.status === "needs_second_factor"
         ? "Two-factor authentication is required for this account."
-        : "Could not complete sign-in. Please try again.";
-    } catch (err: unknown) {
-      if (err && typeof err === "object" && "errors" in err) {
-        const clerkErr = err as { errors: ClerkError[] };
-        return clerkErr.errors?.[0]?.longMessage ?? clerkErr.errors?.[0]?.message ?? "Invalid email or password";
-      }
-      return err instanceof Error ? err.message : "Invalid email or password";
+        : "Could not complete sign-in. Please request a new code.";
+    } catch (err) {
+      return clerkErr(err, "Invalid or expired code");
     }
   };
 
-  const register = async (email: string, password: string): Promise<string | null> => {
+  // ─── Email-code registration ──────────────────────────────────────────────
+
+  const sendRegisterCode = async (email: string, displayName: string): Promise<string | null> => {
     if (!signUp) return "Sign-up not available";
     try {
-      const { error } = await signUp.create({ emailAddress: email, password } as Parameters<typeof signUp.create>[0]);
-      if (error) {
-        return (error as ClerkError).longMessage ?? (error as ClerkError).message ?? "Registration failed";
-      }
-      // v6: finalize if complete, or let email verification proceed
+      const trimmedEmail = email.trim();
+      const trimmedName = displayName.trim();
+      if (!trimmedEmail) return "Please enter your email address.";
+      const createParams: Record<string, unknown> = { emailAddress: trimmedEmail };
+      if (trimmedName) createParams.firstName = trimmedName;
+      const { error } = await signUp.create(createParams as Parameters<typeof signUp.create>[0]);
+      if (error) return resultErr(error, "Registration failed");
+      const { error: sendError } = await signUp.verifications.sendEmailCode();
+      if (sendError) return resultErr(sendError, "Could not send code");
+      return null;
+    } catch (err) {
+      return clerkErr(err, "Registration failed");
+    }
+  };
+
+  const verifyRegisterCode = async (code: string): Promise<string | null> => {
+    if (!signUp) return "Sign-up not available";
+    try {
+      const trimmed = code.trim();
+      if (!trimmed) return "Please enter the code from your email.";
+      const { error } = await signUp.verifications.verifyEmailCode({ code: trimmed });
+      if (error) return resultErr(error, "Invalid or expired code");
       if (signUp.status === "complete") {
         await signUp.finalize();
         return null;
       }
-      // missing_requirements = email verification needed — not an error
-      if (signUp.status === "missing_requirements") return null;
-      return "Registration failed";
-    } catch (err: unknown) {
-      if (err && typeof err === "object" && "errors" in err) {
-        const clerkErr = err as { errors: ClerkError[] };
-        return clerkErr.errors?.[0]?.longMessage ?? "Registration failed";
-      }
-      return err instanceof Error ? err.message : "Registration failed";
+      return "Could not complete sign-up. Please request a new code.";
+    } catch (err) {
+      return clerkErr(err, "Invalid or expired code");
     }
   };
 
@@ -199,66 +233,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await signOut();
     setProfile(null);
     setProfileLang?.(null);
-  };
-
-  const resetPassword = async (email: string): Promise<string | null> => {
-    if (!signIn) return "Sign-in not available";
-    try {
-      const { error } = await signIn.create({
-        strategy: "reset_password_email_code",
-        identifier: email,
-      } as unknown as Parameters<typeof signIn.create>[0]);
-      if (error) {
-        return (error as ClerkError).longMessage ?? (error as ClerkError).message ?? "Reset failed";
-      }
-      return null;
-    } catch (err: unknown) {
-      if (err && typeof err === "object" && "errors" in err) {
-        const clerkErr = err as { errors: ClerkError[] };
-        return clerkErr.errors?.[0]?.longMessage ?? "Reset failed";
-      }
-      return err instanceof Error ? err.message : "Reset failed";
-    }
-  };
-
-  const completeResetPassword = async (code: string, password: string): Promise<string | null> => {
-    if (!signIn) return "Sign-in not available";
-    try {
-      const { error } = await (signIn as unknown as {
-        attemptFirstFactor: (params: { strategy: string; code: string; password: string }) => Promise<{ error?: unknown }>;
-      }).attemptFirstFactor({
-        strategy: "reset_password_email_code",
-        code,
-        password,
-      });
-      if (error) {
-        return (error as ClerkError).longMessage ?? (error as ClerkError).message ?? "Reset failed";
-      }
-      if (signIn.status === "complete") {
-        await signIn.finalize();
-      }
-      return null;
-    } catch (err: unknown) {
-      if (err && typeof err === "object" && "errors" in err) {
-        const clerkErr = err as { errors: ClerkError[] };
-        return clerkErr.errors?.[0]?.longMessage ?? "Reset failed";
-      }
-      return err instanceof Error ? err.message : "Reset failed";
-    }
-  };
-
-  const updatePassword = async (_password: string): Promise<string | null> => {
-    if (!clerkUser) return "Not authenticated";
-    try {
-      await clerkUser.updatePassword({ newPassword: _password });
-      return null;
-    } catch (err: unknown) {
-      if (err && typeof err === "object" && "errors" in err) {
-        const clerkErr = err as { errors: ClerkError[] };
-        return clerkErr.errors?.[0]?.longMessage ?? "Update failed";
-      }
-      return err instanceof Error ? err.message : "Update failed";
-    }
   };
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
@@ -274,8 +248,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (updates.onboardingCompleted !== undefined) dbUpdates.onboardingCompleted = updates.onboardingCompleted;
     if (updates.placementTestCompleted !== undefined) dbUpdates.placementTestCompleted = updates.placementTestCompleted;
 
-    // Let errors propagate so callers can show user-visible feedback when
-    // persistence fails. Callers that don't care can wrap in try/catch.
     await api.profile.upsert(dbUpdates);
   };
 
@@ -306,12 +278,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         user: profile,
         session,
         loading,
-        login,
-        register,
+        sendLoginCode,
+        verifyLoginCode,
+        sendRegisterCode,
+        verifyRegisterCode,
         logout,
-        resetPassword,
-        completeResetPassword,
-        updatePassword,
         updateProfile,
         signInWithGoogle,
         signInWithApple,

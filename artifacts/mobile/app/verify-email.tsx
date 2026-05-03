@@ -9,7 +9,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  TouchableOpacity,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -25,10 +24,14 @@ const RESEND_COOLDOWN_SECONDS = 30;
 export default function VerifyEmailScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{ email?: string }>();
+  const params = useLocalSearchParams<{ email?: string; mode?: string }>();
   const router = useRouter();
-  const { verifyEmail, resendVerificationCode } = useAuth();
+  const { verifyLoginCode, verifyRegisterCode, resendCode } = useAuth();
   const { isSignedIn, isLoaded } = useClerkAuth();
+
+  // Default to register so legacy deep links (no `mode` param) keep landing
+  // on the existing signup-confirmation behaviour.
+  const mode: "login" | "register" = params.mode === "login" ? "login" : "register";
 
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -44,7 +47,7 @@ export default function VerifyEmailScreen() {
   }, [cooldown]);
 
   if (isLoaded && isSignedIn) {
-    return <Redirect href="/(tabs)" />;
+    return <Redirect href={mode === "register" ? "/welcome" : "/(tabs)"} />;
   }
 
   const handleVerify = async () => {
@@ -55,14 +58,17 @@ export default function VerifyEmailScreen() {
     setError(null);
     setInfo(null);
     setLoading(true);
-    const err = await verifyEmail(code.trim());
+    const err = mode === "login"
+      ? await verifyLoginCode(code.trim())
+      : await verifyRegisterCode(code.trim());
     setLoading(false);
     if (err) {
       setError(err);
-    } else {
-      // Land brand-new accounts on the welcome / first-session intro instead
-      // of dropping them straight onto the dashboard.
+    } else if (mode === "register") {
+      // Brand-new accounts land on the welcome screen instead of the dashboard.
       router.replace("/welcome");
+    } else {
+      router.replace("/(tabs)");
     }
   };
 
@@ -71,7 +77,7 @@ export default function VerifyEmailScreen() {
     setError(null);
     setInfo(null);
     setResending(true);
-    const err = await resendVerificationCode();
+    const err = await resendCode(mode);
     setResending(false);
     if (err) {
       setError(err);
@@ -102,7 +108,7 @@ export default function VerifyEmailScreen() {
             <Feather name="mail" size={28} color={colors.primaryForeground} />
           </View>
           <Typography variant="h2" center style={{ marginTop: 14 }}>
-            Verify your email
+            {mode === "login" ? "Check your email" : "Verify your email"}
           </Typography>
           <Typography variant="body" muted center style={{ marginTop: 6, paddingHorizontal: 12 }}>
             We sent a 6-digit code to{params.email ? "" : " your email"}
@@ -125,7 +131,11 @@ export default function VerifyEmailScreen() {
           />
 
           <AppButton
-            title={loading ? "Verifying…" : "Verify email"}
+            title={
+              loading
+                ? mode === "login" ? "Signing in…" : "Verifying…"
+                : mode === "login" ? "Sign in" : "Verify email"
+            }
             onPress={handleVerify}
             loading={loading}
             disabled={loading || code.trim().length === 0}

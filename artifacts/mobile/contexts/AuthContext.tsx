@@ -25,12 +25,11 @@ interface AuthContextType {
   user: UserProfile | null;
   userId: string | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<string | null>;
-  register: (email: string, password: string, displayName: string) => Promise<string | null>;
-  verifyEmail: (code: string) => Promise<string | null>;
-  resendVerificationCode: () => Promise<string | null>;
-  resetPassword: (email: string) => Promise<string | null>;
-  completeResetPassword: (code: string, password: string, email?: string) => Promise<string | null>;
+  sendLoginCode: (email: string) => Promise<string | null>;
+  verifyLoginCode: (code: string) => Promise<string | null>;
+  sendRegisterCode: (email: string, displayName: string) => Promise<string | null>;
+  verifyRegisterCode: (code: string) => Promise<string | null>;
+  resendCode: (mode: "login" | "register") => Promise<string | null>;
   signInWithGoogle: () => Promise<string | null>;
   signInWithApple: () => Promise<string | null>;
   logout: () => Promise<void>;
@@ -43,12 +42,11 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   userId: null,
   loading: true,
-  login: async () => null,
-  register: async () => null,
-  verifyEmail: async () => null,
-  resendVerificationCode: async () => null,
-  resetPassword: async () => null,
-  completeResetPassword: async () => null,
+  sendLoginCode: async () => null,
+  verifyLoginCode: async () => null,
+  sendRegisterCode: async () => null,
+  verifyRegisterCode: async () => null,
+  resendCode: async () => null,
   signInWithGoogle: async () => null,
   signInWithApple: async () => null,
   logout: async () => {},
@@ -74,6 +72,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
+  // Remember the most recent passwordless flow inputs so a "resend code"
+  // press can re-prepare the appropriate first-factor / verification.
+  const [lastLoginEmail, setLastLoginEmail] = useState<string | null>(null);
+  const [lastRegisterEmail, setLastRegisterEmail] = useState<string | null>(null);
+  const [lastRegisterName, setLastRegisterName] = useState<string>("");
 
   const isLoaded = signInLoaded && signUpLoaded && sessionLoaded && userLoaded;
 
@@ -92,18 +95,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!isLoaded) return;
     if (session && clerkUser) {
       loadProfile();
-      // Identify the RevenueCat customer with the Clerk userId BEFORE any
-      // purchase / restore / offerings call can run. Critical: the
-      // server-side RC webhook trusts `app_user_id` as the internal
-      // userId, so it must always be the Clerk id (never anonymous).
       void rcIdentify(clerkUser.id);
     } else {
       setProfile(null);
       setIsAdmin(false);
-      // Make sure RC is reachable for an anonymous paywall view (e.g.
-      // pricing screen before signup) but do not carry over a previous
-      // user's identity. logoutUser() is a no-op when uninitialised /
-      // already anonymous.
       void initRevenueCat(null);
       void rcLogout();
     }
@@ -166,119 +161,100 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function login(email: string, password: string): Promise<string | null> {
+  // ─── Email-code login ────────────────────────────────────────────────────
+  // The Clerk instance is configured passwordless: `email_code` is the only
+  // first-factor strategy. We dispatch the code via signIn.create and redeem
+  // it via attemptFirstFactor before activating the session.
+
+  async function sendLoginCode(email: string): Promise<string | null> {
+    if (!signIn) return "Sign-in not available";
+    try {
+      const trimmed = email.trim();
+      if (!trimmed) return "Please enter your email address.";
+      const attempt = await signIn.create({ identifier: trimmed });
+      // Pick the email_code factor from the supported list — the strategy
+      // factor's `emailAddressId` is required by attemptFirstFactor on most
+      // Clerk instances, even though our config exposes only one factor.
+      const emailFactor = attempt.supportedFirstFactors?.find(
+        (f: { strategy: string }) => f.strategy === "email_code",
+      ) as { emailAddressId?: string } | undefined;
+      await signIn.prepareFirstFactor({
+        strategy: "email_code",
+        emailAddressId: emailFactor?.emailAddressId ?? "",
+      });
+      setLastLoginEmail(trimmed);
+      return null;
+    } catch (err) {
+      return clerkErrorMessage(err, "Could not send code");
+    }
+  }
+
+  async function verifyLoginCode(code: string): Promise<string | null> {
     if (!signIn || !setActiveSignIn) return "Sign-in not available";
     try {
-      const result = await signIn.create({ identifier: email, password });
+      const trimmed = code.trim();
+      if (!trimmed) return "Please enter the code from your email.";
+      const result = await signIn.attemptFirstFactor({ strategy: "email_code", code: trimmed });
       if (result.status === "complete") {
         await setActiveSignIn({ session: result.createdSessionId });
         return null;
       }
-      return "Login failed. Please check your credentials.";
-    } catch (err: unknown) {
-      return clerkErrorMessage(err, "Login failed");
+      return result.status === "needs_second_factor"
+        ? "Two-factor authentication is required for this account."
+        : "Could not complete sign-in. Please request a new code.";
+    } catch (err) {
+      return clerkErrorMessage(err, "Invalid or expired code");
     }
   }
 
-  async function register(email: string, password: string, displayName: string): Promise<string | null> {
+  // ─── Email-code registration ─────────────────────────────────────────────
+
+  async function sendRegisterCode(email: string, displayName: string): Promise<string | null> {
     if (!signUp) return "Sign-up not available";
     try {
+      const trimmedEmail = email.trim();
       const trimmedName = displayName.trim();
+      if (!trimmedEmail) return "Please enter your email address.";
       await signUp.create({
-        emailAddress: email,
-        password,
+        emailAddress: trimmedEmail,
         ...(trimmedName ? { firstName: trimmedName } : {}),
       });
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      setLastRegisterEmail(trimmedEmail);
+      setLastRegisterName(trimmedName);
       return null;
-    } catch (err: unknown) {
+    } catch (err) {
       return clerkErrorMessage(err, "Registration failed");
     }
   }
 
-  async function verifyEmail(code: string): Promise<string | null> {
+  async function verifyRegisterCode(code: string): Promise<string | null> {
     if (!signUp || !setActiveSignUp) return "Sign-up not available";
     try {
-      const result = await signUp.attemptEmailAddressVerification({ code });
+      const trimmed = code.trim();
+      if (!trimmed) return "Please enter the code from your email.";
+      const result = await signUp.attemptEmailAddressVerification({ code: trimmed });
       if (result.status === "complete") {
         await setActiveSignUp({ session: result.createdSessionId });
         return null;
       }
-      return "Verification incomplete. Please try again.";
-    } catch (err: unknown) {
-      return clerkErrorMessage(err, "Verification failed");
+      return "Could not complete sign-up. Please request a new code.";
+    } catch (err) {
+      return clerkErrorMessage(err, "Invalid or expired code");
     }
   }
 
-  async function resendVerificationCode(): Promise<string | null> {
-    if (!signUp) return "Sign-up not available";
-    try {
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-      return null;
-    } catch (err: unknown) {
-      return clerkErrorMessage(err, "Could not resend code");
+  async function resendCode(mode: "login" | "register"): Promise<string | null> {
+    if (mode === "login") {
+      if (!lastLoginEmail) return "Please enter your email and try again.";
+      return sendLoginCode(lastLoginEmail);
     }
-  }
-
-  async function resetPassword(email: string): Promise<string | null> {
-    if (!signIn) return "Sign-in not available";
-    try {
-      await signIn.create({
-        strategy: "reset_password_email_code",
-        identifier: email,
-      });
-      return null;
-    } catch (err: unknown) {
-      return clerkErrorMessage(err, "Could not send reset email");
-    }
-  }
-
-  async function completeResetPassword(code: string, password: string, email?: string): Promise<string | null> {
-    if (!signIn || !setActiveSignIn) return "Sign-in not available";
-
-    async function attempt(): Promise<string | null> {
-      const result = await signIn!.attemptFirstFactor({
-        strategy: "reset_password_email_code",
-        code,
-        password,
-      });
-      if (result.status === "complete") {
-        await setActiveSignIn!({ session: result.createdSessionId });
-        return null;
-      }
-      if (result.status === "needs_new_password") {
-        return "Please enter a new password.";
-      }
-      return "Reset incomplete. Please try again.";
-    }
-
-    try {
-      return await attempt();
-    } catch (err: unknown) {
-      // If the sign-in resource lost its reset_password_email_code factor (e.g. after
-      // app restart, or arriving directly on /reset-password), re-initiate the flow
-      // with the email and try once more before surfacing the error.
-      if (email) {
-        try {
-          await signIn.create({
-            strategy: "reset_password_email_code",
-            identifier: email,
-          });
-          return await attempt();
-        } catch (retryErr: unknown) {
-          return clerkErrorMessage(retryErr, "Password reset failed");
-        }
-      }
-      return clerkErrorMessage(err, "Password reset failed");
-    }
+    if (!lastRegisterEmail) return "Please enter your details and try again.";
+    return sendRegisterCode(lastRegisterEmail, lastRegisterName);
   }
 
   async function startOAuth(strategy: "oauth_google" | "oauth_apple"): Promise<string | null> {
     try {
-      // Explicit redirect URL so Clerk sends the OAuth provider back to a
-      // route that actually exists in our Expo Router tree. On native this
-      // becomes `murcielago://sso-callback`; on web it becomes
-      // `<origin>/sso-callback`.
       const redirectUrl = AuthSession.makeRedirectUri({
         scheme: "murcielago",
         path: "sso-callback",
@@ -292,7 +268,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return null;
       }
       return null;
-    } catch (err: unknown) {
+    } catch (err) {
       return clerkErrorMessage(err, "Sign-in cancelled");
     }
   }
@@ -312,13 +288,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setProfile(null);
       setIsAdmin(false);
-      // Wipe per-user persistence so a second user on the same device cannot
-      // see the previous user's recents, dashboard cache, or exercise drafts.
-      // Runs even if signOut() throws (network error, token expired, etc.).
+      setLastLoginEmail(null);
+      setLastRegisterEmail(null);
+      setLastRegisterName("");
       await clearAllUserData();
-      // Drop the RevenueCat identity too — without this a second user on
-      // the same device would inherit the first user's RC customer and
-      // any active entitlements/purchases would be cross-attributed.
       await rcLogout();
     }
   }
@@ -349,12 +322,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user: profile,
         userId: clerkUser?.id ?? null,
         loading,
-        login,
-        register,
-        verifyEmail,
-        resendVerificationCode,
-        resetPassword,
-        completeResetPassword,
+        sendLoginCode,
+        verifyLoginCode,
+        sendRegisterCode,
+        verifyRegisterCode,
+        resendCode,
         signInWithGoogle,
         signInWithApple,
         logout,

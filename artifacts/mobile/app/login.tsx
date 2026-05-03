@@ -1,16 +1,13 @@
 import { useAuth as useClerkAuth } from "@clerk/clerk-expo";
 import { Redirect, useRouter } from "expo-router";
-import { Feather } from "@expo/vector-icons";
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
-  TextInput,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  TouchableOpacity,
   Image,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -28,11 +25,10 @@ export default function LoginScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { login, signInWithGoogle, signInWithApple } = useAuth();
+  const { sendLoginCode, signInWithGoogle, signInWithApple } = useAuth();
   const { isSignedIn, isLoaded } = useClerkAuth();
 
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [language, setLanguage] = useState<AppLanguage>("sv");
@@ -46,23 +42,23 @@ export default function LoginScreen() {
     setPreferredLanguage(lang);
   };
 
-  const passwordRef = useRef<TextInput>(null);
-
   if (isLoaded && isSignedIn) {
     return <Redirect href="/(tabs)" />;
   }
 
-  const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      setError("Please enter your email and password.");
+  const handleSendCode = async () => {
+    if (!email.trim() || !email.includes("@")) {
+      setError("Please enter a valid email address.");
       return;
     }
     setError(null);
     setLoading(true);
-    const err = await login(email.trim(), password);
+    const err = await sendLoginCode(email.trim());
     setLoading(false);
     if (err) {
       setError(err);
+    } else {
+      router.push({ pathname: "/verify-email", params: { email: email.trim(), mode: "login" } });
     }
   };
 
@@ -115,8 +111,11 @@ export default function LoginScreen() {
         </View>
 
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Typography variant="h3" style={{ marginBottom: 20 }}>
+          <Typography variant="h3" style={{ marginBottom: 6 }}>
             Sign in
+          </Typography>
+          <Typography variant="caption" muted style={{ marginBottom: 18 }}>
+            We&apos;ll email you a one-time code — no password needed.
           </Typography>
 
           <AppTextInput
@@ -126,39 +125,17 @@ export default function LoginScreen() {
             placeholder="your@email.com"
             keyboardType="email-address"
             autoComplete="email"
-            returnKeyType="next"
-            onSubmitEditing={() => passwordRef.current?.focus()}
+            returnKeyType="send"
+            onSubmitEditing={handleSendCode}
+            containerStyle={{ marginBottom: 16 }}
             testID="login-email"
           />
 
-          <AppTextInput
-            ref={passwordRef}
-            label="Password"
-            value={password}
-            onChangeText={setPassword}
-            placeholder="••••••••"
-            isPassword
-            returnKeyType="done"
-            onSubmitEditing={handleLogin}
-            containerStyle={{ marginBottom: 8 }}
-            testID="login-password"
-          />
-
-          <TouchableOpacity
-            onPress={() => router.push("/forgot-password")}
-            style={styles.forgotRow}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Text style={{ color: colors.primary, fontSize: 13, fontFamily: "Inter_500Medium" }}>
-              Forgot password?
-            </Text>
-          </TouchableOpacity>
-
           <AppButton
-            title={loading ? "Signing in…" : "Sign in"}
-            onPress={handleLogin}
+            title={loading ? "Sending…" : "Send code"}
+            onPress={handleSendCode}
             loading={loading}
-            disabled={loading}
+            disabled={loading || !email.trim()}
             size="lg"
             testID="login-submit"
           />
@@ -225,11 +202,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 24,
     borderWidth: 1,
-  },
-  forgotRow: {
-    alignSelf: "flex-end",
-    marginBottom: 16,
-    marginTop: -4,
   },
   dividerRow: {
     flexDirection: "row",

@@ -28,13 +28,11 @@ export default function RegisterScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { register, signInWithGoogle, signInWithApple } = useAuth();
+  const { sendRegisterCode, signInWithGoogle, signInWithApple } = useAuth();
   const { isSignedIn, isLoaded } = useClerkAuth();
 
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [language, setLanguage] = useState<AppLanguage>("sv");
@@ -49,34 +47,27 @@ export default function RegisterScreen() {
   };
 
   const emailRef = useRef<TextInput>(null);
-  const passwordRef = useRef<TextInput>(null);
-  const confirmRef = useRef<TextInput>(null);
 
-  const hasMinLength = password.length >= 8;
-  const hasUppercase = /[A-Z]/.test(password);
-  const hasNumber = /[0-9]/.test(password);
-  const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-  const passwordsMatch = password === confirmPassword && password.length > 0;
   const hasDisplayName = displayName.trim().length >= 2;
-  const isValid = hasDisplayName && hasMinLength && hasUppercase && hasNumber && hasSpecial && passwordsMatch && email.includes("@");
+  const isValid = hasDisplayName && email.includes("@");
 
   if (isLoaded && isSignedIn) {
     return <Redirect href="/(tabs)" />;
   }
 
-  const handleRegister = async () => {
+  const handleSendCode = async () => {
     if (!isValid) {
-      setError("Please complete all fields and meet password requirements.");
+      setError("Please enter your name and a valid email address.");
       return;
     }
     setError(null);
     setLoading(true);
-    const err = await register(email.trim(), password, displayName.trim());
+    const err = await sendRegisterCode(email.trim(), displayName.trim());
     setLoading(false);
     if (err) {
       setError(err);
     } else {
-      router.push({ pathname: "/verify-email", params: { email: email.trim() } });
+      router.push({ pathname: "/verify-email", params: { email: email.trim(), mode: "register" } });
     }
   };
 
@@ -132,12 +123,11 @@ export default function RegisterScreen() {
             Create your account
           </Typography>
           <Typography variant="body" muted center style={{ marginTop: 4 }}>
-            Start learning Spanish today
+            We&apos;ll email you a code to confirm.
           </Typography>
         </View>
 
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-
           <AppTextInput
             label="Display name"
             value={displayName}
@@ -158,47 +148,15 @@ export default function RegisterScreen() {
             placeholder="your@email.com"
             keyboardType="email-address"
             autoComplete="email"
-            returnKeyType="next"
-            onSubmitEditing={() => passwordRef.current?.focus()}
+            returnKeyType="send"
+            onSubmitEditing={handleSendCode}
+            containerStyle={{ marginBottom: 20 }}
             testID="register-email"
           />
 
-          <AppTextInput
-            ref={passwordRef}
-            label="Password"
-            value={password}
-            onChangeText={setPassword}
-            placeholder="••••••••"
-            isPassword
-            returnKeyType="next"
-            onSubmitEditing={() => confirmRef.current?.focus()}
-            testID="register-password"
-          />
-
-          <View style={styles.requirements}>
-            <Requirement met={hasMinLength} text="At least 8 characters" colors={colors} />
-            <Requirement met={hasUppercase} text="One uppercase letter" colors={colors} />
-            <Requirement met={hasNumber} text="One number" colors={colors} />
-            <Requirement met={hasSpecial} text="One special character" colors={colors} />
-          </View>
-
-          <AppTextInput
-            ref={confirmRef}
-            label="Confirm password"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            placeholder="••••••••"
-            isPassword
-            returnKeyType="done"
-            onSubmitEditing={handleRegister}
-            error={confirmPassword.length > 0 && !passwordsMatch ? "Passwords don't match" : undefined}
-            containerStyle={{ marginTop: 12, marginBottom: 20 }}
-            testID="register-confirm-password"
-          />
-
           <AppButton
-            title={loading ? "Creating account…" : "Create account"}
-            onPress={handleRegister}
+            title={loading ? "Sending…" : "Send code"}
+            onPress={handleSendCode}
             loading={loading}
             disabled={loading || !isValid}
             size="lg"
@@ -250,27 +208,6 @@ export default function RegisterScreen() {
   );
 }
 
-function Requirement({ met, text, colors }: { met: boolean; text: string; colors: ReturnType<typeof useColors> }) {
-  return (
-    <View style={styles.requirementRow}>
-      <Feather
-        name={met ? "check-circle" : "circle"}
-        size={14}
-        color={met ? colors.primary : colors.mutedForeground}
-      />
-      <Text
-        style={{
-          fontSize: 13,
-          color: met ? colors.foreground : colors.mutedForeground,
-          fontFamily: "Inter_400Regular",
-        }}
-      >
-        {text}
-      </Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
@@ -294,16 +231,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 22,
     borderWidth: 1,
-  },
-  requirements: {
-    gap: 6,
-    marginTop: -8,
-    marginBottom: 4,
-  },
-  requirementRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
   },
   dividerRow: {
     flexDirection: "row",
