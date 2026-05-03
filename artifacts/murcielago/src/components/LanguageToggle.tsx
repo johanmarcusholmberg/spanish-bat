@@ -1,9 +1,15 @@
 import React from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Globe } from "lucide-react";
+import { Globe, Check } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type Size = "sm" | "md";
-type Variant = "pill" | "minimal";
+type Variant = "pill" | "minimal" | "globe";
 
 interface LanguageToggleProps {
   size?: Size;
@@ -12,9 +18,9 @@ interface LanguageToggleProps {
   variant?: Variant;
 }
 
-const OPTIONS: { code: "sv" | "en"; flag: string; label: string }[] = [
-  { code: "sv", flag: "🇸🇪", label: "SV" },
-  { code: "en", flag: "🇬🇧", label: "EN" },
+const OPTIONS: { code: "sv" | "en"; flag: string; short: string; long: string }[] = [
+  { code: "sv", flag: "🇸🇪", short: "SV", long: "Svenska" },
+  { code: "en", flag: "🇬🇧", short: "EN", long: "English" },
 ];
 
 const LanguageToggle = ({
@@ -25,6 +31,41 @@ const LanguageToggle = ({
 }: LanguageToggleProps) => {
   const { language, setLanguage } = useLanguage();
 
+  if (variant === "globe") {
+    const current = OPTIONS.find((o) => o.code === language) ?? OPTIONS[0];
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          aria-label="Change language"
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${className}`}
+        >
+          <Globe className="h-3.5 w-3.5" aria-hidden />
+          <span>{current.short}</span>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="min-w-[10rem]">
+          {OPTIONS.map(({ code, flag, long }) => {
+            const active = language === code;
+            return (
+              <DropdownMenuItem
+                key={code}
+                onSelect={() => setLanguage(code)}
+                className="gap-2 cursor-pointer"
+              >
+                <span aria-hidden className="text-base">
+                  {flag}
+                </span>
+                <span className="flex-1">{long}</span>
+                {active ? (
+                  <Check className="h-4 w-4 text-peach-dark" aria-hidden />
+                ) : null}
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
   if (variant === "minimal") {
     return (
       <div
@@ -32,7 +73,7 @@ const LanguageToggle = ({
         aria-label="Language"
         className={`inline-flex items-center gap-2 ${className}`}
       >
-        {OPTIONS.map(({ code, label }, i) => {
+        {OPTIONS.map(({ code, short }, i) => {
           const active = language === code;
           return (
             <React.Fragment key={code}>
@@ -51,7 +92,7 @@ const LanguageToggle = ({
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {label}
+                {short}
               </button>
             </React.Fragment>
           );
@@ -73,7 +114,7 @@ const LanguageToggle = ({
       {showIcon && (
         <Globe className={`${isSm ? "h-3.5 w-3.5" : "h-4 w-4"} text-muted-foreground ml-1`} aria-hidden />
       )}
-      {OPTIONS.map(({ code, flag, label }) => {
+      {OPTIONS.map(({ code, flag, short }) => {
         const active = language === code;
         return (
           <button
@@ -92,7 +133,7 @@ const LanguageToggle = ({
             <span aria-hidden className={isSm ? "text-sm" : "text-base"}>
               {flag}
             </span>
-            <span>{label}</span>
+            <span>{short}</span>
           </button>
         );
       })}

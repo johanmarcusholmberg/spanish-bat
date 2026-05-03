@@ -49,7 +49,7 @@ const LoginPage = () => {
           <img src={logo} alt="Murcielingo" className="h-8 w-8" />
           <span className="font-heading font-bold text-lg text-foreground">Murcielingo</span>
         </Link>
-        <LanguageToggle size="sm" variant="minimal" />
+        <LanguageToggle variant="globe" />
       </header>
 
       <div className="flex-1 flex justify-center px-4 pt-8 sm:pt-12 pb-6">

@@ -113,7 +113,7 @@ export default function RegisterScreen() {
             <Typography variant="caption" muted>Back to sign in</Typography>
           </TouchableOpacity>
           <LanguagePicker
-            variant="minimal"
+            variant="globe"
             value={language}
             onChange={handleLanguageChange}
             testID="register-language-picker"

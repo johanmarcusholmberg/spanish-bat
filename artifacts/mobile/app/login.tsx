@@ -91,7 +91,7 @@ export default function LoginScreen() {
       >
         <View style={{ alignItems: "flex-end", marginBottom: 8 }}>
           <LanguagePicker
-            variant="minimal"
+            variant="globe"
             value={language}
             onChange={handleLanguageChange}
             testID="login-language-picker"
