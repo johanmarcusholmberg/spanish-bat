@@ -5,7 +5,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import Footer from "@/components/Footer";
 import LanguageToggle from "@/components/LanguageToggle";
 import logo from "@/assets/murcielago-logo.png";
-import { Sun, Moon, LogOut, Shield, Sparkles, Dumbbell, Library, TrendingUp, User } from "lucide-react";
+import { Sun, Moon, LogOut, Shield, User } from "lucide-react";
+import {
+  EchoRingsMotif,
+  WaveformMotif,
+  PhraseBubbleMotif,
+  PathDotsMotif,
+} from "@/components/EchoMotifs";
 import type { LanguageCode } from "@/i18n/languages";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
@@ -38,13 +44,17 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
     navigate("/");
   };
 
+  // Learner navigation only — Admin is intentionally NOT here so the
+  // primary nav stays focused on the daily learning ritual. Admin has
+  // its own header pill (admin-role-gated) and its own route guard.
+  //
+  // TODO: Re-enable authenticator/2FA for admin before production.
   const navItems = [
-    { to: "/dashboard", icon: Sparkles, label: t("navToday") },
-    { to: "/practice", icon: Dumbbell, label: t("navPractice") },
-    { to: "/library", icon: Library, label: t("navLibrary") },
-    { to: "/stats", icon: TrendingUp, label: t("navProgress") },
-    { to: "/profile", icon: User, label: t("profile") },
-    ...(isAdmin ? [{ to: "/admin", icon: Shield, label: t("adminPanel") }] : []),
+    { to: "/dashboard", motif: EchoRingsMotif, label: t("navToday") },
+    { to: "/practice", motif: WaveformMotif, label: t("navPractice") },
+    { to: "/library", motif: PhraseBubbleMotif, label: t("navLibrary") },
+    { to: "/stats", motif: PathDotsMotif, label: t("navProgress") },
+    { to: "/profile", motif: null as null | typeof EchoRingsMotif, label: t("profile") },
   ];
 
   return (
@@ -55,7 +65,26 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
           <img src={logo} alt="Murciélingo Logo" className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(255,181,167,0.6)]" />
           <span className="font-heading font-bold text-foreground text-lg tracking-tight">Murciélingo</span>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Admin entry — surfaced separately from the learner nav and
+              gated by role. Visually muted so it never competes with
+              the daily learner experience. */}
+          {isAdmin && (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                `hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ring-1 ring-inset transition ${
+                  isActive
+                    ? "bg-foreground text-background ring-foreground"
+                    : "bg-muted text-muted-foreground ring-border hover:text-foreground hover:ring-foreground/40"
+                }`
+              }
+              aria-label={t("adminPanel")}
+            >
+              <Shield className="h-3 w-3" />
+              {t("adminPanel")}
+            </NavLink>
+          )}
           <LanguageToggle variant="globe" onChange={handleLanguageChange} />
           <button
             onClick={() => setDark(!dark)}
@@ -66,7 +95,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
           </button>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition text-sm"
+            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition text-sm px-1.5"
           >
             <LogOut className="h-4 w-4" />
             <span className="hidden sm:inline">{t("logout")}</span>
@@ -74,27 +103,34 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
       </header>
 
-      {/* Desktop Navigation */}
+      {/* Desktop Navigation — learner-only, no admin tile competing here. */}
       <nav className="hidden md:block bg-card border-b border-border px-4">
         <div className="max-w-4xl mx-auto flex gap-1">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `flex items-center gap-2 px-4 py-3 text-sm font-medium transition border-b-2 ${
-                  isActive
-                    ? "border-primary text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted"
-                }`
-              }
-            >
-              <item.icon className="h-4 w-4" />
-              {item.to === "/profile" && user?.level
-                ? `${item.label} – ${t("levelLabel")}: ${user.level}`
-                : item.label}
-            </NavLink>
-          ))}
+          {navItems.map((item) => {
+            const Motif = item.motif;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `flex items-center gap-2 px-4 py-3 text-sm font-medium transition border-b-2 ${
+                    isActive
+                      ? "border-primary text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted"
+                  }`
+                }
+              >
+                {Motif ? (
+                  <Motif className="h-4 w-4" />
+                ) : (
+                  <User className="h-4 w-4" />
+                )}
+                {item.to === "/profile" && user?.level
+                  ? `${item.label} · ${user.level}`
+                  : item.label}
+              </NavLink>
+            );
+          })}
         </div>
       </nav>
 
@@ -105,25 +141,32 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
 
       <Footer />
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-1 z-50">
+      {/* Mobile Bottom Navigation — learner-only, larger tap targets. */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur border-t border-border px-1.5 py-1 z-50">
         <div className="flex justify-around">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `flex flex-col items-center gap-0.5 px-3 py-2 text-[10px] font-medium transition rounded-lg ${
-                  isActive
-                    ? "text-primary"
-                    : "text-muted-foreground"
-                }`
-              }
-            >
-              <item.icon className="h-5 w-5" />
-              <span>{item.to === "/profile" && user?.level ? user.level : item.label}</span>
-            </NavLink>
-          ))}
+          {navItems.map((item) => {
+            const Motif = item.motif;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `flex flex-col items-center gap-0.5 px-3 py-2 min-w-[56px] text-[10px] font-medium transition rounded-lg ${
+                    isActive
+                      ? "text-primary"
+                      : "text-muted-foreground"
+                  }`
+                }
+              >
+                {Motif ? (
+                  <Motif className="h-6 w-6" />
+                ) : (
+                  <User className="h-6 w-6" />
+                )}
+                <span>{item.to === "/profile" && user?.level ? user.level : item.label}</span>
+              </NavLink>
+            );
+          })}
         </div>
       </nav>
     </div>

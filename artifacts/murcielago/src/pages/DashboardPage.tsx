@@ -58,18 +58,18 @@ const DashboardPage = () => {
 
   return (
     <AppLayout>
-      <div className="animate-fade-in space-y-6 max-w-3xl mx-auto">
-        {/* Friendly greeting — kept compact so the hero card leads. */}
+      <div className="animate-fade-in space-y-7 max-w-3xl mx-auto">
+        {/* Friendly greeting — kept compact so Today's Echo leads. */}
         <div className="flex items-center gap-3">
           <MurciMascot size="sm" mood="happy" />
           <div className="min-w-0">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               {t("welcomeBack")} {user?.displayName}
             </p>
-            <p className="text-sm text-foreground/80">
+            <p className="font-heading text-[15px] text-foreground/85 leading-tight mt-0.5">
               {lang === "sv"
-                ? "Här är vad du ska öva idag."
-                : "Here's what to practice today."}
+                ? "Låt oss eka dagens spanska."
+                : "Let's echo today's Spanish."}
             </p>
           </div>
         </div>

@@ -6,47 +6,51 @@
 
 @layer base {
   :root {
-    /* 60% - Sand beige (background) */
-    --background: 42 33% 85%;
-    --foreground: 20 15% 20%;
+    /* Soft warm ivory base — calmer than the old beige block. */
+    --background: 36 38% 95%;
+    --foreground: 22 24% 16%;
 
-    /* Cards/surfaces use slightly lighter beige */
-    --card: 42 30% 92%;
-    --card-foreground: 20 15% 20%;
+    /* Cards sit a touch brighter than the page so they breathe. */
+    --card: 36 45% 98%;
+    --card-foreground: 22 24% 16%;
 
-    --popover: 42 30% 92%;
-    --popover-foreground: 20 15% 20%;
+    --popover: 36 45% 98%;
+    --popover-foreground: 22 24% 16%;
 
-    /* 10% - Peach/Coral (primary accent) */
-    --primary: 14 91% 78%;
-    --primary-foreground: 20 30% 15%;
+    /* Coral primary — warmer, more saturated for confident CTAs. */
+    --primary: 12 78% 64%;
+    --primary-foreground: 36 50% 98%;
 
-    /* 30% - Mint green (secondary) */
-    --secondary: 131 8% 70%;
-    --secondary-foreground: 20 15% 15%;
+    /* Muted clay-mint as a secondary surface. */
+    --secondary: 30 18% 88%;
+    --secondary-foreground: 22 24% 18%;
 
-    --muted: 42 20% 80%;
-    --muted-foreground: 20 10% 45%;
+    --muted: 34 22% 91%;
+    --muted-foreground: 22 12% 42%;
 
-    --accent: 14 91% 78%;
-    --accent-foreground: 20 30% 15%;
+    --accent: 18 70% 88%;
+    --accent-foreground: 18 35% 22%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 42 20% 75%;
-    --input: 42 20% 78%;
-    --ring: 14 91% 78%;
+    --border: 32 22% 86%;
+    --input: 32 22% 88%;
+    --ring: 12 78% 64%;
 
-    --radius: 0.75rem;
+    --radius: 0.9rem;
 
-    /* Custom tokens */
-    --peach: 14 91% 78%;
-    --sand: 42 33% 85%;
-    --mint: 131 8% 70%;
-    --mint-dark: 131 12% 55%;
-    --peach-dark: 14 80% 65%;
-    --peach-light: 14 95% 90%;
+    /* Murciélingo identity tokens */
+    --peach: 14 88% 78%;
+    --sand: 36 38% 95%;
+    --mint: 158 22% 70%;
+    --mint-dark: 158 22% 42%;
+    --peach-dark: 12 78% 64%;
+    --peach-light: 18 88% 92%;
+    --clay: 14 55% 52%;
+    --clay-soft: 18 55% 80%;
+    --ink: 22 28% 14%;
+    --ivory: 36 50% 98%;
 
     --sidebar-background: 131 8% 70%;
     --sidebar-foreground: 20 15% 15%;
@@ -121,15 +125,38 @@
 
 @layer utilities {
   .gradient-peach {
-    background: linear-gradient(135deg, hsl(14, 91%, 78%), hsl(14, 80%, 68%));
+    background: linear-gradient(135deg, hsl(14, 88%, 78%), hsl(12, 78%, 64%));
   }
   .gradient-mint {
-    background: linear-gradient(135deg, hsl(131, 8%, 70%), hsl(131, 12%, 60%));
+    background: linear-gradient(135deg, hsl(158, 22%, 70%), hsl(158, 22%, 50%));
+  }
+  .gradient-ivory {
+    background:
+      radial-gradient(120% 80% at 0% 0%, hsl(18 88% 92% / 0.55), transparent 55%),
+      radial-gradient(100% 60% at 100% 100%, hsl(36 50% 98%), hsl(36 38% 95%));
   }
   .shadow-warm {
-    box-shadow: 0 4px 20px -4px hsl(14 91% 78% / 0.3);
+    box-shadow: 0 8px 28px -10px hsl(12 78% 64% / 0.35);
   }
   .shadow-soft {
-    box-shadow: 0 4px 20px -4px hsl(42 33% 85% / 0.5);
+    box-shadow: 0 6px 24px -10px hsl(22 24% 16% / 0.10);
+  }
+  /* Subtle echo-ring backdrop — used as a watermark on hero sections.
+     Pure CSS (no extra assets) so it stays cheap on mobile. */
+  .echo-rings-bg {
+    background-image:
+      radial-gradient(circle at 100% 0%, hsl(12 78% 64% / 0.12) 0 1px, transparent 1.5px),
+      radial-gradient(circle at 100% 0%, transparent 0 38px, hsl(12 78% 64% / 0.10) 39px 40px, transparent 41px),
+      radial-gradient(circle at 100% 0%, transparent 0 78px, hsl(12 78% 64% / 0.07) 79px 80px, transparent 81px),
+      radial-gradient(circle at 100% 0%, transparent 0 118px, hsl(12 78% 64% / 0.05) 119px 120px, transparent 121px);
+  }
+  .text-clay {
+    color: hsl(var(--clay));
+  }
+  .bg-clay {
+    background-color: hsl(var(--clay));
+  }
+  .bg-clay-soft {
+    background-color: hsl(var(--clay-soft));
   }
 }
