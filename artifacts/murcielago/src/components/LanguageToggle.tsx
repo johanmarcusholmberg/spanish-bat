@@ -5,8 +5,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { LanguageCode } from "@/i18n/languages";
 
 type Size = "sm" | "md";
 type Variant = "pill" | "minimal" | "globe";
@@ -16,45 +19,64 @@ interface LanguageToggleProps {
   showIcon?: boolean;
   className?: string;
   variant?: Variant;
+  /** Optional handler called after the language changes (e.g. to sync to profile). */
+  onChange?: (code: LanguageCode) => void;
+  /** Whether to show the short language code next to the globe icon. */
+  showCode?: boolean;
 }
 
-const OPTIONS: { code: "sv" | "en"; flag: string; short: string; long: string }[] = [
-  { code: "sv", flag: "🇸🇪", short: "SV", long: "Svenska" },
-  { code: "en", flag: "🇬🇧", short: "EN", long: "English" },
-];
+const shortCode = (code: string) => code.toUpperCase();
 
 const LanguageToggle = ({
   size = "md",
   showIcon = true,
   className = "",
   variant = "pill",
+  onChange,
+  showCode = true,
 }: LanguageToggleProps) => {
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, availableLanguages, t } = useLanguage();
+
+  const handleSelect = (code: LanguageCode) => {
+    setLanguage(code);
+    onChange?.(code);
+  };
 
   if (variant === "globe") {
-    const current = OPTIONS.find((o) => o.code === language) ?? OPTIONS[0];
+    const current =
+      availableLanguages.find((o) => o.code === language) ?? availableLanguages[0];
+    const triggerLabel = t("appLanguage") || "Language";
     return (
       <DropdownMenu>
         <DropdownMenuTrigger
-          aria-label="Change language"
-          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${className}`}
+          aria-label={triggerLabel}
+          title={triggerLabel}
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${className}`}
         >
-          <Globe className="h-3.5 w-3.5" aria-hidden />
-          <span>{current.short}</span>
+          <Globe className="h-4 w-4" aria-hidden />
+          {showCode && current ? <span>{shortCode(current.code)}</span> : null}
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="min-w-[10rem]">
-          {OPTIONS.map(({ code, flag, long }) => {
+        <DropdownMenuContent align="end" className="min-w-[12rem]">
+          <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+            {t("chooseLanguage") || "Choose language"}
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {availableLanguages.map(({ code, flag, nativeLabel }) => {
             const active = language === code;
             return (
               <DropdownMenuItem
                 key={code}
-                onSelect={() => setLanguage(code)}
+                onSelect={() => handleSelect(code)}
                 className="gap-2 cursor-pointer"
+                aria-checked={active}
+                role="menuitemradio"
               >
-                <span aria-hidden className="text-base">
-                  {flag}
-                </span>
-                <span className="flex-1">{long}</span>
+                {flag ? (
+                  <span aria-hidden className="text-base">
+                    {flag}
+                  </span>
+                ) : null}
+                <span className="flex-1">{nativeLabel}</span>
                 {active ? (
                   <Check className="h-4 w-4 text-peach-dark" aria-hidden />
                 ) : null}
@@ -70,10 +92,10 @@ const LanguageToggle = ({
     return (
       <div
         role="radiogroup"
-        aria-label="Language"
+        aria-label={t("appLanguage") || "Language"}
         className={`inline-flex items-center gap-2 ${className}`}
       >
-        {OPTIONS.map(({ code, short }, i) => {
+        {availableLanguages.map(({ code, nativeLabel }, i) => {
           const active = language === code;
           return (
             <React.Fragment key={code}>
@@ -84,15 +106,15 @@ const LanguageToggle = ({
                 type="button"
                 role="radio"
                 aria-checked={active}
-                aria-label={code === "sv" ? "Svenska" : "English"}
-                onClick={() => setLanguage(code)}
+                aria-label={nativeLabel}
+                onClick={() => handleSelect(code)}
                 className={`text-xs tracking-wide font-${active ? "bold" : "medium"} transition-colors ${
                   active
                     ? "text-peach-dark"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {short}
+                {shortCode(code)}
               </button>
             </React.Fragment>
           );
@@ -108,13 +130,13 @@ const LanguageToggle = ({
   return (
     <div
       role="radiogroup"
-      aria-label="Language"
+      aria-label={t("appLanguage") || "Language"}
       className={`inline-flex items-center bg-card border border-border rounded-full shadow-sm ${wrapPad} ${className}`}
     >
       {showIcon && (
         <Globe className={`${isSm ? "h-3.5 w-3.5" : "h-4 w-4"} text-muted-foreground ml-1`} aria-hidden />
       )}
-      {OPTIONS.map(({ code, flag, short }) => {
+      {availableLanguages.map(({ code, flag, nativeLabel }) => {
         const active = language === code;
         return (
           <button
@@ -122,18 +144,20 @@ const LanguageToggle = ({
             type="button"
             role="radio"
             aria-checked={active}
-            aria-label={code === "sv" ? "Svenska" : "English"}
-            onClick={() => setLanguage(code)}
+            aria-label={nativeLabel}
+            onClick={() => handleSelect(code)}
             className={`${pillPad} rounded-full font-medium transition-all flex items-center gap-1 ${
               active
                 ? "bg-primary text-primary-foreground shadow-warm"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted"
             }`}
           >
-            <span aria-hidden className={isSm ? "text-sm" : "text-base"}>
-              {flag}
-            </span>
-            <span>{short}</span>
+            {flag ? (
+              <span aria-hidden className={isSm ? "text-sm" : "text-base"}>
+                {flag}
+              </span>
+            ) : null}
+            <span>{shortCode(code)}</span>
           </button>
         );
       })}

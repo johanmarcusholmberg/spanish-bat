@@ -1,6 +1,14 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import {
+  LanguageCode,
+  FALLBACK_LANGUAGE,
+  resolveLanguage,
+  getEnabledLanguages,
+  LanguageOption,
+} from "@/i18n/languages";
+import { languageStorage } from "@/i18n/storage";
 
-type Language = "sv" | "en";
+type Language = LanguageCode;
 
 interface Translations {
   [key: string]: { sv: string; en: string };
@@ -377,6 +385,13 @@ const translations: Translations = {
   echoStepEcho: { sv: "Eka", en: "Echo" },
   echoStepBuild: { sv: "Bygg", en: "Build" },
   echoStepUse: { sv: "Använd", en: "Use" },
+
+  // Language selector
+  appLanguage: { sv: "Appspråk", en: "App language" },
+  chooseLanguage: { sv: "Välj språk", en: "Choose language" },
+  language: { sv: "Språk", en: "Language" },
+  placementTestTitle: { sv: "Placeringstest", en: "Placement Test" },
+  placementTestDesc: { sv: "Testa din spanskanivå igen", en: "Retake the Spanish level test" },
 };
 
 interface LanguageContextType {
@@ -384,37 +399,57 @@ interface LanguageContextType {
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
   setProfileLang?: (lang: Language | null) => void;
+  availableLanguages: LanguageOption[];
 }
 
 const LanguageContext = createContext<LanguageContextType>({
-  language: "sv",
+  language: FALLBACK_LANGUAGE,
   setLanguage: () => {},
   t: (key) => key,
+  availableLanguages: getEnabledLanguages(),
 });
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguageState] = useState<Language>(() => {
-    return (localStorage.getItem("publicLanguage") as Language) || "sv";
-  });
+  const [language, setLanguageState] = useState<Language>(() =>
+    resolveLanguage(languageStorage.read())
+  );
   const [profileLanguage, setProfileLanguage] = useState<Language | null>(null);
 
   const setLanguage = (lang: Language) => {
-    setLanguageState(lang);
-    localStorage.setItem("publicLanguage", lang);
+    const safe = resolveLanguage(lang);
+    setLanguageState(safe);
+    languageStorage.write(safe);
+    // Keep the profile-driven language in sync so the global selector
+    // immediately reflects the user's choice without waiting for a save.
+    setProfileLanguage(safe);
   };
 
   const setProfileLang = (lang: Language | null) => {
-    setProfileLanguage(lang);
+    setProfileLanguage(lang === null ? null : resolveLanguage(lang));
   };
 
   const activeLang = profileLanguage ?? language;
+
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = activeLang;
+    }
+  }, [activeLang]);
 
   const t = (key: string): string => {
     return translations[key]?.[activeLang] || key;
   };
 
   return (
-    <LanguageContext.Provider value={{ language: activeLang, setLanguage, t, setProfileLang }}>
+    <LanguageContext.Provider
+      value={{
+        language: activeLang,
+        setLanguage,
+        t,
+        setProfileLang,
+        availableLanguages: getEnabledLanguages(),
+      }}
+    >
       {children}
     </LanguageContext.Provider>
   );

@@ -9,9 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { User, Save, Check, BookOpen, ChevronRight, Mail, Shield, ClipboardList } from "lucide-react";
+import { User, Save, Check, BookOpen, ChevronRight, Mail, Shield, ClipboardList, Globe } from "lucide-react";
+import { getEnabledLanguages, LanguageCode } from "@/i18n/languages";
 
 const levels: Level[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
+const appLanguages = getEnabledLanguages();
 
 const ProfilePage = () => {
   const { t, setProfileLang } = useLanguage();
@@ -19,7 +21,13 @@ const ProfilePage = () => {
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState(user?.displayName || "");
   const [level, setLevel] = useState<Level>(user?.level || "A1");
-  const [learningFrom, setLearningFrom] = useState<"sv" | "en">(user?.learningFrom || "sv");
+  const [learningFrom, setLearningFrom] = useState<LanguageCode>(user?.learningFrom || "sv");
+
+  const handleLearningFromChange = (code: LanguageCode) => {
+    setLearningFrom(code);
+    // Reflect immediately in the global selector so the UI does not feel out of sync.
+    setProfileLang?.(code);
+  };
   const [saved, setSaved] = useState(false);
 
   const handleSave = async () => {
@@ -92,28 +100,37 @@ const ProfilePage = () => {
               </div>
             </div>
             <div>
-              <Label className="mb-2 block">{t("learningFrom")}</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setLearningFrom("sv")}
-                  className={`py-2 rounded-md text-sm font-medium transition ${
-                    learningFrom === "sv"
-                      ? "gradient-mint text-secondary-foreground"
-                      : "bg-background border border-border text-foreground hover:bg-muted"
-                  }`}
-                >
-                  🇸🇪 {t("swedish")}
-                </button>
-                <button
-                  onClick={() => setLearningFrom("en")}
-                  className={`py-2 rounded-md text-sm font-medium transition ${
-                    learningFrom === "en"
-                      ? "gradient-mint text-secondary-foreground"
-                      : "bg-background border border-border text-foreground hover:bg-muted"
-                  }`}
-                >
-                  🇬🇧 {t("english")}
-                </button>
+              <Label className="mb-2 flex items-center gap-1.5">
+                <Globe className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
+                {t("appLanguage")}
+              </Label>
+              <div
+                role="radiogroup"
+                aria-label={t("chooseLanguage")}
+                className={`grid gap-2`}
+                style={{ gridTemplateColumns: `repeat(${Math.min(appLanguages.length, 3)}, minmax(0, 1fr))` }}
+              >
+                {appLanguages.map((opt) => {
+                  const active = learningFrom === opt.code;
+                  return (
+                    <button
+                      key={opt.code}
+                      type="button"
+                      role="radio"
+                      aria-checked={active}
+                      onClick={() => handleLearningFromChange(opt.code)}
+                      className={`py-2 rounded-md text-sm font-medium transition flex items-center justify-center gap-1.5 ${
+                        active
+                          ? "gradient-mint text-secondary-foreground"
+                          : "bg-background border border-border text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      {opt.flag ? <span aria-hidden>{opt.flag}</span> : null}
+                      <span>{opt.nativeLabel}</span>
+                      {active ? <Check className="h-3.5 w-3.5" aria-hidden /> : null}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </CardContent>
@@ -178,10 +195,10 @@ const ProfilePage = () => {
                 </div>
                 <div className="text-left min-w-0">
                   <p className="text-sm font-medium text-foreground">
-                    {learningFrom === "sv" ? "Placeringstest" : "Placement Test"}
+                    {t("placementTestTitle")}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {learningFrom === "sv" ? "Testa din spanskanivå igen" : "Retake the Spanish level test"}
+                    {t("placementTestDesc")}
                   </p>
                 </div>
               </div>

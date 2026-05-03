@@ -3,12 +3,23 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import Footer from "@/components/Footer";
+import LanguageToggle from "@/components/LanguageToggle";
 import logo from "@/assets/murcielago-logo.png";
 import { Sun, Moon, LogOut, Shield, Sparkles, Dumbbell, Library, TrendingUp, User } from "lucide-react";
+import type { LanguageCode } from "@/i18n/languages";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const { t } = useLanguage();
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin, updateProfile } = useAuth();
+
+  const handleLanguageChange = (code: LanguageCode) => {
+    if (user && user.learningFrom !== code) {
+      // Persist the choice to the user's profile so it survives across devices.
+      void updateProfile({ learningFrom: code }).catch(() => {
+        // Optimistic update is already applied; ignore network failure.
+      });
+    }
+  };
   const navigate = useNavigate();
   const [dark, setDark] = useState(() => {
     if (typeof window !== "undefined") {
@@ -44,7 +55,8 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
           <img src={logo} alt="Murciélingo Logo" className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(255,181,167,0.6)]" />
           <span className="font-heading font-bold text-foreground text-lg tracking-tight">Murciélingo</span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <LanguageToggle variant="globe" onChange={handleLanguageChange} />
           <button
             onClick={() => setDark(!dark)}
             className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition"
