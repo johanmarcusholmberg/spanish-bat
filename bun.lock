@@ -178,8 +178,8 @@
         "zod": "catalog:",
       },
     },
-    "artifacts/murcielago": {
-      "name": "@workspace/murcielago",
+    "artifacts/murcielingo": {
+      "name": "@workspace/murcielingo",
       "version": "0.0.0",
       "dependencies": {
         "@clerk/react": "^6.4.7",
@@ -1303,7 +1303,7 @@
 
     "@workspace/mockup-sandbox": ["@workspace/mockup-sandbox@workspace:artifacts/mockup-sandbox"],
 
-    "@workspace/murcielago": ["@workspace/murcielago@workspace:artifacts/murcielago"],
+    "@workspace/murcielingo": ["@workspace/murcielingo@workspace:artifacts/murcielingo"],
 
     "@workspace/practice": ["@workspace/practice@workspace:lib/practice"],
 
