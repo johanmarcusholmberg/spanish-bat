@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import LanguageToggle from "@/components/LanguageToggle";
 import { ArrowLeft, Loader2, Lock, Mail, KeyRound, User } from "lucide-react";
-import logo from "@/assets/murcielago-logo.png";
+import logo from "@/assets/murcielingo-logo.png";
 
 const RegisterPage = () => {
   const { t } = useLanguage();

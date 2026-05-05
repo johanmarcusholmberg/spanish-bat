@@ -17,7 +17,7 @@ interface Props {
 
 /**
  * Echo Memory — mobile preview card.
- * See the web version (artifacts/murcielago/src/components/EchoMemoryPreview.tsx)
+ * See the web version (artifacts/murcielingo/src/components/EchoMemoryPreview.tsx)
  * for the polish rationale; this mirrors the same stat strip + smart CTA
  * + concrete-teaser pattern using the mobile design system.
  */

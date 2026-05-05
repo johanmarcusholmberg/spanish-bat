@@ -1,10 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const TOKEN_KEY = "murcielago_auth_token";
-const PROFILE_KEY = "murcielago_profile";
-const RECENT_LESSONS_KEY = "murcielago_recent_lessons";
-const DASHBOARD_CACHE_KEY = "murcielago_dashboard_cache";
-const EXERCISE_DRAFT_PREFIX = "murcielago_exercise_draft:";
+const TOKEN_KEY = "murcielingo_auth_token";
+const PROFILE_KEY = "murcielingo_profile";
+const RECENT_LESSONS_KEY = "murcielingo_recent_lessons";
+const DASHBOARD_CACHE_KEY = "murcielingo_dashboard_cache";
+const EXERCISE_DRAFT_PREFIX = "murcielingo_exercise_draft:";
 
 const RECENT_LESSONS_MAX = 10;
 const DASHBOARD_CACHE_TTL_MS = 5 * 60 * 1000;

@@ -1,13 +1,13 @@
 {
   "expo": {
     "name": "Murciélingo",
-    "slug": "murcielago-mobile",
+    "slug": "murcielingo-mobile",
     "owner": "TODO-expo-account-username",
     "version": "1.0.0",
     "description": "Murciélingo — learn Spanish through bite-sized lessons, real reading passages, and spaced-repetition flashcards.",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "murcielago",
+    "scheme": "murcielingo",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -17,11 +17,11 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "app.murcielago.mobile",
+      "bundleIdentifier": "app.murcielingo.mobile",
       "buildNumber": "1"
     },
     "android": {
-      "package": "app.murcielago.mobile",
+      "package": "app.murcielingo.mobile",
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",

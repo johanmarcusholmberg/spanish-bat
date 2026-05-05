@@ -8,7 +8,7 @@ import {
 
 export type { AppLanguage };
 
-const KEY = "murcielago_preferred_language";
+const KEY = "murcielingo_preferred_language";
 
 export async function getPreferredLanguage(): Promise<AppLanguage> {
   try {

@@ -15,7 +15,7 @@ Scope: this covers what we control inside the repo (code, app config, EAS config
 - [x] `(tabs)/_layout.tsx` uses native tabs (Liquid Glass) on iOS 17+ and falls back to classic tabs elsewhere.
 - [x] `RequireAuth`, `ErrorBoundary`, `OfflineBanner`, persisted Clerk token cache, and `dashboardCache` are all wired up.
 - [x] `AsyncStorage` writes are wrapped in try/catch with a single `console.warn` per failure (no console noise during the happy path).
-- [x] Web app (`@workspace/murcielago`) still renders the login screen (verified via screenshot).
+- [x] Web app (`@workspace/murcielingo`) still renders the login screen (verified via screenshot).
 
 > Known dev-only cosmetic: the **web preview** of the mobile artifact in Replit shows Expo's "Welcome to Expo" placeholder because `(tabs)/_layout.tsx` imports native-only modules (`expo-router/unstable-native-tabs`, `expo-glass-effect`, `expo-symbols`). This does **not** affect Expo Go, iOS, or Android — it is purely the desktop browser preview. Test on a device or simulator instead.
 
@@ -56,7 +56,7 @@ Scope: this covers what we control inside the repo (code, app config, EAS config
 - [ ] `expo.version` — bump for each store release (e.g. `1.0.0` → `1.0.1`).
 - [ ] `expo.ios.buildNumber` — bump on every TestFlight/App Store upload.
 - [ ] `expo.android.versionCode` — increment integer on every Play upload.
-- [ ] `expo.ios.bundleIdentifier` (`app.murcielago.mobile`) and `expo.android.package` (`app.murcielago.mobile`) — confirm these are reserved in App Store Connect and Google Play Console before the first upload (they cannot be changed later).
+- [ ] `expo.ios.bundleIdentifier` (`app.murcielingo.mobile`) and `expo.android.package` (`app.murcielingo.mobile`) — confirm these are reserved in App Store Connect and Google Play Console before the first upload (they cannot be changed later).
 - [ ] Real splash + store icon assets — currently `assets/images/splash.png` and `assets/images/icon.png` are placeholders. Tracked by **Task #52** ("Add real splash and store-ready icon artwork before app submission"). Required:
   - iOS icon: 1024×1024 PNG, no alpha, no rounded corners.
   - Android adaptive icon: foreground 1024×1024 PNG with transparency.
@@ -92,7 +92,7 @@ Scope: this covers what we control inside the repo (code, app config, EAS config
   - [ ] `CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` on the deployed API server.
 - [ ] `EXPO_PUBLIC_API_BASE_URL` points at the **deployed** API domain (e.g. `https://api.murcielingo.app/api`), not a Replit dev URL. Set this in `eas.json → build.production.env`.
 - [ ] API server is deployed and reachable over HTTPS from outside Replit.
-- [ ] Clerk dashboard has the production redirect URLs whitelisted (`murcielago://`, plus any web callbacks).
+- [ ] Clerk dashboard has the production redirect URLs whitelisted (`murcielingo://`, plus any web callbacks).
 - [ ] Postgres for prod is sized appropriately and backed up.
 - [ ] `OPENAI` / `AI_INTEGRATIONS_OPENAI_*` secrets are present on the deployed API server (used by `/api/ai/translate` and `/api/ai/conversation`).
 
@@ -103,7 +103,7 @@ Scope: this covers what we control inside the repo (code, app config, EAS config
 - [ ] `eas build --profile preview --platform ios` and `--platform android` succeed.
 - [ ] Install the preview build on a physical device via TestFlight (iOS) and Internal App Sharing / Internal Testing track (Android).
 - [ ] Run the manual smoke test from §1 on the preview build (not just dev).
-- [ ] Verify deep-link scheme `murcielago://` returns to app from OAuth.
+- [ ] Verify deep-link scheme `murcielingo://` returns to app from OAuth.
 - [ ] Verify push notifications, location, camera, and any other permissions are **not** requested unless actually used (right now we use none — keep it that way unless a feature needs it).
 
 ---

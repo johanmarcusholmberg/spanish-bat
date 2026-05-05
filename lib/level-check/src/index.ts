@@ -10,7 +10,7 @@
  * suggests it, the user can always decline and keep practicing — that
  * decision is made in the UI, not enforced here.
  *
- * This package is shared by both the web app (`artifacts/murcielago`)
+ * This package is shared by both the web app (`artifacts/murcielingo`)
  * and the React Native mobile app (`artifacts/mobile`). It is content-
  * agnostic: callers pass candidate `PracticeItem`s (the same shape used
  * by `@workspace/practice`) and the generator selects items per section.

@@ -25,7 +25,7 @@ import {
   Check,
   Flame,
 } from "lucide-react";
-import logo from "@/assets/murcielago-logo.png";
+import logo from "@/assets/murcielingo-logo.png";
 import LanguageToggle from "@/components/LanguageToggle";
 
 const LOGIN_ROUTE = "/login";

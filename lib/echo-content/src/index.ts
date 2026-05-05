@@ -7,7 +7,7 @@
  * regardless of platform — even when the per-platform UI differs.
  *
  * Phrases are short Spanish sentences derived from the canonical noun
- * catalog used on web (see artifacts/murcielago/src/data/nounsExpanded.ts).
+ * catalog used on web (see artifacts/murcielingo/src/data/nounsExpanded.ts).
  * They are intentionally simple, level-appropriate, and end with a period
  * so a TTS engine reads them naturally.
  *
