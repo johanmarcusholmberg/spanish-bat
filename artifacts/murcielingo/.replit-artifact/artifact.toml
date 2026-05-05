@@ -2,7 +2,7 @@ kind = "web"
 previewPath = "/"
 title = "Murciélingo - Spanish Learning App"
 version = "1.0.0"
-id = "artifacts/murcielago"
+id = "artifacts/murcielingo"
 router = "path"
 
 [[integratedSkills]]
@@ -15,11 +15,11 @@ paths = [ "/" ]
 localPort = 25133
 
 [services.development]
-run = "pnpm --filter @workspace/murcielago run dev"
+run = "pnpm --filter @workspace/murcielingo run dev"
 
 [services.production]
-build = [ "pnpm", "--filter", "@workspace/murcielago", "run", "build" ]
-publicDir = "artifacts/murcielago/dist/public"
+build = [ "pnpm", "--filter", "@workspace/murcielingo", "run", "build" ]
+publicDir = "artifacts/murcielingo/dist/public"
 serve = "static"
 
 [[services.production.rewrites]]

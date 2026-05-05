@@ -3,7 +3,7 @@
  * shared by `@workspace/api-server` (which serves it over HTTP) and
  * `@workspace/mobile` (which can also import it directly for sync use in
  * `practiceItems.ts`). The web app keeps its own richer content shape in
- * `artifacts/murcielago/src/data/` for now.
+ * `artifacts/murcielingo/src/data/` for now.
  */
 export type Level = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 

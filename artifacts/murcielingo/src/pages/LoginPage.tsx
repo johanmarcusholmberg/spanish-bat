@@ -4,7 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Loader2, Lock, Mail, KeyRound } from "lucide-react";
-import logo from "@/assets/murcielago-logo.png";
+import logo from "@/assets/murcielingo-logo.png";
 import LanguageToggle from "@/components/LanguageToggle";
 
 type Mode =

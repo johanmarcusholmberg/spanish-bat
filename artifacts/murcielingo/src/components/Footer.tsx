@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import logo from "@/assets/murcielago-logo.png";
+import logo from "@/assets/murcielingo-logo.png";
 
 const Footer = () => {
   const { t } = useLanguage();

@@ -178,7 +178,7 @@ These items live outside the code in third-party consoles. They must be done by 
 
 - [ ] **Clerk production instance** — create a separate production instance in the [Clerk Dashboard](https://dashboard.clerk.com), enable email/password sign-up, and toggle on Google + Apple OAuth providers.
 - [ ] **Swap to production Clerk publishable key** — replace `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` (currently `pk_test_*`) with the production `pk_live_*` key in EAS secrets (`eas secret:create --scope project --name EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY --value pk_live_...`).
-- [ ] **Clerk OAuth redirect URLs** — in Clerk → User & Authentication → Social Connections, register `murcielago://oauth-native-callback` as an allowed redirect URL for both Google and Apple.
+- [ ] **Clerk OAuth redirect URLs** — in Clerk → User & Authentication → Social Connections, register `murcielingo://oauth-native-callback` as an allowed redirect URL for both Google and Apple.
 - [ ] **Production API base URL** — point `EXPO_PUBLIC_API_BASE_URL` at the deployed API server (the Replit deployment URL once the API is published), not the dev domain.
 - [ ] **Privacy Policy URL** — host a public privacy policy and put the URL into `app.json → extra._storeMetadataTodos.privacyPolicyUrl`, plus the App Store Connect and Google Play Console listing pages. Both stores reject submissions without one.
 - [ ] **Terms of Service URL** — same pattern; required by the App Store Review Guidelines once any user-generated content or accounts exist.
@@ -196,8 +196,8 @@ These items live outside the code in third-party consoles. They must be done by 
   - Full description: ≤ 4000 chars
   - High-res icon: 512×512 (Play Store auto-generates from `adaptiveIcon.foregroundImage`)
 - [ ] **Content rating questionnaires** — complete the IARC questionnaire in Google Play Console and the App Store age-rating form in App Store Connect.
-- [ ] **Create the App Store Connect app record** — in App Store Connect → Apps → +, create a new app with bundle ID `app.murcielago.mobile` **before** running any submit. The `ascAppId` you put in `eas.json` comes from this record's URL.
-- [ ] **Create the Google Play app record** — in Play Console → Create app, with package name `app.murcielago.mobile`, **before** running any submit.
+- [ ] **Create the App Store Connect app record** — in App Store Connect → Apps → +, create a new app with bundle ID `app.murcielingo.mobile` **before** running any submit. The `ascAppId` you put in `eas.json` comes from this record's URL.
+- [ ] **Create the Google Play app record** — in Play Console → Create app, with package name `app.murcielingo.mobile`, **before** running any submit.
 - [ ] **Apple Team ID + ASC App ID** — fill the `submit.production.ios` block in `eas.json` with your real `appleId`, `ascAppId`, and `appleTeamId`.
 - [ ] **App Store Connect API key (required for non-interactive iOS submit)** — in App Store Connect → Users and Access → Integrations → App Store Connect API, create a key with the **App Manager** role, download the `.p8` file (you can only download it once), and add three fields to `eas.json → submit.production.ios`:
   - `ascApiKeyPath`: relative path to the downloaded `.p8` (e.g. `./AuthKey_ABCD1234.p8`) — **do not commit this file to git**.
@@ -229,14 +229,14 @@ Tick every box before running `eas submit`. Anything unchecked is a likely rejec
 - [ ] `app.json → extra._storeMetadataTodos.supportEmail` set to a real address
 - [ ] `eas.json → submit.production.ios` filled with real Apple values (`appleId`, `ascAppId`, `appleTeamId`)
 - [ ] `eas.json → submit.production.ios` also has `ascApiKeyPath`, `ascApiKeyId`, `ascApiKeyIssuerId` for non-interactive submit
-- [ ] App Store Connect app record exists with bundle ID `app.murcielago.mobile`
-- [ ] Google Play app record exists with package `app.murcielago.mobile`
+- [ ] App Store Connect app record exists with bundle ID `app.murcielingo.mobile`
+- [ ] Google Play app record exists with package `app.murcielingo.mobile`
 - [ ] `eas.json → submit.production.android.serviceAccountKeyPath` points to a real key file
 
 **Production secrets and endpoints**
 - [ ] `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` swapped to `pk_live_*` in EAS secrets
 - [ ] `EXPO_PUBLIC_API_BASE_URL` points at the production deployment, not `replit.dev`
-- [ ] Clerk production instance OAuth redirect URLs include `murcielago://oauth-native-callback`
+- [ ] Clerk production instance OAuth redirect URLs include `murcielingo://oauth-native-callback`
 
 **Legal and store listings**
 - [ ] Privacy policy live at the URL in `app.json`
@@ -418,8 +418,8 @@ Do these in order before shipping a build that processes real purchases:
 1. **Apple — App Store Connect → My Apps → \[your app\] → In-App Purchases**
    - Create an **Auto-Renewable Subscription Group** (e.g. "Murciélingo Premium").
    - Create two products in the group:
-     - Monthly — product id `murcielago_premium_monthly_v1` (or whatever you set `EXPO_PUBLIC_RC_PRODUCT_MONTHLY` to).
-     - Yearly — product id `murcielago_premium_yearly_v1`.
+     - Monthly — product id `murcielingo_premium_monthly_v1` (or whatever you set `EXPO_PUBLIC_RC_PRODUCT_MONTHLY` to).
+     - Yearly — product id `murcielingo_premium_yearly_v1`.
    - Apple requires localised name + description + a screenshot per product before review.
 
 2. **Google — Play Console → Monetize → Products → Subscriptions**
@@ -428,8 +428,8 @@ Do these in order before shipping a build that processes real purchases:
 
 3. **RevenueCat — [app.revenuecat.com](https://app.revenuecat.com)**
    - Create a project (e.g. "Murciélingo").
-   - Add an iOS app — paste your App Store Connect shared secret + bundle id (`app.murcielago.mobile`).
-   - Add an Android app — upload the Play service account JSON + package name (`app.murcielago.mobile`).
+   - Add an iOS app — paste your App Store Connect shared secret + bundle id (`app.murcielingo.mobile`).
+   - Add an Android app — upload the Play service account JSON + package name (`app.murcielingo.mobile`).
    - **Products**: import the four store products you just created (RC has a "Pull from store" button per app).
    - **Entitlement**: create one entitlement called `premium` and attach all four products to it.
    - **Offering**: create a default offering `default` with two packages — `$rc_monthly` and `$rc_annual` — pointing at the corresponding products. Mark this offering as Current.

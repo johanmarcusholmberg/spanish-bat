@@ -11,7 +11,7 @@ import { useColors } from "@/hooks/useColors";
 /**
  * StreakCard — mobile port of the polished web StreakCard.
  *
- * Mirrors the web pattern (artifacts/murcielago/src/components/StreakCard.tsx):
+ * Mirrors the web pattern (artifacts/murcielingo/src/components/StreakCard.tsx):
  *   - Today-status pill (emerald "Practiced today" / amber "Not yet today")
  *   - 3-tile stat strip: current, longest, this week
  *   - Milestone hint within 3 days of [3, 7, 14, 30, 60, 100, 180, 365]

@@ -1,6 +1,6 @@
 # Stripe Setup (Web Subscriptions)
 
-The web app (`artifacts/murcielago`) uses **Stripe Checkout + Stripe Billing
+The web app (`artifacts/murcielingo`) uses **Stripe Checkout + Stripe Billing
 + Stripe Customer Portal** for subscriptions. The mobile app continues to
 use the App Store / Play Store via RevenueCat — **never put Stripe
 Checkout inside the iOS / Android binaries**, it violates store policy.

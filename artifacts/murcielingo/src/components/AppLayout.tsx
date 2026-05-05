@@ -4,7 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import Footer from "@/components/Footer";
 import LanguageToggle from "@/components/LanguageToggle";
-import logo from "@/assets/murcielago-logo.png";
+import logo from "@/assets/murcielingo-logo.png";
 import { Sun, Moon, LogOut, Shield, User } from "lucide-react";
 import {
   EchoRingsMotif,

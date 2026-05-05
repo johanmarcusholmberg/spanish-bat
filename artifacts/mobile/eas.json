@@ -48,7 +48,7 @@
         "appleId": "TODO_REPLACE_WITH_APPLE_ID_EMAIL",
         "ascAppId": "TODO_APP_STORE_CONNECT_APP_ID",
         "appleTeamId": "TODO_APPLE_TEAM_ID",
-        "bundleIdentifier": "app.murcielago.mobile",
+        "bundleIdentifier": "app.murcielingo.mobile",
         "ascApiKeyPath": "./TODO-AuthKey.p8",
         "ascApiKeyId": "TODO_ASC_API_KEY_ID",
         "ascApiKeyIssuerId": "TODO_ASC_API_KEY_ISSUER_ID"

@@ -473,7 +473,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function startOAuth(strategy: "oauth_google" | "oauth_apple"): Promise<string | null> {
     try {
       const redirectUrl = AuthSession.makeRedirectUri({
-        scheme: "murcielago",
+        scheme: "murcielingo",
         path: "sso-callback",
       });
       const { createdSessionId, setActive } = await startSSOFlow({

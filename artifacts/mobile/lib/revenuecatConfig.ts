@@ -13,7 +13,7 @@
  *   EXPO_PUBLIC_RC_PRODUCT_MONTHLY — Apple/Google product id, monthly
  *   EXPO_PUBLIC_RC_PRODUCT_YEARLY  — Apple/Google product id, yearly
  *
- * The product ids are placeholders ("murcielago_premium_monthly_v1" /
+ * The product ids are placeholders ("murcielingo_premium_monthly_v1" /
  * "_yearly_v1") until real Apple/Google products exist; the SDK will
  * happily fall back to whatever offerings the RevenueCat dashboard
  * actually returns.
@@ -26,10 +26,10 @@ export const RC_CONFIG = {
   productIds: {
     monthly:
       process.env.EXPO_PUBLIC_RC_PRODUCT_MONTHLY ??
-      "murcielago_premium_monthly_v1",
+      "murcielingo_premium_monthly_v1",
     yearly:
       process.env.EXPO_PUBLIC_RC_PRODUCT_YEARLY ??
-      "murcielago_premium_yearly_v1",
+      "murcielingo_premium_yearly_v1",
   },
 } as const;
 
